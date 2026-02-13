@@ -111,7 +111,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                     <div className="flex justify-center mb-8">
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-gold/10 border border-rose-gold/20 text-rose-gold text-sm tracking-wide">
                             <Lock className="w-4 h-4" />
-                            <span className="uppercase text-xs">Love Verification</span>
+                            <span className="uppercase text-xs">Xác nhận tình yêu</span>
                         </div>
                     </div>
 
@@ -197,7 +197,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                     {/* Footer */}
                     <div className="mt-8 text-center">
                         <p className="text-sm text-white/15 tracking-[0.2em] uppercase font-light">
-                            Protected by <p className="text-rose-gold text-xs">Hội đồng tình yêu thế giới</p>
+                            Được bảo vệ bởi <p className="text-rose-gold text-xs">Hội đồng tình yêu vũ trụ</p>
                         </p>
                     </div>
                 </div>

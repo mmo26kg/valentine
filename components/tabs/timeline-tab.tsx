@@ -114,9 +114,9 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
             >
                 <div>
                     <p className="text-rose-gold/50 text-sm uppercase tracking-widest">
-                        Timeline
+                        Dòng thời gian
                     </p>
-                    <h1 className="text-4xl font-serif italic text-white">Our Journey</h1>
+                    <h1 className="text-4xl font-serif italic text-white">Hành trình yêu</h1>
                 </div>
 
                 {/* Filters */}
@@ -139,7 +139,7 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                             className="text-rose-gold/60 hover:text-rose-gold text-sm flex items-center gap-1"
                         >
                             <X className="w-3 h-3" />
-                            Clear
+                            Xóa lọc
                         </button>
                     )}
                 </div>
@@ -183,7 +183,7 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                                             }`}
                                     >
                                         <h3 className="text-2xl font-serif italic text-white">
-                                            {format(d, "MMMM do")}
+                                            {format(d, "d MMMM")}
                                         </h3>
                                         <p className="text-xs uppercase tracking-widest text-rose-gold/50 mt-1">
                                             {post.title}
@@ -229,11 +229,11 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                                                 </p>
                                                 <div className="flex items-center gap-3 mt-4 text-xs text-white/20">
                                                     <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
-                                                        <Heart className="w-3 h-3" /> Like
+                                                        <Heart className="w-3 h-3" /> Thích
                                                     </button>
                                                     {post.user_id === currentRole && (
                                                         <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
-                                                            <Pencil className="w-3 h-3" /> Edit
+                                                            <Pencil className="w-3 h-3" /> Sửa
                                                         </button>
                                                     )}
                                                 </div>
@@ -261,10 +261,10 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                 <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-serif italic text-center text-white">
-                            Add a Memory
+                            Thêm kỷ niệm mới
                         </DialogTitle>
                         <p className="text-center text-rose-gold/50 font-serif text-sm">
-                            Capture this moment in time forever
+                            Lưu giữ khoảnh khắc này mãi mãi
                         </p>
                     </DialogHeader>
 
@@ -294,7 +294,7 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                                         className="object-cover opacity-60 group-hover:opacity-40 transition-opacity"
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <p className="bg-black/50 text-white px-3 py-1 rounded-full text-xs">Change Image</p>
+                                        <p className="bg-black/50 text-white px-3 py-1 rounded-full text-xs">Thay đổi ảnh</p>
                                     </div>
                                 </div>
                             ) : (
@@ -302,16 +302,16 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                                     {uploading ? (
                                         <div className="flex flex-col items-center">
                                             <div className="w-8 h-8 border-2 border-rose-gold border-t-transparent rounded-full animate-spin mb-2" />
-                                            <p className="text-sm text-rose-gold">Uploading...</p>
+                                            <p className="text-sm text-rose-gold">Đang tải lên...</p>
                                         </div>
                                     ) : (
                                         <>
                                             <Camera className="w-8 h-8 text-rose-gold/40 mx-auto mb-2" />
                                             <p className="text-sm">
-                                                <span className="text-rose-gold">Upload a file</span>
-                                                <span className="text-white/40"> or drag and drop</span>
+                                                <span className="text-rose-gold">Tải ảnh lên</span>
+                                                <span className="text-white/40"> hoặc kéo thả</span>
                                             </p>
-                                            <p className="text-xs text-white/20 mt-1">PNG, JPG, GIF up to 10MB</p>
+                                            <p className="text-xs text-white/20 mt-1">PNG, JPG, GIF tối đa 10MB</p>
                                         </>
                                     )}
                                 </>
@@ -319,17 +319,17 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                         </div>
 
                         <div>
-                            <Label className="text-white/60">Title</Label>
+                            <Label className="text-white/60">Tiêu đề</Label>
                             <Input
                                 value={newPost.title}
                                 onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))}
-                                placeholder="What happened?"
+                                placeholder="Chuyện gì đã xảy ra?"
                                 className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30"
                             />
                         </div>
 
                         <div>
-                            <Label className="text-white/60">Date</Label>
+                            <Label className="text-white/60">Ngày</Label>
                             <Input
                                 type="date"
                                 value={newPost.event_date}
@@ -339,21 +339,21 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                         </div>
 
                         <div>
-                            <Label className="text-white/60">Share your thoughts</Label>
+                            <Label className="text-white/60">Chia sẻ suy nghĩ</Label>
                             <Textarea
                                 value={newPost.content}
                                 onChange={(e) => setNewPost((p) => ({ ...p, content: e.target.value }))}
-                                placeholder="What made this moment special?"
+                                placeholder="Điều gì làm khoảnh khắc này đặc biệt?"
                                 className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 min-h-[100px] focus-visible:ring-rose-gold/30 font-serif"
                             />
                         </div>
 
                         <div>
-                            <Label className="text-white/60">Location (optional)</Label>
+                            <Label className="text-white/60">Địa điểm (tùy chọn)</Label>
                             <Input
                                 value={newPost.location}
                                 onChange={(e) => setNewPost((p) => ({ ...p, location: e.target.value }))}
-                                placeholder="Where was this?"
+                                placeholder="Ở đâu thế?"
                                 className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30"
                             />
                         </div>
@@ -363,7 +363,7 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                             disabled={!newPost.title.trim() || !newPost.content.trim() || uploading}
                             className="w-full bg-rose-gold hover:bg-rose-gold-dark text-background font-serif py-5 disabled:opacity-30"
                         >
-                            {uploading ? "Uploading..." : "Post to Timeline"}
+                            {uploading ? "Đang tải lên..." : "Đăng lên dòng thời gian"}
                         </Button>
                     </div>
                 </DialogContent>

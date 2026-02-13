@@ -62,10 +62,10 @@ export function CountdownTab() {
             >
                 <div>
                     <p className="text-rose-gold text-lg italic font-serif mb-1">
-                        Good evening, Love
+                        Chào bạn yêu
                     </p>
                     <h1 className="text-4xl md:text-5xl font-light text-white">
-                        Upcoming Moments
+                        Sự kiện sắp tới
                     </h1>
                 </div>
                 <div className="text-right hidden md:block">
@@ -73,7 +73,7 @@ export function CountdownTab() {
                         {today}
                     </p>
                     <p className="text-sm text-white/30 uppercase tracking-widest">
-                        Today
+                        Hôm nay
                     </p>
                 </div>
             </motion.div>
@@ -91,10 +91,10 @@ export function CountdownTab() {
                     </div>
                     <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider">
-                            Active
+                            Đang diễn ra
                         </p>
                         <p className="text-xl font-medium text-white">
-                            {events.length} Events
+                            {events.length} Sự kiện
                         </p>
                     </div>
                 </div>
@@ -104,7 +104,7 @@ export function CountdownTab() {
                     </div>
                     <div>
                         <p className="text-xs text-white/40 uppercase tracking-wider">
-                            Next Up
+                            Tiếp theo
                         </p>
                         <p className="text-xl font-medium text-white">
                             {events[0]?.title || "—"}
@@ -158,7 +158,7 @@ export function CountdownTab() {
                                                 {time.days}
                                             </span>
                                             <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
-                                                Days
+                                                Ngày
                                             </span>
                                         </div>
                                         <div className="h-auto w-px bg-rose-gold/10" />
@@ -167,7 +167,7 @@ export function CountdownTab() {
                                                 {time.hours}
                                             </span>
                                             <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
-                                                Hours
+                                                Giờ
                                             </span>
                                         </div>
                                     </>
@@ -190,7 +190,7 @@ export function CountdownTab() {
                                             />
                                         </div>
                                         <p className="text-xs text-white/30 mt-2 text-right">
-                                            {time.days < 7 ? "Almost here!" : time.days < 30 ? "Getting close!" : "Coming up"}
+                                            {time.days < 7 ? "Sắp đến rồi!" : time.days < 30 ? "Đang đến gần!" : "Sắp tới"}
                                         </p>
                                     </div>
                                 )}
@@ -217,10 +217,10 @@ export function CountdownTab() {
                     </div>
                     <div className="text-center">
                         <h3 className="text-lg font-light text-rose-gold font-serif">
-                            Add New Milestone
+                            Thêm cột mốc mới
                         </h3>
                         <p className="text-sm text-white/30 mt-1">
-                            Create a new memory to look forward to
+                            Tạo kỷ niệm mới để cùng mong chờ
                         </p>
                     </div>
                 </motion.button>

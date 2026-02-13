@@ -23,11 +23,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 const TABS = [
-    { value: "home", label: "Home", icon: Home },
-    { value: "countdown", label: "Countdown", icon: Timer },
-    { value: "timeline", label: "Timeline", icon: BookHeart },
-    { value: "profile", label: "Profile", icon: User },
-    // { value: "settings", label: "Settings", icon: Settings },
+    { value: "home", label: "Trang chủ", icon: Home },
+    { value: "countdown", label: "Đếm ngược", icon: Timer },
+    { value: "timeline", label: "Kỷ niệm", icon: BookHeart },
+    { value: "profile", label: "Hồ sơ", icon: User },
+    // { value: "settings", label: "Cài đặt", icon: Settings },
 ];
 
 interface MainAppProps {
@@ -109,7 +109,7 @@ export function MainApp({
                                 <DropdownMenuItem>
                                     <Button variant="link" size="sm" onClick={onLock} className="w-full">
                                         <LogOut className="w-4 h-4 mr-2" />
-                                        Logout
+                                        Đăng xuất
                                     </Button>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

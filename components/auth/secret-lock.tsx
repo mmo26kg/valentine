@@ -133,7 +133,7 @@ export function SecretLockScreen({
                             <Lock className="w-6 h-6 text-rose-gold/80" />
                         </motion.div>
 
-                        <h2 className="font-serif text-2xl italic text-white">Locked</h2>
+                        <h2 className="font-serif text-2xl italic text-white">Đã khóa</h2>
 
                         <form onSubmit={handleSubmit} className="w-full space-y-4">
                             <div className="relative">
@@ -180,7 +180,7 @@ export function SecretLockScreen({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}
                 >
-                    Eternally Yours
+                    Mãi mãi là của bạn
                 </motion.p>
             </motion.div>
         </div>

@@ -85,13 +85,13 @@ function ProfileCard({
 
                 <h2 className="text-2xl font-serif mt-4 text-white">{user.name}</h2>
                 <p className="text-rose-gold/50 italic font-serif text-sm mt-1">
-                    &ldquo;Feeling loved & inspired&rdquo;
+                    &ldquo;Đang cảm thấy được yêu & hạnh phúc&rdquo;
                 </p>
 
                 {/* About */}
                 <div className="w-full mt-6">
                     <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
-                        About Me
+                        Giới thiệu
                     </h3>
                     <div className="border-t border-rose-gold/10 pt-3">
                         {editing ? (
@@ -109,7 +109,7 @@ function ProfileCard({
                 {/* Personality Tags */}
                 <div className="w-full mt-6">
                     <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
-                        Personality
+                        Tính cách
                     </h3>
                     <div className="border-t border-rose-gold/10 pt-3 flex flex-wrap gap-2">
                         {tags.map((tag) => (
@@ -127,7 +127,7 @@ function ProfileCard({
                                     value={newTag}
                                     onChange={(e) => setNewTag(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && addTag()}
-                                    placeholder="Add tag..."
+                                    placeholder="Thêm tag..."
                                     className="h-7 w-24 text-xs bg-transparent border-rose-gold/20 text-white"
                                 />
                                 <Button
@@ -148,7 +148,7 @@ function ProfileCard({
                     <div className="glass-card rounded-lg p-4">
                         <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
                             <ThumbsUp className="w-3 h-3" />
-                            <span className="uppercase tracking-widest">Likes</span>
+                            <span className="uppercase tracking-widest">Sở thích</span>
                         </div>
                         <div className="space-y-1.5">
                             {(user.likes || []).map((like) => (
@@ -161,7 +161,7 @@ function ProfileCard({
                     <div className="glass-card rounded-lg p-4">
                         <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
                             <ThumbsDown className="w-3 h-3" />
-                            <span className="uppercase tracking-widest">Dislikes</span>
+                            <span className="uppercase tracking-widest">Ghét</span>
                         </div>
                         <div className="space-y-1.5">
                             {(user.dislikes || []).map((dislike) => (
@@ -178,12 +178,12 @@ function ProfileCard({
                     {isOwner ? (
                         <>
                             <Sparkles className="w-4 h-4" />
-                            Profile Settings
+                            Cài đặt hồ sơ
                         </>
                     ) : (
                         <>
                             <Heart className="w-4 h-4" fill="currentColor" />
-                            Send Love Nudge
+                            Gửi chút tình yêu
                         </>
                     )}
                 </button>

@@ -135,7 +135,7 @@ export function HomeTab({
                         <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
                         <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white/70 text-sm">
                             <MapPin className="w-4 h-4 text-rose-gold" />
-                            <span className="font-serif italic">Our Journey</span>
+                            <span className="font-serif italic">Hành trình của chúng mình</span>
                         </div>
                     </motion.div>
                 </div>
@@ -148,7 +148,7 @@ export function HomeTab({
                     transition={{ delay: 0.4 }}
                 >
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-serif italic text-white">Daily Note</h2>
+                        <h2 className="text-2xl font-serif italic text-white">Nhật ký hôm nay</h2>
                         <span className="text-rose-gold/50 text-sm border border-rose-gold/10 px-3 py-1 rounded-full font-serif">
                             {format(today, "MMMM d, yyyy")}
                         </span>
@@ -196,7 +196,7 @@ export function HomeTab({
                             ) : (
                                 <>
                                     <Textarea
-                                        placeholder="What made you smile today?"
+                                        placeholder="Hôm nay của bạn thế nào?"
                                         value={captionText}
                                         onChange={(e) => setCaptionText(e.target.value)}
                                         className="bg-background/30 border-rose-gold/10 min-h-[100px] resize-none text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30 font-serif"
@@ -226,7 +226,7 @@ export function HomeTab({
                                             />
                                             <button className="text-white/20 hover:text-rose-gold transition-colors flex items-center gap-2">
                                                 <ImageIcon className="w-5 h-5" />
-                                                {isUploading && <span className="text-xs animate-pulse">Uploading...</span>}
+                                                {isUploading && <span className="text-xs animate-pulse">Đang tải lên...</span>}
                                             </button>
                                         </div>
                                         <Button
@@ -234,7 +234,7 @@ export function HomeTab({
                                             disabled={!captionText.trim() || isUploading}
                                             className="bg-rose-gold hover:bg-rose-gold-dark text-background font-serif disabled:opacity-30"
                                         >
-                                            {isUploading ? "Uploading..." : "Share Note"}
+                                            {isUploading ? "Đang tải lên..." : "Chia sẻ"}
                                             {!isUploading && <Send className="w-4 h-4 ml-2" />}
                                         </Button>
                                     </div>
@@ -274,17 +274,17 @@ export function HomeTab({
                                     </div>
                                     <div>
                                         <p className="text-white font-medium">
-                                            {partnerName}&apos;s Note is Locked
+                                            Nhật ký của {partnerName} đang khóa
                                         </p>
                                         <p className="text-white/40 text-sm mt-1 max-w-[240px]">
                                             {hasWrittenToday
-                                                ? `Waiting for ${partnerName} to share today...`
-                                                : `Share your daily moment to unlock what ${partnerName} wrote for you today.`}
+                                                ? `Đang chờ ${partnerName} chia sẻ...`
+                                                : `Chia sẻ khoảnh khắc của bạn để xem ${partnerName} viết gì hôm nay.`}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 text-rose-gold/40 text-xs tracking-widest uppercase">
                                         <span className="w-2 h-2 rounded-full bg-rose-gold/30 animate-pulse" />
-                                        Waiting For You
+                                        Chờ bạn chia sẻ
                                     </div>
                                 </div>
                             )}
@@ -310,7 +310,7 @@ export function HomeTab({
                 >
                     <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-linear-to-r from-transparent via-rose-gold/20 to-transparent" />
-                        <h3 className="text-xl font-serif italic text-white/60">Memory Lane</h3>
+                        <h3 className="text-xl font-serif italic text-white/60">Kỷ niệm xưa</h3>
                         <div className="h-px flex-1 bg-linear-to-r from-transparent via-rose-gold/20 to-transparent" />
                     </div>
 
@@ -334,17 +334,17 @@ export function HomeTab({
                                 >
                                     <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-4">
                                         <span className="text-rose-gold font-serif">
-                                            {format(new Date(date), "MMMM d, yyyy")}
+                                            {format(new Date(date), "dd/MM/yyyy")}
                                         </span>
                                         <span className="text-xs text-white/30 uppercase tracking-widest">
-                                            Daily Note
+                                            Nhật ký
                                         </span>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* My Note */}
                                         <div className="space-y-2">
-                                            <p className="text-xs text-rose-gold/50 uppercase tracking-widest">You</p>
+                                            <p className="text-xs text-rose-gold/50 uppercase tracking-widest">Bạn</p>
                                             <p className="text-white/80 font-serif italic text-sm leading-relaxed">
                                                 {myNote?.content}
                                             </p>
@@ -381,7 +381,7 @@ export function HomeTab({
                                                 </>
                                             ) : (
                                                 <p className="text-white/20 italic text-sm">
-                                                    Didn&apos;t share a note this day.
+                                                    Không có nhật ký ngày này.
                                                 </p>
                                             )}
                                         </div>
@@ -398,7 +398,7 @@ export function HomeTab({
                                 onClick={() => setHistoryLimit(prev => prev + 5)}
                                 className="text-white/40 hover:text-rose-gold hover:bg-transparent"
                             >
-                                Load more memories
+                                Xem thêm
                                 <ChevronDown className="w-4 h-4 ml-2" />
                             </Button>
                         </div>
