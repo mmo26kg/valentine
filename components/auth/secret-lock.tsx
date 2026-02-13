@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Lock, ArrowRight, User } from "lucide-react";
+import { Heart, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AmbientBackground } from "@/components/shared/ambient-background";

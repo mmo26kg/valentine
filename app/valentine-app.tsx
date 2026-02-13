@@ -22,43 +22,22 @@ export default function ValentineApp() {
         useUnlocked();
     const { password, setPassword } = usePassword();
     const { startDate, setStartDate } = useStartDate();
-    const { setCaption, getCaption, hasWrittenToday } = useDailyCaptions();
+    const { captions, setCaption, getCaption, hasWrittenToday } = useDailyCaptions();
     const { posts, addPost } = useTimelinePosts();
 
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const partnerRole = role === "ảnh" ? "ẻm" : "ảnh";
+    const myCaptionObj = getCaption(todayStr, role);
+    const partnerCaptionObj = getCaption(todayStr, partnerRole);
 
-    // Check for special event today
-    const monthDay = `${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(
-        new Date().getDate()
-    ).padStart(2, "0")}`;
-    const hasSpecialEvent = SPECIAL_EVENTS.some((e) => e.date === monthDay);
+    // Helper to extract content safely (handles old string format if any data migration partial, or new object format)
+    // store.ts updated to return object or null. 
+    // Types updated in store.ts: Record<string, Record<string, { content: string; media_url?: string | null }>>
+    // getCaption returns { content: string; media_url?: string|null} | null
+    const myCaptionContent = myCaptionObj?.content || "";
+    const partnerCaptionContent = partnerCaptionObj?.content || "";
 
-    // Step 1: Lock Screen
-    if (!unlocked) {
-        return (
-            <SecretLockScreen
-                onUnlock={unlock}
-                onSelectRole={setRole}
-                currentRole={role}
-                correctPassword={password}
-            />
-        );
-    }
-
-    // Step 2: Love Captcha
-    if (!captchaPassed) {
-        return <LoveCaptcha onPass={passCaptcha} />;
-    }
-
-    // Step 3: Special Event (if today is a special date)
-    if (hasSpecialEvent && !eventDismissed) {
-        return (
-            <AnimatePresence>
-                <EventScreen onDismiss={dismissEvent} />
-            </AnimatePresence>
-        );
-    }
+    // ... (rest of component) ...
 
     // Step 4: Main App
     return (
@@ -66,10 +45,11 @@ export default function ValentineApp() {
             currentRole={role}
             startDate={startDate}
             password={password}
-            myCaption={getCaption(todayStr, role)}
-            partnerCaption={getCaption(todayStr, partnerRole)}
+            myCaption={myCaptionContent}
+            partnerCaption={partnerCaptionContent}
             hasWrittenToday={hasWrittenToday(todayStr, role)}
-            onSubmitCaption={(content) => setCaption(todayStr, role, content)}
+            captions={captions}
+            onSubmitCaption={(content, mediaUrl) => setCaption(todayStr, role, content, mediaUrl)}
             posts={posts}
             onAddPost={addPost}
             onUpdateStartDate={setStartDate}

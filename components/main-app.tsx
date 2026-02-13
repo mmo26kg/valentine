@@ -7,7 +7,6 @@ import {
     Timer,
     BookHeart,
     User,
-    Heart,
     LogOut,
 } from "lucide-react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -38,7 +37,8 @@ interface MainAppProps {
     myCaption: string;
     partnerCaption: string;
     hasWrittenToday: boolean;
-    onSubmitCaption: (content: string) => void;
+    captions: Record<string, Record<string, { content: string; media_url?: string | null }>>;
+    onSubmitCaption: (content: string, mediaUrl?: string | null) => void;
     posts: Array<{
         id: string;
         user_id: string;
@@ -63,6 +63,7 @@ export function MainApp({
     myCaption,
     partnerCaption,
     hasWrittenToday,
+    captions,
     onSubmitCaption,
     posts,
     onAddPost,
@@ -71,7 +72,7 @@ export function MainApp({
     onLock,
 }: MainAppProps) {
     const [activeTab, setActiveTab] = useState("home");
-    const partnerName = currentRole === "ẻm" ? "Mĩn Bì" : "Pink Duck";
+    const partnerName = currentRole === "ảnh" ? "Mĩn Bì" : "Pink Duck";
 
     return (
         <div className="min-h-screen relative">
@@ -119,7 +120,7 @@ export function MainApp({
                 {/* Content */}
                 <main className="max-w-5xl mx-auto px-4 py-8 pb-28">
                     <AnimatePresence mode="wait">
-                        <TabsContent value="home" asChild>
+                        {activeTab === "home" && (
                             <motion.div
                                 key="home"
                                 initial={{ opacity: 0, y: 20 }}
@@ -134,12 +135,13 @@ export function MainApp({
                                     myCaption={myCaption}
                                     partnerCaption={partnerCaption}
                                     hasWrittenToday={hasWrittenToday}
+                                    captions={captions}
                                     onSubmitCaption={onSubmitCaption}
                                 />
                             </motion.div>
-                        </TabsContent>
+                        )}
 
-                        <TabsContent value="countdown" asChild>
+                        {activeTab === "countdown" && (
                             <motion.div
                                 key="countdown"
                                 initial={{ opacity: 0, y: 20 }}
@@ -149,9 +151,9 @@ export function MainApp({
                             >
                                 <CountdownTab />
                             </motion.div>
-                        </TabsContent>
+                        )}
 
-                        <TabsContent value="timeline" asChild>
+                        {activeTab === "timeline" && (
                             <motion.div
                                 key="timeline"
                                 initial={{ opacity: 0, y: 20 }}
@@ -165,9 +167,9 @@ export function MainApp({
                                     onAddPost={onAddPost}
                                 />
                             </motion.div>
-                        </TabsContent>
+                        )}
 
-                        <TabsContent value="profile" asChild>
+                        {activeTab === "profile" && (
                             <motion.div
                                 key="profile"
                                 initial={{ opacity: 0, y: 20 }}
@@ -177,9 +179,10 @@ export function MainApp({
                             >
                                 <ProfileTab currentRole={currentRole} />
                             </motion.div>
-                        </TabsContent>
+                        )}
 
-                        <TabsContent value="settings" asChild>
+                        {/* Settings Tab (hidden in dock but can be enabled if needed) */}
+                        {/* {activeTab === "settings" && (
                             <motion.div
                                 key="settings"
                                 initial={{ opacity: 0, y: 20 }}
@@ -195,7 +198,7 @@ export function MainApp({
                                     onLock={onLock}
                                 />
                             </motion.div>
-                        </TabsContent>
+                        )} */}
                     </AnimatePresence>
                 </main>
 

@@ -24,6 +24,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { useUpload } from "@/hooks/use-upload";
 
 interface TimelinePost {
     id: string;
@@ -46,6 +47,8 @@ interface TimelineTabProps {
 
 
 export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps) {
+    const { uploadFile, isUploading: uploading } = useUpload();
+    console.log("isUploading:", uploading);
     const [filterYear, setFilterYear] = useState<string | null>(null);
     const [addOpen, setAddOpen] = useState(false);
     const [newPost, setNewPost] = useState({
@@ -155,7 +158,7 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                         >
-                            <div className="px-6 py-2 rounded-full border border-rose-gold/20 bg-surface text-rose-gold font-serif text-lg">
+                            <div className="px-6 py-2 z-10 rounded-full border border-rose-gold/20 bg-surface text-rose-gold font-serif text-lg">
                                 {year}
                             </div>
                         </motion.div>
@@ -267,13 +270,52 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
 
                     <div className="space-y-4 mt-4">
                         {/* Upload area */}
-                        <div className="border-2 border-dashed border-rose-gold/20 rounded-xl p-8 text-center hover:border-rose-gold/40 transition-colors cursor-pointer">
-                            <Camera className="w-8 h-8 text-rose-gold/40 mx-auto mb-2" />
-                            <p className="text-sm">
-                                <span className="text-rose-gold">Upload a file</span>
-                                <span className="text-white/40"> or drag and drop</span>
-                            </p>
-                            <p className="text-xs text-white/20 mt-1">PNG, JPG, GIF up to 10MB</p>
+                        <div className="relative border-2 border-dashed border-rose-gold/20 rounded-xl p-8 text-center hover:border-rose-gold/40 transition-colors cursor-pointer overflow-hidden group">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="absolute inset-0 opacity-0 cursor-pointer z-20"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        const url = await uploadFile(file);
+                                        if (url) {
+                                            setNewPost(p => ({ ...p, media_url: url }));
+                                        }
+                                    }
+                                }}
+                            />
+                            {newPost.media_url ? (
+                                <div className="absolute inset-0 z-10">
+                                    <Image
+                                        src={newPost.media_url}
+                                        alt="Preview"
+                                        fill
+                                        className="object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <p className="bg-black/50 text-white px-3 py-1 rounded-full text-xs">Change Image</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {uploading ? (
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-8 h-8 border-2 border-rose-gold border-t-transparent rounded-full animate-spin mb-2" />
+                                            <p className="text-sm text-rose-gold">Uploading...</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Camera className="w-8 h-8 text-rose-gold/40 mx-auto mb-2" />
+                                            <p className="text-sm">
+                                                <span className="text-rose-gold">Upload a file</span>
+                                                <span className="text-white/40"> or drag and drop</span>
+                                            </p>
+                                            <p className="text-xs text-white/20 mt-1">PNG, JPG, GIF up to 10MB</p>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         <div>
@@ -318,10 +360,10 @@ export function TimelineTab({ posts, currentRole, onAddPost }: TimelineTabProps)
 
                         <Button
                             onClick={handleSubmit}
-                            disabled={!newPost.title.trim() || !newPost.content.trim()}
+                            disabled={!newPost.title.trim() || !newPost.content.trim() || uploading}
                             className="w-full bg-rose-gold hover:bg-rose-gold-dark text-background font-serif py-5 disabled:opacity-30"
                         >
-                            Post to Timeline
+                            {uploading ? "Uploading..." : "Post to Timeline"}
                         </Button>
                     </div>
                 </DialogContent>
