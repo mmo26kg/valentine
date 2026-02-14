@@ -86,14 +86,14 @@ function ItemList({
                 <span className="uppercase tracking-widest">{title}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 content-start grow">
+            <div className="flex flex-wrap gap-2 content-start grow">
                 {visibleItems.map((item, idx) => (
-                    <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-white/5 hover:bg-white/10 transition-colors rounded-full px-2 py-1.5 h-[20px]">
-                        <p className="text-white/70 text-[10px] leading-tight wrap-break-word pr-1 lowercase font-sans">
+                    <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-white/5 hover:bg-white/10 transition-colors rounded-full px-3 py-1 min-h-[24px]">
+                        <p className="text-white/70 text-xs leading-tight wrap-break-word pr-1 lowercase font-sans">
                             # {item}
                         </p>
                         {editing && (
-                            <button onClick={() => onRemove(item)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity ml-1 shrink-0 mt-0.5">
+                            <button onClick={() => onRemove(item)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity ml-1 shrink-0">
                                 <X className="w-3 h-3" />
                             </button>
                         )}
@@ -103,7 +103,7 @@ function ItemList({
                 {showMore && (
                     <Dialog>
                         <DialogTrigger asChild>
-                            <button className="flex items-center justify-center bg-white/5 rounded px-2 py-1.5 text-xs text-rose-gold/60 hover:text-rose-gold hover:bg-white/10 transition-colors col-span-2 border border-dashed border-rose-gold/20 h-[32px]">
+                            <button className="flex items-center justify-center bg-white/5 rounded px-2 py-1.5 text-xs text-rose-gold/60 hover:text-rose-gold hover:bg-white/10 transition-colors w-full border border-dashed border-rose-gold/20 h-[32px]">
                                 <Plus className="w-3 h-3 mr-1" /> Xem thêm {hiddenCount} mục
                             </button>
                         </DialogTrigger>
@@ -431,7 +431,7 @@ function ProfileCard({
                     </div>
                 </div>
 
-                <div className="w-full mt-6 grid grid-cols-2 gap-4">
+                <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ItemList
                         title="Sở thích"
                         icon={<ThumbsUp className="w-3 h-3" />}
