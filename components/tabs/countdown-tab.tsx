@@ -13,6 +13,8 @@ import {
     Pencil,
     Trash2,
     Save,
+    MoreHorizontal,
+    Settings,
 } from "lucide-react";
 import {
     Dialog,
@@ -20,6 +22,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -30,6 +38,7 @@ import type { CountdownEvent } from "@/lib/types";
 import { useCountdowns, useGreetings, useCurrentUser } from "@/lib/store";
 import { DEFAULT_GREETINGS } from "@/lib/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLongPress } from "@/hooks/use-long-press";
 
 const ICON_MAP: Record<string, React.ElementType> = {
     heart: Heart,
@@ -50,6 +59,52 @@ const ICONS = [
 ];
 
 const TYPES = ["Ngày lễ", "Kỷ niệm", "Sinh nhật", "Khác", "Đi chơi"];
+
+function GreetingItem({ greeting, onDelete }: { greeting: any, onDelete: (id: string) => void }) {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const longPressProps = useLongPress(() => {
+        setDropdownOpen(true);
+    });
+
+    return (
+        <div
+            className="flex justify-between items-center bg-white/5 p-3 rounded-lg group relative"
+            {...longPressProps}
+        >
+            <p className="text-sm text-white/90">{greeting.content}</p>
+
+            {/* Desktop Actions */}
+            <Button
+                onClick={() => onDelete(greeting.id)}
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
+            >
+                <Trash2 className="w-3 h-3" />
+            </Button>
+
+            {/* Mobile Long Press Indicator */}
+            <div className="md:hidden text-white/20">
+                <Settings className="w-3.5 h-3.5" />
+            </div>
+
+            {/* Mobile Long Press Actions */}
+            <div className="absolute top-1/2 right-3 -translate-y-1/2 z-30 md:hidden pointer-events-none">
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                    <DropdownMenuTrigger className="w-1 h-1 opacity-0 pointer-events-none" />
+                    <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white min-w-[120px]">
+                        <DropdownMenuItem onClick={() => {
+                            onDelete(greeting.id);
+                            setDropdownOpen(false);
+                        }} className="focus:bg-red-500/20 focus:text-red-400 text-red-400 cursor-pointer gap-2">
+                            <Trash2 className="w-4 h-4" /> Xóa
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </div>
+    );
+}
 
 function GreetingConfigDialog({
     open,
@@ -118,17 +173,11 @@ function GreetingConfigDialog({
                                         myGreetings
                                             .filter(g => g.time_of_day === timeOfDay)
                                             .map(g => (
-                                                <div key={g.id} className="flex justify-between items-center bg-white/5 p-3 rounded-lg group">
-                                                    <p className="text-sm text-white/90">{g.content}</p>
-                                                    <Button
-                                                        onClick={() => deleteGreeting(g.id)}
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6 text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </Button>
-                                                </div>
+                                                <GreetingItem
+                                                    key={g.id}
+                                                    greeting={g}
+                                                    onDelete={deleteGreeting}
+                                                />
                                             ))
                                     )}
                                 </div>
@@ -190,14 +239,27 @@ function DynamicGreeting({ onEdit }: { onEdit: () => void }) {
         return () => clearInterval(interval);
     }, [greetings, role, partnerId]);
 
+    const longPressProps = useLongPress(() => {
+        onEdit();
+    });
+
     return (
-        <span className="group flex items-center gap-2">
+        <span
+            className="group flex items-center gap-2 relative"
+            {...longPressProps}
+        >
             {greeting}
+
+            {/* Mobile Long Press Indicator */}
+            <div className="md:hidden text-rose-gold/30">
+                <Settings className="w-3 h-3" />
+            </div>
+
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-rose-gold"
+                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-rose-gold hidden md:flex"
             >
                 <Pencil className="w-3 h-3" />
             </Button>
@@ -246,6 +308,168 @@ function calculateTimeRemaining(target: Date, now: Date) {
     const minutes = differenceInMinutes(target, now) % 60;
 
     return { days, hours, minutes, isToday: false };
+}
+
+interface CountdownCardProps {
+    event: CountdownEvent & { targetDate: Date };
+    index: number;
+    now: Date;
+    onEdit: (event: CountdownEvent, e: React.MouseEvent) => void;
+    onDelete: (id: string) => void;
+}
+
+function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardProps) {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const time = calculateTimeRemaining(event.targetDate, now);
+    const Icon = ICON_MAP[event.icon] || Heart;
+    const isFeature = index === 0;
+
+    const longPressProps = useLongPress(() => {
+        setDropdownOpen(true);
+    });
+
+    return (
+        <motion.div
+            key={event.id}
+            className={`group relative glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[260px] ${isFeature ? "md:col-span-2" : ""
+                }`}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 * index }}
+            {...longPressProps}
+        >
+            {/* Mobile Long Press Indicator */}
+            <div className="absolute top-4 right-4 md:hidden text-white/20">
+                <Settings className="w-4 h-4 animate-pulse-slow" />
+            </div>
+
+            {/* Hidden Dropdown for Mobile Long Press */}
+            <div className="absolute top-4 right-4 z-30">
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                    <DropdownMenuTrigger className="w-1 h-1 opacity-0 pointer-events-none" />
+                    <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white min-w-[150px]">
+                        <DropdownMenuItem onClick={() => {
+                            onEdit(event as CountdownEvent, { stopPropagation: () => { } } as any);
+                            setDropdownOpen(false);
+                        }} className="focus:bg-white/10 focus:text-white cursor-pointer gap-2">
+                            <Pencil className="w-4 h-4" /> Chỉnh sửa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                            onDelete(event.id);
+                            setDropdownOpen(false);
+                        }} className="focus:bg-red-500/20 focus:text-red-400 text-red-400 cursor-pointer gap-2">
+                            <Trash2 className="w-4 h-4" /> Xóa
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            {/* Decorative glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-gold/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
+
+            <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="bg-rose-gold/10 p-2 rounded-lg">
+                        <Icon className="w-5 h-5 text-rose-gold" />
+                    </div>
+                    <span className="text-xs text-rose-gold/50 border border-rose-gold/10 px-2 py-0.5 rounded-full capitalize">
+                        {event.type}
+                    </span>
+                </div>
+                <div>
+                    <h3 className="text-xl text-white font-light">{event.title}</h3>
+                    <p className="text-sm text-white/40">
+                        {format(event.targetDate, "MMM d, yyyy")}
+                    </p>
+                </div>
+            </div>
+
+            {/* Countdown Display */}
+            <div className={`relative z-10 ${isFeature ? "flex gap-8 mt-4" : "mt-6"}`}>
+                {time.isToday ? (
+                    <div className="w-full text-center py-4">
+                        <span className="inline-block text-2xl md:text-3xl font-light text-rose-gold text-glow font-serif animate-pulse">
+                            ✨ Đang diễn ra ✨
+                        </span>
+                        <p className="text-sm text-white/50 mt-2">
+                            Hãy tận hưởng ngày đặc biệt này!
+                        </p>
+                    </div>
+                ) : isFeature ? (
+                    <>
+                        <div className="text-center">
+                            <span className="block text-5xl md:text-7xl font-light text-rose-gold text-glow leading-none font-serif">
+                                {time.days}
+                            </span>
+                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
+                                Ngày
+                            </span>
+                        </div>
+                        <div className="h-auto w-px bg-rose-gold/10" />
+                        <div className="text-center">
+                            <span className="block text-5xl md:text-7xl font-light text-rose-gold/60 leading-none font-serif">
+                                {time.hours}
+                            </span>
+                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
+                                Giờ
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-center bg-background/30 rounded-xl p-4 border border-rose-gold/5">
+                        <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-4xl font-light text-rose-gold text-glow font-serif">
+                                {time.days}
+                            </span>
+                            <span className="text-lg text-rose-gold/40">d</span>
+                        </div>
+                        <div className="w-full bg-white/5 h-1 mt-3 rounded-full overflow-hidden">
+                            <motion.div
+                                className="bg-rose-gold h-full shadow-[0_0_10px_rgba(201,160,160,0.6)]"
+                                initial={{ width: 0 }}
+                                animate={{
+                                    width: `${Math.max(5, 100 - (time.days / 365) * 100)}%`,
+                                }}
+                                transition={{ duration: 1, delay: 0.3 * index }}
+                            />
+                        </div>
+                        <p className="text-xs text-white/30 mt-2 text-right">
+                            {time.days < 7 ? "Chuẩn bị nhen!" : time.days < 30 ? "Đang đến gần!" : time.days < 60 ? "Sắp tới" : time.days < 90 ? "Đợi xíu" : "Còn lâu á"}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {isFeature && event.description && (
+                <p className="text-white/30 italic font-light font-serif mt-4 relative z-10">
+                    &ldquo;{event.description}&rdquo;
+                </p>
+            )}
+
+            {/* Actions - Visible on hover (Desktop) */}
+            <div className="absolute top-4 right-4 z-20 hidden md:flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={(e) => onEdit(event as CountdownEvent, e)}
+                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white rounded-full"
+                >
+                    <Pencil className="w-4 h-4" />
+                </Button>
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(event.id);
+                    }}
+                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-red-400 rounded-full"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </Button>
+            </div>
+        </motion.div>
+    );
 }
 
 export function CountdownTab() {
@@ -328,7 +552,7 @@ export function CountdownTab() {
     const todayDateString = formatVietnamDate(undefined, "MMMM d");
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 select-none">
             {/* Header */}
             <motion.div
                 className="flex flex-col md:flex-row md:items-end justify-between gap-4"
@@ -390,127 +614,17 @@ export function CountdownTab() {
 
             {/* Event Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {processedEvents.map((event, i) => {
-                    const time = calculateTimeRemaining(event.targetDate, now);
-                    const Icon = ICON_MAP[event.icon] || Heart;
-                    const isFeature = i === 0;
+                {processedEvents.map((event, i) => (
+                    <CountdownCard
+                        key={event.id}
+                        event={event}
+                        index={i}
+                        now={now}
+                        onEdit={openEdit}
+                        onDelete={setDeleteId}
+                    />
+                ))}
 
-                    return (
-                        <motion.div
-                            key={event.id}
-                            className={`group relative glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[260px] ${isFeature ? "md:col-span-2" : ""
-                                }`}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 * i }}
-                        >
-                            {/* Decorative glow */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-gold/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
-
-                            <div className="relative z-10 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="bg-rose-gold/10 p-2 rounded-lg">
-                                        <Icon className="w-5 h-5 text-rose-gold" />
-                                    </div>
-                                    <span className="text-xs text-rose-gold/50 border border-rose-gold/10 px-2 py-0.5 rounded-full capitalize">
-                                        {event.type}
-                                    </span>
-                                </div>
-                                <div>
-                                    <h3 className="text-xl text-white font-light">{event.title}</h3>
-                                    <p className="text-sm text-white/40">
-                                        {format(event.targetDate, "MMM d, yyyy")}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Countdown Display */}
-                            <div className={`relative z-10 ${isFeature ? "flex gap-8 mt-4" : "mt-6"}`}>
-                                {time.isToday ? (
-                                    <div className="w-full text-center py-4">
-                                        <span className="inline-block text-2xl md:text-3xl font-light text-rose-gold text-glow font-serif animate-pulse">
-                                            ✨ Đang diễn ra ✨
-                                        </span>
-                                        <p className="text-sm text-white/50 mt-2">
-                                            Hãy tận hưởng ngày đặc biệt này!
-                                        </p>
-                                    </div>
-                                ) : isFeature ? (
-                                    <>
-                                        <div className="text-center">
-                                            <span className="block text-5xl md:text-7xl font-light text-rose-gold text-glow leading-none font-serif">
-                                                {time.days}
-                                            </span>
-                                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
-                                                Ngày
-                                            </span>
-                                        </div>
-                                        <div className="h-auto w-px bg-rose-gold/10" />
-                                        <div className="text-center">
-                                            <span className="block text-5xl md:text-7xl font-light text-rose-gold/60 leading-none font-serif">
-                                                {time.hours}
-                                            </span>
-                                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
-                                                Giờ
-                                            </span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="text-center bg-background/30 rounded-xl p-4 border border-rose-gold/5">
-                                        <div className="flex items-baseline justify-center gap-1">
-                                            <span className="text-4xl font-light text-rose-gold text-glow font-serif">
-                                                {time.days}
-                                            </span>
-                                            <span className="text-lg text-rose-gold/40">d</span>
-                                        </div>
-                                        <div className="w-full bg-white/5 h-1 mt-3 rounded-full overflow-hidden">
-                                            <motion.div
-                                                className="bg-rose-gold h-full shadow-[0_0_10px_rgba(201,160,160,0.6)]"
-                                                initial={{ width: 0 }}
-                                                animate={{
-                                                    width: `${Math.max(5, 100 - (time.days / 365) * 100)}%`,
-                                                }}
-                                                transition={{ duration: 1, delay: 0.3 * i }}
-                                            />
-                                        </div>
-                                        <p className="text-xs text-white/30 mt-2 text-right">
-                                            {time.days < 7 ? "Sắp đến rồi!" : time.days < 30 ? "Đang đến gần!" : "Sắp tới"}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {isFeature && event.description && (
-                                <p className="text-white/30 italic font-light font-serif mt-4 relative z-10">
-                                    &ldquo;{event.description}&rdquo;
-                                </p>
-                            )}
-
-                            {/* Actions - Visible on hover */}
-                            <div className="absolute top-4 right-4 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={(e) => openEdit(event, e)}
-                                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white rounded-full"
-                                >
-                                    <Pencil className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteId(event.id);
-                                    }}
-                                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-red-400 rounded-full"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    );
-                })}
 
                 {/* Add New Card */}
                 <motion.button
