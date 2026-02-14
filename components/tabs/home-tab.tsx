@@ -169,7 +169,7 @@ export function HomeTab({
                                     <p className="text-white/40 text-sm">
                                         {hasWrittenToday
                                             ? "Đã chia sẻ hôm nay"
-                                            : `Chia sẻ suy nghĩ của bạn để mở khóa ${currentRole === "ẻm" ? "của ẻm" : "của ảnh"}.`}
+                                            : `Chia sẻ suy nghĩ của bạn để mở khóa ${currentRole === "ẻm" ? "của ảnh" : "của ẻm"}.`}
                                     </p>
                                 </div>
                             </div>

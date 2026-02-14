@@ -6,9 +6,19 @@ import { useEffect, useState } from "react";
 
 interface FallingHeartsProps {
     count?: number;
+    minDuration?: number;
+    maxDuration?: number;
+    minDelay?: number;
+    maxDelay?: number;
 }
 
-export function FallingHearts({ count = 15 }: FallingHeartsProps) {
+export function FallingHearts({
+    count = 15,
+    minDuration = 6,
+    maxDuration = 12,
+    minDelay = 0,
+    maxDelay = 8
+}: FallingHeartsProps) {
     const [hearts, setHearts] = useState<
         Array<{
             id: number;
@@ -26,13 +36,13 @@ export function FallingHearts({ count = 15 }: FallingHeartsProps) {
             id: i,
             left: Math.random() * 100,
             size: Math.random() * 16 + 10,
-            delay: Math.random() * 8,
-            duration: Math.random() * 6 + 6,
+            delay: Math.random() * (maxDelay - minDelay) + minDelay,
+            duration: Math.random() * (maxDuration - minDuration) + minDuration,
             opacity: Math.random() * 0.3 + 0.1,
             filled: Math.random() > 0.5,
         }));
         setTimeout(() => setHearts(h), 0);
-    }, [count]);
+    }, [count, minDuration, maxDuration, minDelay, maxDelay]);
 
     return (
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-1">

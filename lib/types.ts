@@ -58,3 +58,19 @@ export interface SpecialEvent {
     message: string;
     icon: string;
 }
+
+export interface Profile {
+    id: string; // 'him' | 'her'
+    name: string;
+    avatar_url: string | null;
+    bio?: string;
+    personality_tags?: string[];
+    likes?: string[];
+    dislikes?: string[];
+}
+
+export interface LoveLog {
+    id: string;
+    sender_id: string;
+    created_at: string;
+}

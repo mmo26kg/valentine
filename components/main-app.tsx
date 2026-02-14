@@ -21,6 +21,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { useProfiles } from "@/lib/store";
+// import { SAMPLE_USERS } from "@/lib/constants";
 
 const TABS = [
     { value: "home", label: "Trang chủ", icon: Home },
@@ -76,8 +78,16 @@ export function MainApp({
     onLock,
 }: MainAppProps) {
     const [activeTab, setActiveTab] = useState("home");
-    const partnerName = currentRole === "ảnh" ? "Mĩn Bì" : "Pink Duck";
-    const currentUserAvatarURL = currentRole === "ảnh" ? "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG" : "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg";
+    const { profiles, updateProfile } = useProfiles();
+
+    // Resolve dynamic profiles
+    const him = { ...profiles["him"] };
+    const her = { ...profiles["her"] };
+
+    const partnerName = currentRole === "ảnh" ? her.name : him.name; // Dynamically use name? or stick to static? The requirement said "sửa lại các hình ảnh...". Maybe names too?
+    // Let's use dynamic names too for consistency.
+
+    const currentUserAvatarURL = currentRole === "ảnh" ? him.avatar_url : her.avatar_url;
 
     return (
         <div className="min-h-screen relative">
@@ -103,11 +113,11 @@ export function MainApp({
                             <DropdownMenuTrigger asChild>
                                 <div className="flex items-center gap-2 text-white/40 text-sm">
                                     <span className="hidden sm:inline font-serif italic">
-                                        {currentRole === "ảnh" ? "Pink Duck" : "Mĩn Bì"}
+                                        {currentRole === "ảnh" ? him.name : her.name}
                                     </span>
                                     <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center overflow-hidden">
                                         {/* <User className="w-4 h-4 text-rose-gold/60" /> */}
-                                        <img src={currentUserAvatarURL} className="" alt="Logo" width={32} height={32} />
+                                        <img src={currentUserAvatarURL || ""} className="" alt="Logo" width={32} height={32} />
                                     </div>
                                 </div>
                             </DropdownMenuTrigger>
@@ -185,7 +195,11 @@ export function MainApp({
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <ProfileTab currentRole={currentRole} />
+                                <ProfileTab
+                                    currentRole={currentRole}
+                                    profiles={profiles}
+                                    updateProfile={updateProfile} // No need for casting if types match
+                                />
                             </motion.div>
                         )}
 
@@ -237,6 +251,6 @@ export function MainApp({
                     </div>
                 </div>
             </Tabs>
-        </div>
+        </div >
     );
 }

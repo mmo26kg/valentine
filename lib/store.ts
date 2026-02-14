@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TimelinePost, SpecialEvent, CountdownEvent } from "./types";
+import { TimelinePost, SpecialEvent, CountdownEvent, Profile } from "./types";
 import { supabase } from "@/lib/supabase";
 import { formatVietnamDate } from "@/lib/date-utils";
 
@@ -519,3 +519,188 @@ export const useCountdowns = () => {
 
     return { countdowns, addCountdown, updateCountdown, deleteCountdown };
 };
+
+/** Profiles (Shared via Supabase) */
+export function useProfiles() {
+    const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+
+    const fetchProfiles = useCallback(async () => {
+        console.log("Fetching profiles...");
+        const { data, error } = await supabase.from("profiles").select("*");
+        if (error) {
+            console.error("Error fetching profiles:", error);
+            return;
+        }
+        if (data) {
+            console.log("Profiles fetched:", data);
+            const profileMap: Record<string, Profile> = {};
+            data.forEach((p) => {
+                profileMap[p.id] = p;
+            });
+            setProfiles(profileMap);
+        }
+    }, []);
+
+    useEffect(() => {
+        void fetchProfiles();
+
+        const channel = supabase
+            .channel("profiles_changes")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "profiles" },
+                () => {
+                    fetchProfiles();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [fetchProfiles]);
+
+    const updateProfile = useCallback(async (profile: Profile) => {
+        console.log("Saving profile:", profile);
+        // Optimistic update
+        setProfiles((prev) => ({ ...prev, [profile.id]: profile }));
+
+        try {
+            const { data, error } = await supabase.from("profiles").upsert(profile).select();
+
+            if (error) {
+                console.error("Error updating profile (Supabase):", error);
+                alert(`Lỗi lưu hồ sơ: ${error.message} (${error.code})`);
+                fetchProfiles(); // Revert
+                return false;
+            }
+
+            console.log("Profile updated successfully:", data);
+            return true;
+        } catch (err) {
+            console.error("Unexpected error updating profile:", err);
+            alert("Lỗi không xác định khi lưu hồ sơ");
+            fetchProfiles();
+            return false;
+        }
+    }, [fetchProfiles]);
+
+    return { profiles, updateProfile, refreshProfiles: fetchProfiles };
+}
+
+/** Love Logic */
+export function useLove(currentRole: "ảnh" | "ẻm") {
+    const [loveCount, setLoveCount] = useState(0); // Count received from partner
+    const [lastSentTime, setLastSentTime] = useState<number>(0);
+    const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+    const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+    // Load last sent time from local storage
+    useEffect(() => {
+        const stored = getItem("valentine_last_love_sent", 0);
+        setLastSentTime(stored);
+    }, []);
+
+    // Timer for cooldown
+    useEffect(() => {
+        if (lastSentTime === 0 && cooldownRemaining === 0) return;
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const diff = now - lastSentTime;
+            if (diff < COOLDOWN_MS) {
+                setCooldownRemaining(COOLDOWN_MS - diff);
+            } else {
+                setCooldownRemaining(0);
+            }
+        }, 1000);
+
+        // Immediate check
+        const now = Date.now();
+        const diff = now - lastSentTime;
+        if (diff < COOLDOWN_MS) {
+            setCooldownRemaining(COOLDOWN_MS - diff);
+        } else {
+            setCooldownRemaining(0);
+        }
+
+        return () => clearInterval(interval);
+    }, [lastSentTime]);
+
+    // Fetch love count (received from other person)
+    const fetchLoveCount = useCallback(async () => {
+        // If I am 'him' (ảnh), I want to know how many times 'her' sent love.
+        const sender = currentRole === "ảnh" ? "her" : "him";
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        const { count, error } = await supabase
+            .from("love_logs")
+            .select("*", { count: "exact", head: true })
+            .eq("sender_id", sender)
+            .gte("created_at", todayStart.toISOString())
+            .lte("created_at", todayEnd.toISOString());
+
+        if (error) {
+            console.error("Error fetching love count:", error);
+        } else {
+            console.log(`Fetched love count from ${sender}:`, count);
+            setLoveCount(count || 0);
+        }
+    }, [currentRole]);
+
+    useEffect(() => {
+        void fetchLoveCount();
+
+        // Subscribe to insertions in love_logs
+        const channel = supabase
+            .channel("love_logs_changes")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "love_logs" },
+                (payload) => {
+                    const newLog = payload.new as { sender_id: string };
+                    const senderToCheck = currentRole === "ảnh" ? "her" : "him";
+                    if (newLog.sender_id === senderToCheck) {
+                        fetchLoveCount();
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [fetchLoveCount, currentRole]);
+
+    const sendLove = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastSentTime < COOLDOWN_MS) {
+            return false; // Still on cooldown
+        }
+
+        // Send: if I am 'ảnh', I am 'him' sending to DB
+        const myId = currentRole === "ảnh" ? "him" : "her";
+
+        // Optimistic cooldown
+        const newTime = Date.now();
+        setLastSentTime(newTime);
+        setItem("valentine_last_love_sent", newTime);
+        setCooldownRemaining(COOLDOWN_MS);
+
+        const { error } = await supabase.from("love_logs").insert({ sender_id: myId });
+
+        if (error) {
+            console.error("Error sending love:", error);
+            // Revert invalidation if needed, or just let it fail silently (cooldown already consumed locally)
+            return false;
+        }
+        return true;
+    }, [currentRole, lastSentTime]);
+
+    return { loveCount, sendLove, cooldownRemaining };
+}
