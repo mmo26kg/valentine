@@ -16,6 +16,12 @@ import { differenceInDays, format } from "date-fns";
 import { useUpload } from "@/hooks/use-upload";
 import { getVietnamDate } from "@/lib/date-utils";
 
+import {
+    Dialog,
+    DialogContent,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+
 interface HomeTabProps {
     startDate: string;
     currentRole: "ảnh" | "ẻm";
@@ -184,14 +190,10 @@ export function HomeTab({
                                         Actually captions prop has it. Let's look up.
                                     */}
                                     {captions[todayStr]?.[currentRole]?.media_url && (
-                                        <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10">
-                                            <Image
-                                                src={captions[todayStr][currentRole].media_url!}
-                                                alt="Attachment"
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </div>
+                                        <ImageWithZoom
+                                            src={captions[todayStr][currentRole].media_url!}
+                                            alt="Attachment"
+                                        />
                                     )}
                                 </div>
                             ) : (
@@ -255,12 +257,10 @@ export function HomeTab({
                                         &ldquo;{partnerCaption}&rdquo;
                                     </p>
                                     {captions[todayStr]?.[currentRole === "ảnh" ? "ẻm" : "ảnh"]?.media_url && (
-                                        <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 w-full max-w-xs mx-auto">
-                                            <Image
+                                        <div className="w-full max-w-xs mx-auto">
+                                            <ImageWithZoom
                                                 src={captions[todayStr][currentRole === "ảnh" ? "ẻm" : "ảnh"].media_url!}
                                                 alt="Attachment"
-                                                fill
-                                                className="object-cover"
                                             />
                                         </div>
                                     )}
@@ -350,14 +350,10 @@ export function HomeTab({
                                                 {myNote?.content}
                                             </p>
                                             {myNote?.media_url && (
-                                                <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 mt-2">
-                                                    <Image
-                                                        src={myNote.media_url}
-                                                        alt="Your memory"
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
+                                                <ImageWithZoom
+                                                    src={myNote.media_url}
+                                                    alt="Your memory"
+                                                />
                                             )}
                                         </div>
 
@@ -370,14 +366,10 @@ export function HomeTab({
                                                         {partnerNote.content}
                                                     </p>
                                                     {partnerNote.media_url && (
-                                                        <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 mt-2">
-                                                            <Image
-                                                                src={partnerNote.media_url}
-                                                                alt="Partner memory"
-                                                                fill
-                                                                className="object-cover"
-                                                            />
-                                                        </div>
+                                                        <ImageWithZoom
+                                                            src={partnerNote.media_url}
+                                                            alt="Partner memory"
+                                                        />
                                                     )}
                                                 </>
                                             ) : (
@@ -406,6 +398,33 @@ export function HomeTab({
                     )}
                 </motion.div>
             )}
-        </div>
+        </div >
+    );
+}
+
+function ImageWithZoom({ src, alt }: { src: string; alt: string }) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 mt-2 cursor-pointer hover:brightness-110 transition-all">
+                    <Image
+                        src={src}
+                        alt={alt}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-5xl w-full bg-transparent border-none shadow-none p-0 flex items-center justify-center">
+                <div className="relative w-full h-[80vh]">
+                    <Image
+                        src={src}
+                        alt={alt}
+                        fill
+                        className="object-contain"
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

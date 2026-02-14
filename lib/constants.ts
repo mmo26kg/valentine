@@ -132,25 +132,25 @@ export const SAMPLE_TIMELINE_POSTS = [
 ];
 
 // ─── Sample Users ───
-export const SAMPLE_USERS = {
-    him: {
-        id: "ảnh",
-        name: "Pink Duck 🏹",
-        avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG",
-        role: "him" as const,
-        bio: "Là 1 BA và 1 lập trình diên tham dọng. Nghiện cafe và thích ăn cay",
-        personality_tags: ["Tham dọng", "Vloger", "Cafe", "Ớt"],
-        likes: ["Code", "Làm app", "Chạy bộ", "Cafe", "Thích ăn cay"],
-        dislikes: ["Ồn ào", "Phim kinh dị"],
-    },
-    her: {
-        id: "ẻm",
-        name: "Mĩn Bì 💘",
-        avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg",
-        role: "her" as const,
-        bio: "1 BA mới nhú, dễ nhạy cảm, hong thích đi làm nhưng muốn có nhiều tiền, thích dọn dẹp, hong thích ra đường - lâu lâu cũng có thích.",
-        personality_tags: ["BA", "Dễ nhạy cảm", "Thích dọn dẹp", "Thích ra đường"],
-        likes: ["Cacao sữa gấu", "Latte dâu", "Mochi", "Lẩu bò", "Dồi trường", "Thú linh nướng", "Bún đậu", "Bún riêu", "Texas"],
-        dislikes: ["Thằn lằn", "Rắn", "Bò sát các loại", "Đi làm"],
-    },
-};
+// export const SAMPLE_USERS = {
+//     him: {
+//         id: "ảnh",
+//         name: "Pink Duck 🏹",
+//         avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG",
+//         role: "him" as const,
+//         bio: "Là 1 BA và 1 lập trình diên tham dọng. Nghiện cafe và thích ăn cay",
+//         personality_tags: ["Tham dọng", "Vloger", "Cafe", "Ớt"],
+//         likes: ["Code", "Làm app", "Chạy bộ", "Cafe", "Thích ăn cay"],
+//         dislikes: ["Ồn ào", "Phim kinh dị"],
+//     },
+//     her: {
+//         id: "ẻm",
+//         name: "Mĩn Bì 💘",
+//         avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg",
+//         role: "her" as const,
+//         bio: "1 BA mới nhú, dễ nhạy cảm, hong thích đi làm nhưng muốn có nhiều tiền, thích dọn dẹp, hong thích ra đường - lâu lâu cũng có thích.",
+//         personality_tags: ["BA", "Dễ nhạy cảm", "Thích dọn dẹp", "Thích ra đường"],
+//         likes: ["Cacao sữa gấu", "Latte dâu", "Mochi", "Lẩu bò", "Dồi trường", "Thú linh nướng", "Bún đậu", "Bún riêu", "Texas"],
+//         dislikes: ["Thằn lằn", "Rắn", "Bò sát các loại", "Đi làm"],
+//     },
+// };

@@ -1,5 +1,8 @@
+-- Create the schema if it doesn't exist
+CREATE SCHEMA IF NOT EXISTS valentine;
+
 -- Create profiles table
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE TABLE IF NOT EXISTS valentine.profiles (
     id TEXT PRIMARY KEY, -- 'him' or 'her'
     name TEXT NOT NULL,
     avatar_url TEXT,
@@ -13,23 +16,74 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Create love_logs table
-CREATE TABLE IF NOT EXISTS public.love_logs (
+CREATE TABLE IF NOT EXISTS valentine.love_logs (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     sender_id TEXT NOT NULL, -- 'him' or 'her'
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable RLS (Optional but recommended, though simplified for this pair app)
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.love_logs ENABLE ROW LEVEL SECURITY;
+-- Create posts table (Found in store.ts usage)
+CREATE TABLE IF NOT EXISTS valentine.posts (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id TEXT NOT NULL, -- 'him' or 'her'
+    title TEXT,
+    content TEXT,
+    media_url TEXT,
+    media_urls TEXT[],
+    event_date DATE,
+    type TEXT, -- 'photo', 'video', 'text', 'milestone'
+    location TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create comments table
+-- DROP TABLE to ensure we recreate it with the correct Foreign Key to valentine.posts
+DROP TABLE IF EXISTS valentine.comments;
+
+CREATE TABLE valentine.comments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    post_id UUID NOT NULL REFERENCES valentine.posts(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL, -- 'him' or 'her'
+    content TEXT NOT NULL,
+    reactions JSONB DEFAULT '{}'::jsonb, -- { "him": "❤️", "her": "👍" }
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE valentine.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE valentine.love_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE valentine.posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE valentine.comments ENABLE ROW LEVEL SECURITY;
 
 -- Create policies (Allow all for simplistic couple app usage)
-CREATE POLICY "Allow public access to profiles" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow public access to love_logs" ON public.love_logs FOR ALL USING (true) WITH CHECK (true);
+-- Drop existing policies first to avoid error if they exist
+DO $$ 
+BEGIN
+    DROP POLICY IF EXISTS "Allow public access to profiles" ON valentine.profiles;
+    DROP POLICY IF EXISTS "Allow public access to love_logs" ON valentine.love_logs;
+    DROP POLICY IF EXISTS "Allow public access to posts" ON valentine.posts;
+    DROP POLICY IF EXISTS "Allow public access to comments" ON valentine.comments;
+EXCEPTION
+    WHEN undefined_object THEN null;
+END $$;
+
+CREATE POLICY "Allow public access to profiles" ON valentine.profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to love_logs" ON valentine.love_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to posts" ON valentine.posts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to comments" ON valentine.comments FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert initial data if not exists
-INSERT INTO public.profiles (id, name, avatar_url, bio, personality_tags, likes, dislikes)
+INSERT INTO valentine.profiles (id, name, avatar_url, bio, personality_tags, likes, dislikes)
 VALUES 
-    ('him', 'Pink Duck 🏹', 'https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG', 'Là 1 BA và 1 lập trình diên tham dọng. Nghiện cafe và thích ăn cay', ARRAY['Tham dọng', 'Vloger', 'Cafe', 'Ớt'], ARRAY['Code', 'Làm app', 'Chạy bộ', 'Cafe', 'Thích ăn cay'], ARRAY['Ồn ào', 'Phim kinh dị']),
+    ('him', 'Pink Duck 🏹', 'https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80n.PNG', 'Là 1 BA và 1 lập trình diên tham dọng. Nghiện cafe và thích ăn cay', ARRAY['Tham dọng', 'Vloger', 'Cafe', 'Ớt'], ARRAY['Code', 'Làm app', 'Chạy bộ', 'Cafe', 'Thích ăn cay'], ARRAY['Ồn ào', 'Phim kinh dị']),
     ('her', 'Mĩn Bì 💘', 'https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg', '1 BA mới nhú, dễ nhạy cảm, hong thích đi làm nhưng muốn có nhiều tiền, thích dọn dẹp, hong thích ra đường - lâu lâu cũng có thích.', ARRAY['BA', 'Dễ nhạy cảm', 'Thích dọn dẹp', 'Thích ra đường'], ARRAY['Cacao sữa gấu', 'Latte dâu', 'Mochi', 'Lẩu bò', 'Dồi trường', 'Thú linh nướng', 'Bún đậu', 'Bún riêu', 'Texas'], ARRAY['Thằn lằn', 'Rắn', 'Bò sát các loại', 'Đi làm'])
 ON CONFLICT (id) DO NOTHING;
+
+-- Grant usage on schema to anon and authenticated roles (CRITICAL FOR NEW SCHEMA)
+GRANT USAGE ON SCHEMA valentine TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA valentine TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA valentine TO anon, authenticated, service_role;
+
+-- Additional specific grants for comments just in case
+GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.comments TO anon, authenticated, service_role;

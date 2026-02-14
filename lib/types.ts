@@ -19,6 +19,15 @@ export interface DailyCaption {
     created_at: string;
 }
 
+export interface Comment {
+    id: string;
+    post_id: string;
+    user_id: string;
+    content: string;
+    reactions: Record<string, string>; // { "him": "❤️", "her": "👍" }
+    created_at: string;
+}
+
 export interface TimelinePost {
     id: string;
     user_id: string;
@@ -31,6 +40,7 @@ export interface TimelinePost {
     created_at: string;
     location?: string;
     user?: User;
+    comments?: Comment[]; // Optional for UI consumption
 }
 
 export interface CoupleSettings {

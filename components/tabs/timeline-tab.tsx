@@ -14,6 +14,9 @@ import {
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
+    MessageCircle,
+    Send,
+    Smile,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -37,6 +40,8 @@ import {
 import { format } from "date-fns";
 import { useUpload } from "@/hooks/use-upload";
 import { getVietnamDate, formatVietnamDate } from "@/lib/date-utils";
+import { usePostComments, useProfiles } from "@/lib/store";
+import { Comment, Profile } from "@/lib/types";
 
 interface TimelinePost {
     id: string;
@@ -59,8 +64,228 @@ interface TimelineTabProps {
     onUpdatePost?: (id: string, updates: Partial<TimelinePost>) => void;
 }
 
+function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
+    comment: Comment,
+    currentRole: "ảnh" | "ẻm",
+    profiles: Record<string, Profile>,
+    onDelete: (id: string) => void,
+    onReact: (id: string, userId: string, emoji: string) => void
+}) {
+    // Map user_id to profile role ('him'/'her')
+    const roleMap: Record<string, string> = { "him": "ảnh", "her": "ẻm", "ảnh": "him", "ẻm": "her" };
+    // comment.user_id is 'him' or 'her' usually
+    const isOwner = comment.user_id === (currentRole === "ảnh" ? "him" : "her");
+
+    const userProfile = profiles[comment.user_id];
+    const avatar = userProfile?.avatar_url || "/images/default-avatar.png";
+    const name = userProfile?.name || (comment.user_id === "him" ? "Anh" : "Em");
+
+    // Check reaction
+    const myId = currentRole === "ảnh" ? "him" : "her";
+    const hasReacted = comment.reactions?.[myId];
+
+    return (
+        <div className="flex gap-3 text-sm group/comment">
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10">
+                <Image src={avatar} alt={name} width={32} height={32} className="object-cover w-full h-full" />
+            </div>
+            <div className="flex-1 space-y-1">
+                <div className="bg-white/5 rounded-2xl rounded-tl-none px-3 py-2 inline-block max-w-full">
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-bold text-rose-gold text-xs">{name}</span>
+                        <span className="text-[10px] text-white/30">{format(new Date(comment.created_at), "HH:mm dd/MM")}</span>
+                    </div>
+                    <p className="text-white/80 leading-relaxed whitespace-pre-wrap wrap-break-word">{comment.content}</p>
+                </div>
+
+                {/* Reactions & Actions */}
+                <div className="flex items-center gap-4 text-xs text-white/40 pl-2">
+                    <button
+                        onClick={() => onReact(comment.id, myId, "❤️")}
+                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${hasReacted ? "text-rose-gold" : ""}`}
+                    >
+                        {hasReacted ? <Heart className="w-3 h-3 fill-rose-gold" /> : <Heart className="w-3 h-3" />}
+                        {Object.keys(comment.reactions || {}).length > 0 && (
+                            <span>{Object.keys(comment.reactions || {}).length}</span>
+                        )}
+                    </button>
+                    {isOwner && (
+                        <button
+                            onClick={() => onDelete(comment.id)}
+                            className="hover:text-red-400 transition-colors opacity-0 group-hover/comment:opacity-100"
+                        >
+                            Xóa
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function TimelinePostCard({
+    post, currentRole, openGallery, handleEdit, handleDelete, profiles
+}: {
+    post: TimelinePost,
+    currentRole: "ảnh" | "ẻm",
+    openGallery: (post: TimelinePost, index: number) => void,
+    handleEdit: (post: TimelinePost) => void,
+    handleDelete: (post: TimelinePost) => void,
+    profiles: Record<string, Profile>
+}) {
+    const { comments, addComment, toggleReaction, deleteComment } = usePostComments(post.id);
+    const [showComments, setShowComments] = useState(false);
+    const [newComment, setNewComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleAddComment = async () => {
+        if (!newComment.trim()) return;
+        setIsSubmitting(true);
+        const myId = currentRole === "ảnh" ? "him" : "her";
+        await addComment(newComment.trim(), myId);
+        setNewComment("");
+        setIsSubmitting(false);
+    };
+
+    return (
+        <div className="glass-card glass-card-hover rounded-xl overflow-hidden">
+            {(post.media_urls && post.media_urls.length > 0) ? (
+                <div
+                    className="relative aspect-video overflow-hidden cursor-pointer group"
+                    onClick={() => openGallery(post, 0)}
+                >
+                    <Image
+                        src={post.media_urls[0]}
+                        alt={post.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-700"
+                    />
+                    {post.media_urls.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-md">
+                            +{post.media_urls.length - 1}
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-white text-sm font-serif italic">Xem album</span>
+                    </div>
+                </div>
+            ) : post.media_url ? (
+                <div
+                    className="relative aspect-video overflow-hidden cursor-pointer"
+                    onClick={() => openGallery(post, 0)}
+                >
+                    <Image
+                        src={post.media_url}
+                        alt={post.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-700"
+                    />
+                </div>
+            ) : null}
+
+            <div className="p-5">
+                {!post.media_url && !post.media_urls?.length && (
+                    <Quote className="w-6 h-6 text-rose-gold/20 mb-2" />
+                )}
+                <p className="text-white/60 font-serif italic leading-relaxed text-sm">
+                    {post.content}
+                </p>
+                <div className="flex items-center gap-3 mt-4 text-xs text-white/20 border-t border-white/5 pt-3">
+                    <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
+                        <Heart className="w-3 h-3" /> Thích
+                    </button>
+
+                    <button
+                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${showComments ? "text-rose-gold" : ""}`}
+                        onClick={() => setShowComments(!showComments)}
+                    >
+                        <MessageCircle className="w-3 h-3" />
+                        {comments.length > 0 ? `${comments.length} Bình luận` : "Bình luận"}
+                    </button>
+
+                    <div className="ml-auto flex items-center gap-2">
+                        {post.user_id === currentRole && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
+                                        <MoreHorizontal className="w-4 h-4" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-surface border-rose-gold/10 text-white">
+                                    <DropdownMenuItem
+                                        className="focus:bg-rose-gold/10 focus:text-rose-gold cursor-pointer"
+                                        onClick={() => handleEdit(post)}
+                                    >
+                                        <Pencil className="w-4 h-4 mr-2" />
+                                        Chỉnh sửa
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="focus:bg-red-500/10 focus:text-red-400 text-red-400 cursor-pointer"
+                                        onClick={() => handleDelete(post)}
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Xóa
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {showComments && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="pt-4 space-y-4">
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                                        placeholder="Viết bình luận..."
+                                        className="h-9 text-xs bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        onClick={handleAddComment}
+                                        disabled={!newComment.trim() || isSubmitting}
+                                        className="h-9 w-9 p-0 bg-rose-gold hover:bg-rose-gold/80"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                    </Button>
+                                </div>
+
+                                <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                                    {comments.map(comment => (
+                                        <CommentItem
+                                            key={comment.id}
+                                            comment={comment}
+                                            currentRole={currentRole}
+                                            profiles={profiles}
+                                            onDelete={deleteComment}
+                                            onReact={toggleReaction}
+                                        />
+                                    ))}
+                                    {comments.length === 0 && (
+                                        <p className="text-center text-white/20 text-xs py-2 italic">Chưa có bình luận nào.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+}
+
 export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpdatePost }: TimelineTabProps) {
     const { uploadFile, isUploading: uploading } = useUpload();
+    const { profiles } = useProfiles();
     const [filterYear, setFilterYear] = useState<string | null>(null);
     const [addOpen, setAddOpen] = useState(false);
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
@@ -292,81 +517,14 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
 
                                         {/* Content side */}
                                         <div className="flex-1">
-                                            <div className="glass-card glass-card-hover rounded-xl overflow-hidden">
-                                                {(post.media_urls && post.media_urls.length > 0) ? (
-                                                    <div
-                                                        className="relative aspect-video overflow-hidden cursor-pointer group"
-                                                        onClick={() => openGallery(post, 0)}
-                                                    >
-                                                        <Image
-                                                            src={post.media_urls[0]}
-                                                            alt={post.title}
-                                                            fill
-                                                            className="object-cover hover:scale-105 transition-transform duration-700"
-                                                        />
-                                                        {post.media_urls.length > 1 && (
-                                                            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-md">
-                                                                +{post.media_urls.length - 1}
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <span className="text-white text-sm font-serif italic">Xem album</span>
-                                                        </div>
-                                                    </div>
-                                                ) : post.media_url ? (
-                                                    <div
-                                                        className="relative aspect-video overflow-hidden cursor-pointer"
-                                                        onClick={() => openGallery(post, 0)}
-                                                    >
-                                                        <Image
-                                                            src={post.media_url}
-                                                            alt={post.title}
-                                                            fill
-                                                            className="object-cover hover:scale-105 transition-transform duration-700"
-                                                        />
-                                                    </div>
-                                                ) : null}
-
-                                                <div className="p-5">
-                                                    {!post.media_url && (
-                                                        <Quote className="w-6 h-6 text-rose-gold/20 mb-2" />
-                                                    )}
-                                                    <p className="text-white/60 font-serif italic leading-relaxed text-sm">
-                                                        {post.content}
-                                                    </p>
-                                                    <div className="flex items-center gap-3 mt-4 text-xs text-white/20">
-                                                        <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
-                                                            <Heart className="w-3 h-3" /> Thích
-                                                        </button>
-                                                        {post.user_id === currentRole && (
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <button className="flex items-center gap-1 hover:text-rose-gold transition-colors ml-2">
-                                                                        <MoreHorizontal className="w-4 h-4" />
-                                                                    </button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end" className="bg-surface border-rose-gold/10 text-white">
-                                                                    {/* Edit feature to be fully implemented later */}
-                                                                    <DropdownMenuItem
-                                                                        className="focus:bg-rose-gold/10 focus:text-rose-gold cursor-pointer"
-                                                                        onClick={() => handleEdit(post)}
-                                                                    >
-                                                                        <Pencil className="w-4 h-4 mr-2" />
-                                                                        Chỉnh sửa
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="focus:bg-red-500/10 focus:text-red-400 text-red-400 cursor-pointer"
-                                                                        onClick={() => handleDelete(post)}
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                                        Xóa
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <TimelinePostCard
+                                                post={post}
+                                                currentRole={currentRole}
+                                                openGallery={openGallery}
+                                                handleEdit={handleEdit}
+                                                handleDelete={handleDelete}
+                                                profiles={profiles}
+                                            />
                                         </div>
                                     </motion.div>
                                 );
