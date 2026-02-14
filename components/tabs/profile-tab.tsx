@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 // import { SAMPLE_USERS } from "@/lib/constants";
 import { useLove, useProfiles, useLoveStats } from "@/lib/store";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { Profile } from "@/lib/types";
 import { FallingHearts } from "../shared/falling-hearts";
 import {
@@ -92,7 +93,8 @@ function ItemList({
     title, icon, items, editing,
     newItemValue, onNewItemChange, onAdd, onRemove
 }: ItemListProps) {
-    const MAX_VISIBLE = 8;
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    const MAX_VISIBLE = isMobile ? 4 : 8;
     // Show all items if editing, otherwise slice
     const visibleItems = editing ? items : items.slice(0, MAX_VISIBLE);
     const hiddenCount = items.length - MAX_VISIBLE;
