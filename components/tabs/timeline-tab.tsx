@@ -81,24 +81,24 @@ const CommentItem = memo(({ comment, currentRole, profiles, onDelete, onReact }:
 
     return (
         <div className="flex gap-3 text-sm group/comment">
-            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10">
+            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-border">
                 <Image src={avatar} alt={name} width={32} height={32} className="object-cover w-full h-full" />
             </div>
             <div className="flex-1 space-y-1">
-                <div className="bg-white/5 rounded-2xl rounded-tl-none px-3 py-2 inline-block max-w-full">
+                <div className="bg-muted rounded-2xl rounded-tl-none px-3 py-2 inline-block max-w-full">
                     <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-rose-gold text-xs">{name}</span>
-                        <span className="text-[10px] text-white/30">{format(new Date(comment.created_at), "HH:mm dd/MM")}</span>
+                        <span className="font-bold text-primary text-xs">{name}</span>
+                        <span className="text-[10px] text-muted-foreground">{format(new Date(comment.created_at), "HH:mm dd/MM")}</span>
                     </div>
-                    <p className="text-white/80 leading-relaxed whitespace-pre-wrap wrap-break-word">{comment.content}</p>
+                    <p className="text-foreground leading-relaxed whitespace-pre-wrap wrap-break-word">{comment.content}</p>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-white/40 pl-2">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground pl-2">
                     <button
                         onClick={() => onReact(comment.id, myId, "❤️")}
-                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${hasReacted ? "text-rose-gold" : ""}`}
+                        className={`flex items-center gap-1 hover:text-primary transition-colors ${hasReacted ? "text-primary" : ""}`}
                     >
-                        {hasReacted ? <Heart className="w-3 h-3 fill-rose-gold" /> : <Heart className="w-3 h-3" />}
+                        {hasReacted ? <Heart className="w-3 h-3 fill-primary" /> : <Heart className="w-3 h-3" />}
                         {Object.keys(comment.reactions || {}).length > 0 && (
                             <span>{Object.keys(comment.reactions || {}).length}</span>
                         )}
@@ -106,7 +106,7 @@ const CommentItem = memo(({ comment, currentRole, profiles, onDelete, onReact }:
                     {isOwner && (
                         <button
                             onClick={() => onDelete(comment.id)}
-                            className="text-white/30 hover:text-red-400 transition-colors"
+                            className="text-muted-foreground hover:text-destructive transition-colors"
                         >
                             Xóa
                         </button>
@@ -180,7 +180,7 @@ function PostDetailView({
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-full w-full bg-surface text-white overflow-hidden rounded-xl relative">
+        <div className="flex flex-col md:flex-row h-full w-full bg-background text-foreground overflow-hidden rounded-xl relative">
             {/* Image Section: Fixed height on mobile, full height on desktop */}
             <div className={`relative bg-black flex items-center justify-center shrink-0 ${hasMedia ? "w-full md:w-3/5 h-[40vh] md:h-full" : "hidden"}`}>
                 <AnimatePresence mode="wait">
@@ -230,7 +230,7 @@ function PostDetailView({
                             <button
                                 key={idx}
                                 onClick={() => setCurrentImageIndex(idx)}
-                                className={`relative w-10 h-10 rounded-md overflow-hidden shrink-0 border-2 transition-all ${idx === currentImageIndex ? "border-rose-gold scale-110" : "border-white/20 opacity-70 hover:opacity-100"
+                                className={`relative w-10 h-10 rounded-md overflow-hidden shrink-0 border-2 transition-all ${idx === currentImageIndex ? "border-primary scale-110" : "border-white/20 opacity-70 hover:opacity-100"
                                     }`}
                             >
                                 <Image src={url} alt="thumb" fill className="object-cover" />
@@ -250,44 +250,38 @@ function PostDetailView({
                 )}
             </div>
 
-            {/* Desktop-only close button in top right, mobile close is on the image */}
-            <button
-                onClick={onClose}
-                className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors z-50 hidden md:flex"
-            >
-                <X className="w-5 h-5" />
-            </button>
+
 
             {/* Content Section: Scrollable */}
-            <div className={`flex flex-col h-full bg-surface border-l border-white/5 overflow-hidden ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>
+            <div className={`flex flex-col h-full bg-background border-l border-border overflow-hidden ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>
                 <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                    <div className="px-4 py-3 border-b border-white/5 shrink-0">
+                    <div className="px-4 py-3 border-b border-border shrink-0">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h2 className="text-xl font-serif italic text-white mb-1">{post.title}</h2>
-                                <p className="text-rose-gold/50 text-xs uppercase tracking-widest">{format(new Date(post.event_date), "d MMMM, yyyy")}</p>
+                                <h2 className="text-xl font-serif italic text-foreground mb-1">{post.title}</h2>
+                                <p className="text-primary/70 text-xs uppercase tracking-widest">{format(new Date(post.event_date), "d MMMM, yyyy")}</p>
                             </div>
                         </div>
                     </div>
                     {post.location && (
-                        <div className="flex items-center gap-1 px-4 py-2 text-sm text-white/40 border-b border-white/5">
+                        <div className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground border-b border-border">
                             <MapPin className="w-3 h-3" />
                             {post.location}
                         </div>
                     )}
-                    <div className="px-4 py-4 text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic border-b border-white/5">
+                    <div className="px-4 py-4 text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap font-serif italic border-b border-border">
                         {post.content}
                     </div>
 
-                    <div className="px-4 py-2 flex items-center gap-4 border-b border-white/5">
+                    <div className="px-4 py-2 flex items-center gap-4 border-b border-border">
                         <button
                             onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${hasReacted
-                                ? "bg-rose-gold/20 text-rose-gold"
-                                : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                                ? "bg-primary/20 text-primary"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                 }`}
                         >
-                            <Heart className={`w-4 h-4 ${hasReacted ? "fill-rose-gold" : ""}`} />
+                            <Heart className={`w-4 h-4 ${hasReacted ? "fill-primary" : ""}`} />
                             {hasReacted ? "Đã thích" : "Thích"}
                             {Object.keys(post.reactions || {}).length > 0 && (
                                 <span className="ml-1 opacity-70">
@@ -299,7 +293,7 @@ function PostDetailView({
 
                     <div className="p-4 space-y-4">
                         {comments.length === 0 ? (
-                            <div className="py-8 flex flex-col items-center justify-center text-white/20">
+                            <div className="py-8 flex flex-col items-center justify-center text-muted-foreground/50">
                                 <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
                                 <p className="text-sm italic">Chưa có bình luận nào</p>
                             </div>
@@ -318,7 +312,7 @@ function PostDetailView({
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-white/5 bg-surface shrink-0">
+                <div className="p-4 border-t border-border bg-background shrink-0">
                     <div className="flex gap-2">
                         <div className="relative flex-1">
                             <Input
@@ -326,15 +320,15 @@ function PostDetailView({
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
                                 placeholder="Viết bình luận..."
-                                className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
+                                className="h-10 pl-3 pr-10 bg-muted border-input text-foreground focus-visible:ring-primary/30 rounded-full text-sm"
                             />
-                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
+                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                         </div>
                         <Button
                             size="icon"
                             onClick={handleAddComment}
                             disabled={!newComment.trim() || isSubmitting}
-                            className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
+                            className="h-10 w-10 rounded-full bg-primary hover:bg-primary/80 flex items-center justify-center shrink-0"
                         >
                             <Send className="w-4 h-4" />
                         </Button>
@@ -408,7 +402,7 @@ function PostDetailView({
                                     <button
                                         key={idx}
                                         onClick={() => setCurrentImageIndex(idx)}
-                                        className={`relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${idx === currentImageIndex ? "border-rose-gold scale-110" : "border-white/20 opacity-50"}`}
+                                        className={`relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${idx === currentImageIndex ? "border-primary scale-110" : "border-white/20 opacity-50"}`}
                                     >
                                         <Image src={url} alt="thumb" fill className="object-cover" />
                                     </button>
@@ -550,23 +544,23 @@ const TimelinePostCard = memo(({
 
             <div className="p-5">
                 {!post.media_url && !post.media_urls?.length && (
-                    <Quote className="w-6 h-6 text-rose-gold/20 mb-2" />
+                    <Quote className="w-6 h-6 text-primary/40 mb-2" />
                 )}
                 <div
                     onClick={() => openGallery(post, 0)}
                     className="cursor-pointer group/content"
                 >
-                    <p className="text-white/60 font-serif italic leading-relaxed text-sm group-hover/content:text-white/80 transition-colors">
+                    <p className="text-muted-foreground font-serif italic leading-relaxed text-sm group-hover/content:text-foreground transition-colors">
                         {post.content}
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 mt-4 text-xs text-white/20 border-t border-white/5 pt-3">
+                <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground border-t border-border pt-3">
                     <button
                         onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
-                        className={`flex items-center gap-1 transition-colors ${hasReacted ? "text-rose-gold" : "hover:text-rose-gold"}`}
+                        className={`flex items-center gap-1 transition-colors ${hasReacted ? "text-primary" : "hover:text-primary"}`}
                     >
-                        <Heart className={`w-3 h-3 ${hasReacted ? "fill-rose-gold" : ""}`} />
+                        <Heart className={`w-3 h-3 ${hasReacted ? "fill-primary" : ""}`} />
                         {hasReacted ? "Đã thích" : "Thích"}
                         {Object.keys(post.reactions || {}).length > 0 && (
                             <span className="ml-0.5">({Object.keys(post.reactions || {}).length})</span>
@@ -574,7 +568,7 @@ const TimelinePostCard = memo(({
                     </button>
 
                     <button
-                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${shouldShowComments ? "text-rose-gold" : ""}`}
+                        className={`flex items-center gap-1 hover:text-primary transition-colors ${shouldShowComments ? "text-primary" : ""}`}
                         onClick={() => setShowComments(!showComments)}
                     >
                         <MessageCircle className="w-3 h-3" />
@@ -585,7 +579,7 @@ const TimelinePostCard = memo(({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-white/40 hover:text-rose-gold transition-colors"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 const url = `${window.location.origin}${window.location.pathname}?post=${post.id}`;
@@ -599,20 +593,20 @@ const TimelinePostCard = memo(({
                         {post.user_id === currentRole && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
+                                    <button className="flex items-center gap-1 hover:text-primary transition-colors">
                                         <MoreHorizontal className="w-4 h-4" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-surface border-rose-gold/10 text-white">
+                                <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
                                     <DropdownMenuItem
-                                        className="focus:bg-rose-gold/10 focus:text-rose-gold cursor-pointer"
+                                        className="focus:bg-primary/10 focus:text-primary cursor-pointer"
                                         onClick={() => handleEdit(post)}
                                     >
                                         <Pencil className="w-4 h-4 mr-2" />
                                         Chỉnh sửa
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        className="focus:bg-red-500/10 focus:text-red-400 text-red-400 cursor-pointer"
+                                        className="focus:bg-destructive/10 focus:text-destructive text-destructive cursor-pointer"
                                         onClick={() => handleDelete(post)}
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
@@ -648,14 +642,14 @@ const TimelinePostCard = memo(({
                                     {hasMoreComments && (
                                         <button
                                             onClick={() => openGallery(post, 0)}
-                                            className="w-full text-left text-xs text-rose-gold/70 hover:text-rose-gold transition-colors py-1 pl-1"
+                                            className="w-full text-left text-xs text-primary/70 hover:text-primary transition-colors py-1 pl-1"
                                         >
                                             Xem thêm {comments.length - VISIBLE_COMMENTS} bình luận khác...
                                         </button>
                                     )}
 
                                     {comments.length === 0 && (
-                                        <p className="text-center text-white/20 text-xs py-2 italic">Chưa có bình luận nào.</p>
+                                        <p className="text-center text-muted-foreground/60 text-xs py-2 italic">Chưa có bình luận nào.</p>
                                     )}
                                 </div>
 
@@ -665,13 +659,13 @@ const TimelinePostCard = memo(({
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
                                         placeholder="Viết bình luận..."
-                                        className="h-8 text-xs bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full"
+                                        className="h-8 text-xs bg-muted border-border text-foreground focus-visible:ring-primary/30 rounded-full"
                                     />
                                     <Button
                                         size="sm"
                                         onClick={handleAddComment}
                                         disabled={!newComment.trim() || isSubmitting}
-                                        className="h-8 w-8 p-0 rounded-full bg-rose-gold hover:bg-rose-gold/80"
+                                        className="h-8 w-8 p-0 rounded-full bg-primary hover:bg-primary/80"
                                     >
                                         <Send className="w-3 h-3" />
                                     </Button>
@@ -849,10 +843,10 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                 animate={{ opacity: 1, y: 0 }}
             >
                 <div>
-                    <p className="text-rose-gold/50 text-sm uppercase tracking-widest">
+                    <p className="text-primary/50 text-sm uppercase tracking-widest">
                         Dòng thời gian
                     </p>
-                    <h1 className="text-4xl font-serif italic text-white">Hành trình yêu</h1>
+                    <h1 className="text-4xl font-serif italic text-foreground">Hành trình yêu</h1>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -861,8 +855,8 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                             key={y}
                             onClick={() => setFilterYear(filterYear === y ? null : y)}
                             className={`px-3 py-1.5 rounded-lg text-sm transition-all ${filterYear === y
-                                ? "bg-rose-gold text-background"
-                                : "bg-surface hover:bg-surface-hover text-white/60 border border-rose-gold/10"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-card hover:bg-muted text-muted-foreground border border-border"
                                 }`}
                         >
                             {y}
@@ -871,7 +865,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                     {filterYear && (
                         <button
                             onClick={() => setFilterYear(null)}
-                            className="text-rose-gold/60 hover:text-rose-gold text-sm flex items-center gap-1"
+                            className="text-primary/60 hover:text-primary text-sm flex items-center gap-1"
                         >
                             <X className="w-3 h-3" />
                             Xóa lọc
@@ -881,7 +875,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
             </motion.div>
 
             <div className="relative">
-                <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-[2px] bg-rose-gold/10 hidden md:block" />
+                <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-[2px] bg-border hidden md:block" />
 
                 {years.map((year) => {
                     const yearPosts = grouped[year];
@@ -894,7 +888,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                             >
-                                <div className="px-6 py-2 z-10 rounded-full border border-rose-gold/20 bg-surface text-rose-gold font-serif text-lg">
+                                <div className="px-6 py-2 z-10 rounded-full border border-border bg-card text-primary font-serif text-lg">
                                     {year}
                                 </div>
                             </motion.div>
@@ -916,21 +910,21 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                                             className={`flex-1 ${isLeft ? "md:text-right" : "md:text-left"
                                                 }`}
                                         >
-                                            <h3 className="text-2xl font-serif italic text-white">
+                                            <h3 className="text-2xl font-serif italic text-foreground">
                                                 {format(d, "d MMMM")}
                                             </h3>
-                                            <p className="text-xs uppercase tracking-widest text-rose-gold/50 mt-1">
+                                            <p className="text-xs uppercase tracking-widest text-primary/50 mt-1">
                                                 {post.title}
                                             </p>
                                             {post.location && (
-                                                <div className={`flex items-center gap-1 mt-2 text-sm text-white/30 ${isLeft ? "md:justify-end" : ""}`}>
-                                                    <MapPin className="w-3 h-3 text-rose-gold/40" />
+                                                <div className={`flex items-center gap-1 mt-2 text-sm text-muted-foreground ${isLeft ? "md:justify-end" : ""}`}>
+                                                    <MapPin className="w-3 h-3 text-primary/40" />
                                                     {post.location}
                                                 </div>
                                             )}
                                         </div>
 
-                                        <div className="relative z-10 shrink-0 w-4 h-4 rounded-full bg-background border-2 border-rose-gold shadow-[0_0_10px_rgba(234,179,164,0.5)] hidden md:block" />
+                                        <div className="relative z-10 shrink-0 w-4 h-4 rounded-full bg-background border-2 border-primary shadow-[0_0_10px_var(--primary)] hidden md:block" />
 
                                         <div className="flex-1 w-full">
                                             <TimelinePostCard
@@ -954,80 +948,82 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
             <Dialog open={addOpen} onOpenChange={setAddOpen} >
                 <DialogTrigger asChild>
                     <Button
-                        className="fixed bottom-24 right-8 h-14 w-14 rounded-full bg-rose-gold hover:bg-rose-gold/80 shadow-lg shadow-rose-gold/20 z-50 p-0"
+                        className="fixed bottom-24 right-8 h-14 w-14 rounded-full bg-primary hover:bg-primary/80 shadow-lg shadow-primary/20 z-50 p-0"
                     >
                         <Plus className="w-6 h-6" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-surface border-rose-gold/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[425px] bg-card text-card-foreground border-border">
                     <DialogHeader>
-                        <DialogTitle className="font-serif italic text-2xl text-rose-gold">
-                            {editingPostId ? "Chỉnh sửa kỷ niệm" : "Lưu giữ khoảnh khắc"}
+                        <DialogTitle className="text-2xl font-serif italic text-foreground">
+                            {editingPostId ? "Chỉnh sửa kỷ niệm" : "Thêm kỷ niệm mới"}
                         </DialogTitle>
                     </DialogHeader>
-
-                    <div className="space-y-6 py-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-xs uppercase tracking-widest text-white/40">Tiêu đề</Label>
-                                <Input
-                                    value={newPost.title}
-                                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                                    className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
-                                    placeholder="VD: Buổi hẹn đầu tiên"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs uppercase tracking-widest text-white/40">Ngày</Label>
-                                <Input
-                                    type="date"
-                                    value={newPost.event_date}
-                                    onChange={(e) => setNewPost({ ...newPost, event_date: e.target.value })}
-                                    className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-xs uppercase tracking-widest text-white/40">Địa điểm</Label>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="title" className="text-foreground">Tiêu đề</Label>
                             <Input
-                                value={newPost.location}
-                                onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
-                                className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
-                                placeholder="VD: Đà Lạt, Việt Nam"
+                                id="title"
+                                value={newPost.title}
+                                onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                                placeholder="Tiêu đề kỷ niệm..."
+                                className="bg-muted border-input text-foreground focus-visible:ring-primary/30"
                             />
                         </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-xs uppercase tracking-widest text-white/40">Nội dung</Label>
+                        <div className="grid gap-2">
+                            <Label htmlFor="date" className="text-foreground">Ngày diễn ra</Label>
+                            <Input
+                                id="date"
+                                type="date"
+                                value={newPost.event_date}
+                                onChange={(e) => setNewPost({ ...newPost, event_date: e.target.value })}
+                                className="bg-muted border-input text-foreground focus-visible:ring-primary/30 block w-full"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="content" className="text-foreground">Nội dung</Label>
                             <Textarea
+                                id="content"
                                 value={newPost.content}
                                 onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                                className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 min-h-[120px]"
-                                placeholder="Hãy viết gì đó cho khoảnh khắc này..."
+                                placeholder="Chia sẻ câu chuyện của bạn..."
+                                className="bg-muted border-input text-foreground focus-visible:ring-primary/30 min-h-[100px]"
                             />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="location" className="text-foreground">Địa điểm (Tùy chọn)</Label>
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    id="location"
+                                    value={newPost.location}
+                                    onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
+                                    placeholder="Tại đâu..."
+                                    className="pl-9 bg-muted border-input text-foreground focus-visible:ring-primary/30"
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-4">
-                            <Label className="text-xs uppercase tracking-widest text-white/40">Hình ảnh</Label>
+                            <Label className="text-foreground">Hình ảnh</Label>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {newPost.media_urls.map((url, i) => (
-                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
+                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-border">
                                         <Image src={url} alt="Uploaded" fill className="object-cover" />
                                         <button
                                             onClick={() => setNewPost({
                                                 ...newPost,
                                                 media_urls: newPost.media_urls.filter((_, idx) => idx !== i)
                                             })}
-                                            className="absolute top-1 right-1 bg-black/50 p-1 rounded-full text-white/70 hover:text-red-400"
+                                            className="absolute top-1 right-1 bg-background/50 p-1 rounded-full text-muted-foreground hover:text-destructive"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
                                     </div>
                                 ))}
-                                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-white/10 hover:border-rose-gold/30 transition-colors cursor-pointer bg-white/5 group">
-                                    <Camera className="w-6 h-6 text-white/20 group-hover:text-rose-gold/40 mb-2" />
-                                    <span className="text-[10px] text-white/20 group-hover:text-rose-gold/40 uppercase tracking-widest">
+                                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/30 transition-colors cursor-pointer bg-muted group">
+                                    <Camera className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary/70 mb-2" />
+                                    <span className="text-[10px] text-muted-foreground/50 group-hover:text-primary/70 uppercase tracking-widest">
                                         {uploading ? "Đang tải..." : "Thêm ảnh"}
                                     </span>
                                     <input
@@ -1044,19 +1040,9 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                     </div>
 
                     <DialogFooter>
-                        <Button
-                            variant="ghost"
-                            onClick={handleCloseDialog}
-                            className="text-white/40 hover:text-white hover:bg-white/5"
-                        >
-                            Hủy
-                        </Button>
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={!newPost.title || !newPost.content || uploading}
-                            className="bg-rose-gold hover:bg-rose-gold/80"
-                        >
-                            {editingPostId ? "Cập nhật" : "Tạo kỷ niệm"}
+                        <Button variant="ghost" onClick={() => setAddOpen(false)} className="text-muted-foreground hover:text-foreground">Hủy</Button>
+                        <Button onClick={handleSubmit} disabled={!newPost.title || !newPost.content || uploading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                            {uploading ? "Đang xử lý..." : (editingPostId ? "Cập nhật" : "Đăng kỷ niệm")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

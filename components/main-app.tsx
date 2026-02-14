@@ -38,6 +38,7 @@ import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useValentine } from "@/providers/valentine-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const TABS = [
     { value: "home", label: "Trang chủ", icon: Home },
@@ -131,37 +132,38 @@ export function MainApp() {
                 className="relative z-10"
             >
                 {/* Header */}
-                <header className="border-b border-white/5 bg-background/80 backdrop-blur-md sticky top-0 z-30">
+                <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
                     <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center overflow-hidden">
+                            <div className="w-8 h-8 rounded-full bg-surface border border-primary/20 flex items-center justify-center overflow-hidden">
                                 <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/avatar.png" alt="Logo" width={32} height={32} />
                             </div>
-                            <span className="font-serif text-lg italic text-white">
+                            <span className="font-serif text-lg italic text-foreground">
                                 Ảnh & Ẻm
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
+                            <ModeToggle />
                             <NotificationCenter onNavigate={handleNavigate} />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <div className="flex items-center gap-2 text-white/40 text-sm cursor-pointer hover:text-white transition-colors">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors">
                                         <span className="hidden sm:inline font-serif italic">
                                             {currentRole === "ảnh" ? profiles.him?.name : profiles.her?.name}
                                         </span>
-                                        <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center overflow-hidden">
+                                        <div className="w-8 h-8 rounded-full bg-surface border border-primary/20 flex items-center justify-center overflow-hidden">
                                             {currentUserAvatarURL ? (
                                                 <img src={currentUserAvatarURL} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
                                             ) : (
-                                                <div className="w-full h-full bg-rose-gold/10 flex items-center justify-center text-rose-gold/30 text-[10px]">
+                                                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary/30 text-[10px]">
                                                     {currentRole === "ảnh" ? "Anh" : "Em"}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white">
-                                    <DropdownMenuItem onClick={onLock} className="focus:bg-red-500/20 focus:text-red-400 cursor-pointer">
+                                <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
+                                    <DropdownMenuItem onClick={onLock} className="focus:bg-destructive/20 focus:text-destructive cursor-pointer">
                                         <LogOut className="w-4 h-4 mr-2" />
                                         Đăng xuất
                                     </DropdownMenuItem>
@@ -253,8 +255,8 @@ export function MainApp() {
                                             className={cn(
                                                 "size-full transition-colors duration-300",
                                                 activeTab === value
-                                                    ? "text-rose-gold"
-                                                    : "text-white/40 group-hover:text-white"
+                                                    ? "text-primary dark:text-rose-gold"
+                                                    : "text-muted-foreground group-hover:text-foreground"
                                             )}
                                         />
                                     </DockIcon>

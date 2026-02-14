@@ -81,20 +81,20 @@ function ItemList({
     const showMore = !editing && hiddenCount > 0;
 
     return (
-        <div className="glass-card rounded-lg p-4 flex flex-col h-full">
-            <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
+        <div className="glass-card rounded-lg p-4 flex flex-col h-full border border-border bg-card/80">
+            <div className="flex items-center gap-2 text-xs text-primary/60 mb-3">
                 {icon}
                 <span className="uppercase tracking-widest">{title}</span>
             </div>
 
             <div className="flex flex-wrap gap-2 content-start grow">
                 {visibleItems.map((item, idx) => (
-                    <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-white/5 hover:bg-white/10 transition-colors rounded-full px-3 py-1 min-h-[24px]">
-                        <p className="text-white/70 text-xs leading-tight wrap-break-word pr-1 lowercase font-sans">
+                    <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-muted hover:bg-muted/80 transition-colors rounded-full px-3 py-1 min-h-[24px]">
+                        <p className="text-foreground/70 text-xs leading-tight wrap-break-word pr-1 lowercase font-sans">
                             # {item}
                         </p>
                         {editing && (
-                            <button onClick={() => onRemove(item)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity ml-1 shrink-0">
+                            <button onClick={() => onRemove(item)} className="text-muted-foreground hover:text-destructive opacity-0 group-hover/item:opacity-100 transition-opacity ml-1 shrink-0">
                                 <X className="w-3 h-3" />
                             </button>
                         )}
@@ -104,19 +104,19 @@ function ItemList({
                 {showMore && (
                     <Dialog>
                         <DialogTrigger asChild>
-                            <button className="flex items-center justify-center bg-white/5 rounded px-2 py-1.5 text-xs text-rose-gold/60 hover:text-rose-gold hover:bg-white/10 transition-colors w-full border border-dashed border-rose-gold/20 h-[32px]">
+                            <button className="flex items-center justify-center bg-muted rounded px-2 py-1.5 text-xs text-primary/60 hover:text-primary hover:bg-muted/80 transition-colors w-full border border-dashed border-primary/20 h-[32px]">
                                 <Plus className="w-3 h-3 mr-1" /> Xem thêm {hiddenCount} mục
                             </button>
                         </DialogTrigger>
-                        <DialogContent className="bg-[#1a1528] border-rose-gold/20 text-white max-w-lg">
+                        <DialogContent className="bg-popover border-border text-popover-foreground max-w-lg">
                             <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-rose-gold font-serif text-xl">
+                                <DialogTitle className="flex items-center gap-2 text-primary font-serif text-xl">
                                     {icon} {title}
                                 </DialogTitle>
                             </DialogHeader>
                             <div className="grid grid-cols-2 gap-3 mt-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                 {items.map((item, idx) => (
-                                    <div key={`${item}-${idx}`} className="bg-white/5 rounded px-3 py-2 text-sm text-white/90 font-serif border border-white/10">
+                                    <div key={`${item}-${idx}`} className="bg-muted rounded px-3 py-2 text-sm text-foreground/90 font-serif border border-border">
                                         {item}
                                     </div>
                                 ))}
@@ -127,19 +127,19 @@ function ItemList({
             </div>
 
             {editing && (
-                <div className="flex gap-1 mt-3 pt-3 border-t border-white/5 w-full">
+                <div className="flex gap-1 mt-3 pt-3 border-t border-border w-full">
                     <Input
                         value={newItemValue}
                         onChange={(e) => onNewItemChange(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && onAdd()}
                         placeholder="Thêm..."
-                        className="h-8 text-xs bg-transparent border-rose-gold/20 text-white px-2 focus-visible:ring-rose-gold/50 min-w-0"
+                        className="h-8 text-xs bg-transparent border-primary/20 text-foreground px-2 focus-visible:ring-primary/50 min-w-0"
                     />
                     <Button
                         size="sm"
                         variant="ghost"
                         onClick={onAdd}
-                        className="h-8 w-8 p-0 text-rose-gold hover:bg-rose-gold/10 shrink-0"
+                        className="h-8 w-8 p-0 text-primary hover:bg-primary/10 shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                     </Button>
@@ -275,7 +275,7 @@ function ProfileCard({
 
     return (
         <motion.div
-            className="glass-card rounded-2xl overflow-hidden flex flex-col h-full"
+            className="glass-card rounded-2xl overflow-hidden flex flex-col h-full border border-border bg-card/80"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
         >
@@ -298,7 +298,7 @@ function ProfileCard({
                     fill
                     className="object-cover opacity-60"
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-[#1a1528] to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
 
                 {isOwner && (
                     <button
@@ -306,7 +306,7 @@ function ProfileCard({
                             if (editing) handleSave();
                             else setEditing(true);
                         }}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white/60 hover:text-rose-gold transition-colors z-10"
+                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/30 backdrop-blur flex items-center justify-center text-foreground/60 hover:text-primary transition-colors z-10"
                     >
                         {editing ? <Check className="w-4 h-4 text-green-400" /> : <Pencil className="w-4 h-4" />}
                     </button>
@@ -314,7 +314,7 @@ function ProfileCard({
                 {isOwner && editing && (
                     <button
                         onClick={() => setEditing(false)}
-                        className="absolute top-3 right-12 w-8 h-8 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white/60 hover:text-red-400 transition-colors z-10"
+                        className="absolute top-3 right-12 w-8 h-8 rounded-full bg-background/30 backdrop-blur flex items-center justify-center text-foreground/60 hover:text-destructive transition-colors z-10"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -324,7 +324,7 @@ function ProfileCard({
             <div className="flex flex-col items-center -mt-12 px-6 pb-8 relative z-0 grow">
                 <div className="relative group">
                     <div
-                        className={`w-24 h-24 rounded-full bg-[#1a1528] border-4 border-[#1a1528] flex items-center justify-center overflow-hidden cursor-pointer ${isOwner && editing ? "hover:opacity-80 transition-opacity" : ""}`}
+                        className={`w-24 h-24 rounded-full bg-background border-4 border-background flex items-center justify-center overflow-hidden cursor-pointer ${isOwner && editing ? "hover:opacity-80 transition-opacity" : ""}`}
                         onClick={handleAvatarClick}
                     >
                         <img
@@ -344,7 +344,7 @@ function ProfileCard({
                         )}
                     </div>
                     {isOwner && !editing && (
-                        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-green-500 border-2 border-[#1a1528]" />
+                        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-green-500 border-2 border-background" />
                     )}
                 </div>
 
@@ -353,10 +353,10 @@ function ProfileCard({
                         <Input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="text-center font-serif text-xl border-rose-gold/20 bg-transparent text-white focus-visible:ring-rose-gold/50"
+                            className="text-center font-serif text-xl border-primary/20 bg-transparent text-foreground focus-visible:ring-primary/50"
                         />
                     ) : (
-                        <h2 className="text-2xl font-serif text-white">{user.name}</h2>
+                        <h2 className="text-2xl font-serif text-foreground">{user.name}</h2>
                     )}
 
                     <div className="mt-1 flex justify-center">
@@ -364,10 +364,10 @@ function ProfileCard({
                             <Textarea
                                 value={tagline}
                                 onChange={(e) => setTagline(e.target.value)}
-                                className="bg-white/5 border-rose-gold/10 text-white text-sm min-h-[40px] font-serif focus-visible:ring-rose-gold/50"
+                                className="bg-muted border-primary/10 text-foreground text-sm min-h-[40px] font-serif focus-visible:ring-primary/50"
                             />
                         ) : (
-                            <p className="text-rose-gold/50 italic font-serif text-sm">
+                            <p className="text-primary/50 italic font-serif text-sm">
                                 &ldquo;{user.tagline || "Đang cảm thấy được yêu & hạnh phúc"}&rdquo;
                             </p>
                         )}
@@ -375,36 +375,36 @@ function ProfileCard({
                 </div>
 
                 <div className="w-full mt-6">
-                    <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
+                    <h3 className="text-xs uppercase tracking-widest text-primary/60 mb-3">
                         Giới thiệu
                     </h3>
-                    <div className="border-t border-rose-gold/10 pt-3">
+                    <div className="border-t border-primary/10 pt-3">
                         {editing ? (
                             <Textarea
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
-                                className="bg-white/5 border-rose-gold/10 text-white text-sm min-h-[80px] font-serif focus-visible:ring-rose-gold/50"
+                                className="bg-muted border-primary/10 text-foreground text-sm min-h-[80px] font-serif focus-visible:ring-primary/50"
                             />
                         ) : (
-                            <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">{bio}</p>
+                            <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">{bio}</p>
                         )}
                     </div>
                 </div>
 
                 <div className="w-full mt-6">
-                    <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
+                    <h3 className="text-xs uppercase tracking-widest text-primary/60 mb-3">
                         Tính cách
                     </h3>
-                    <div className="border-t border-rose-gold/10 pt-3 flex flex-wrap gap-2">
+                    <div className="border-t border-primary/10 pt-3 flex flex-wrap gap-2">
                         {tags.map((tag) => (
                             <Badge
                                 key={tag}
                                 variant="outline"
-                                className="border-rose-gold/20 text-rose-gold/80 bg-rose-gold/5 rounded-full px-3 py-1 text-xs flex gap-1 items-center"
+                                className="border-primary/20 text-primary/80 bg-primary/5 rounded-full px-3 py-1 text-xs flex gap-1 items-center"
                             >
                                 {tag}
                                 {editing && (
-                                    <button onClick={() => handleRemoveTag(tag)} className="ml-1 hover:text-red-400">
+                                    <button onClick={() => handleRemoveTag(tag)} className="ml-1 hover:text-destructive">
                                         <X className="w-3 h-3" />
                                     </button>
                                 )}
@@ -417,13 +417,13 @@ function ProfileCard({
                                     onChange={(e) => setNewTag(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
                                     placeholder="Thêm..."
-                                    className="h-7 w-20 text-xs bg-transparent border-rose-gold/20 text-white px-2 focus-visible:ring-rose-gold/50"
+                                    className="h-7 w-20 text-xs bg-transparent border-primary/20 text-foreground px-2 focus-visible:ring-primary/50"
                                 />
                                 <Button
                                     size="sm"
                                     variant="ghost"
                                     onClick={handleAddTag}
-                                    className="h-7 w-7 p-0 text-rose-gold hover:bg-rose-gold/10"
+                                    className="h-7 w-7 p-0 text-primary hover:bg-primary/10"
                                 >
                                     <Plus className="w-3 h-3" />
                                 </Button>
@@ -457,17 +457,17 @@ function ProfileCard({
 
                 <div className="mt-auto pt-6 w-full">
                     {isOwner ? (
-                        <div className="glass-card p-4 rounded-xl border border-rose-gold/10 bg-rose-gold/5">
-                            <div className="flex items-center justify-between text-rose-gold">
+                        <div className="glass-card p-4 rounded-xl border border-primary/10 bg-primary/5">
+                            <div className="flex items-center justify-between text-primary">
                                 <span className="text-sm font-medium">Đã nhận được</span>
                                 <div className="flex items-center gap-2">
-                                    <Heart className="w-5 h-5 fill-rose-gold" />
+                                    <Heart className="w-5 h-5 fill-primary" />
                                     <span className="text-xl font-bold">{loveProps.loveCount}</span>
                                 </div>
                             </div>
-                            <p className="text-xs text-white/40 mt-1 text-right">lượt yêu hôm nay</p>
+                            <p className="text-xs text-muted-foreground mt-1 text-right">lượt yêu hôm nay</p>
 
-                            <div className="flex items-center justify-between text-rose-gold/70 mt-3 pt-3 border-t border-rose-gold/10">
+                            <div className="flex items-center justify-between text-primary/70 mt-3 pt-3 border-t border-primary/10">
                                 <span className="text-sm font-medium">Tổng lịch sử</span>
                                 <div className="flex items-center gap-2">
                                     <Heart className="w-4 h-4" />
@@ -479,8 +479,8 @@ function ProfileCard({
                         <div>
                             <Button
                                 className={`w-full gap-2 relative overflow-hidden transition-all ${loveProps.cooldownRemaining > 0
-                                    ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/5 cursor-not-allowed'
-                                    : 'bg-rose-gold/10 hover:bg-rose-gold/20 text-rose-gold border border-rose-gold/20 hover:border-rose-gold/50'
+                                    ? 'bg-muted text-muted-foreground border-border hover:bg-muted cursor-not-allowed'
+                                    : 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/50'
                                     }`}
                                 onClick={async () => {
                                     if (loveProps.cooldownRemaining === 0) {
@@ -505,7 +505,7 @@ function ProfileCard({
                                 )}
                             </Button>
 
-                            <div className="flex items-center justify-between text-white/30 mt-3 px-1">
+                            <div className="flex items-center justify-between text-muted-foreground mt-3 px-1">
                                 <span className="text-xs">Tổng số tim đã nhận</span>
                                 <div className="flex items-center gap-1.5">
                                     <Heart className="w-3 h-3" />

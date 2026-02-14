@@ -44,20 +44,20 @@ const HistoryItem = memo(({
 }) => {
     return (
         <motion.div
-            className="glass-card rounded-xl p-6"
+            className="glass-card rounded-xl p-6 border border-border bg-card/80"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
         >
-            <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-4">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-4">
                 <div className="flex items-center gap-3">
-                    <span className="text-rose-gold font-serif">
+                    <span className="text-primary font-serif">
                         {format(new Date(date), "dd/MM/yyyy")}
                     </span>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-white/20 hover:text-rose-gold transition-colors"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors"
                         onClick={(e) => {
                             e.stopPropagation();
                             const url = `${window.location.origin}${window.location.pathname}?caption=${date}`;
@@ -69,15 +69,15 @@ const HistoryItem = memo(({
                         <LinkIcon className="w-3 h-3" />
                     </Button>
                 </div>
-                <span className="text-xs text-white/30 uppercase tracking-widest">
+                <span className="text-xs text-muted-foreground uppercase tracking-widest">
                     Nhật ký
                 </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <p className="text-xs text-rose-gold/50 uppercase tracking-widest">Bạn</p>
-                    <p className="text-white/80 font-serif italic text-sm leading-relaxed">
+                    <p className="text-xs text-primary/50 uppercase tracking-widest">Bạn</p>
+                    <p className="text-foreground/80 font-serif italic text-sm leading-relaxed">
                         {myNote?.content}
                     </p>
                     {myNote?.media_url && (
@@ -88,11 +88,11 @@ const HistoryItem = memo(({
                     )}
                 </div>
 
-                <div className="space-y-2 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
-                    <p className="text-xs text-rose-gold/50 uppercase tracking-widest">{partnerName}</p>
+                <div className="space-y-2 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
+                    <p className="text-xs text-primary/50 uppercase tracking-widest">{partnerName}</p>
                     {partnerNote ? (
                         <>
-                            <p className="text-white/80 font-serif italic text-sm leading-relaxed">
+                            <p className="text-foreground/80 font-serif italic text-sm leading-relaxed">
                                 {partnerNote.content}
                             </p>
                             {partnerNote.media_url && (
@@ -103,7 +103,7 @@ const HistoryItem = memo(({
                             )}
                         </>
                     ) : (
-                        <p className="text-white/20 italic text-sm">
+                        <p className="text-muted-foreground italic text-sm">
                             Không có nhật ký ngày này.
                         </p>
                     )}
@@ -206,19 +206,19 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                     >
-                        <p className="text-rose-gold/70 text-sm tracking-[0.3em] uppercase italic font-serif">
+                        <p className="text-primary/70 text-sm tracking-[0.3em] uppercase italic font-serif">
                             Đã bên nhau
                         </p>
                         <div className="flex items-baseline justify-center gap-3">
                             <motion.span
-                                className="text-7xl md:text-8xl font-serif text-white font-light text-glow"
+                                className="text-7xl md:text-8xl font-serif text-foreground font-light text-glow"
                                 key={daysTogether}
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                             >
                                 {daysTogether.toLocaleString()}
                             </motion.span>
-                            <span className="text-3xl md:text-4xl text-rose-gold/60 font-serif italic">
+                            <span className="text-3xl md:text-4xl text-primary/60 font-serif italic">
                                 Ngày
                             </span>
                         </div>
@@ -241,7 +241,7 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
                         <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white/70 text-sm">
-                            <MapPin className="w-4 h-4 text-rose-gold" />
+                            <MapPin className="w-4 h-4 text-primary" />
                             <span className="font-serif italic">Hành trình của chúng mình</span>
                         </div>
                     </motion.div>
@@ -255,24 +255,24 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                     transition={{ delay: 0.4 }}
                 >
                     <div className="flex flex-col items-start justify-between">
-                        <span className="mb-2 text-rose-gold/50 text-sm border border-rose-gold/10 px-3 py-1 rounded-full font-serif">
+                        <span className="mb-2 text-primary/50 text-sm border border-primary/10 px-3 py-1 rounded-full font-serif">
                             {format(today, "MMMM d, yyyy")}
                         </span>
-                        <h2 className="text-2xl  font-serif italic text-white">Nhật ký hôm nay</h2>
+                        <h2 className="text-2xl  font-serif italic text-foreground">Nhật ký hôm nay</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                         {/* Your Note */}
-                        <div className="glass-card rounded-xl p-6 space-y-4">
+                        <div className="glass-card rounded-xl p-6 space-y-4 border border-border bg-card/80">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-rose-gold/20 flex items-center justify-center">
-                                    <Heart className="w-4 h-4 text-rose-gold" />
+                                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <Heart className="w-4 h-4 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-white font-medium">
+                                    <p className="text-foreground font-medium">
                                         {hasWrittenToday ? "Note của bạn" : "Đến lượt bạn"}
                                     </p>
-                                    <p className="text-white/40 text-sm">
+                                    <p className="text-muted-foreground text-sm">
                                         {hasWrittenToday
                                             ? "Đã chia sẻ hôm nay"
                                             : `Chia sẻ suy nghĩ của bạn để mở khóa ${currentRole === "ẻm" ? "của ảnh" : "của ẻm"}.`}
@@ -282,8 +282,8 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
 
                             {hasWrittenToday ? (
                                 <div className="space-y-3">
-                                    <div className="bg-background/30 rounded-lg p-4 border border-rose-gold/5">
-                                        <p className="text-white/70 font-serif italic">{myCaption}</p>
+                                    <div className="bg-background/30 rounded-lg p-4 border border-primary/5">
+                                        <p className="text-foreground/70 font-serif italic">{myCaption}</p>
                                     </div>
                                     {/* Display uploaded media if exists (Need to check if myCaption logic handles media_url display or if we need to fetch it from captions prop. 
                                         Since myCaption prop is just string, we might need to look it up in captions prop or rely on optimized update. 
@@ -302,12 +302,12 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                                         placeholder={`Hôm nay của ${currentRole} thế nào?`}
                                         value={captionText}
                                         onChange={(e) => setCaptionText(e.target.value)}
-                                        className="bg-background/30 border-rose-gold/10 min-h-[100px] resize-none text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30 font-serif"
+                                        className="bg-background/30 border-primary/10 min-h-[100px] resize-none text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/30 font-serif"
                                     />
 
                                     {/* Image Preview */}
                                     {uploadedMedia && (
-                                        <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 group">
+                                        <div className="relative aspect-video rounded-lg overflow-hidden border border-primary/10 group">
                                             <Image src={uploadedMedia} alt="Uploaded" fill className="object-cover" />
                                             <button
                                                 onClick={() => setUploadedMedia(null)}
@@ -327,7 +327,7 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                                                 onChange={handleFileSelect}
                                                 disabled={isUploading}
                                             />
-                                            <button className="text-white/20 hover:text-rose-gold transition-colors flex items-center gap-2">
+                                            <button className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                                                 <ImageIcon className="w-5 h-5" />
                                                 {isUploading && <span className="text-xs animate-pulse">Đang tải lên...</span>}
                                             </button>
@@ -335,7 +335,7 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                                         <Button
                                             onClick={handleSubmit}
                                             disabled={!captionText.trim() || isUploading}
-                                            className="bg-rose-gold hover:bg-rose-gold-dark text-background font-serif disabled:opacity-30"
+                                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-serif disabled:opacity-30"
                                         >
                                             {isUploading ? "Đang tải lên..." : "Chia sẻ"}
                                             {!isUploading && <Send className="w-4 h-4 ml-2" />}
@@ -346,14 +346,14 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                         </div>
 
                         {/* Partner's Note */}
-                        <div className="glass-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] relative overflow-hidden">
+                        <div className="glass-card rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] relative overflow-hidden border border-border bg-card/80">
                             {hasWrittenToday && partnerCaption ? (
                                 <motion.div
                                     className="text-center space-y-4 p-4 w-full"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                 >
-                                    <p className="text-white/70 font-serif italic text-lg">
+                                    <p className="text-foreground/70 font-serif italic text-lg">
                                         &ldquo;{partnerCaption}&rdquo;
                                     </p>
                                     {captions[todayStr]?.[currentRole === "ảnh" ? "ẻm" : "ảnh"]?.media_url && (
@@ -364,27 +364,27 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                                             />
                                         </div>
                                     )}
-                                    <p className="text-rose-gold/40 text-sm">
+                                    <p className="text-primary/40 text-sm">
                                         — {partnerName}
                                     </p>
                                 </motion.div>
                             ) : (
                                 <div className="text-center space-y-4">
-                                    <div className="w-14 h-14 rounded-full bg-rose-gold/10 flex items-center justify-center mx-auto">
-                                        <Lock className="w-6 h-6 text-rose-gold/50" />
+                                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                                        <Lock className="w-6 h-6 text-primary/50" />
                                     </div>
                                     <div>
-                                        <p className="text-white font-medium">
+                                        <p className="text-foreground font-medium">
                                             Nhật ký của {partnerName} đang khóa
                                         </p>
-                                        <p className="text-white/40 text-sm mt-1 max-w-[240px]">
+                                        <p className="text-muted-foreground text-sm mt-1 max-w-[240px]">
                                             {hasWrittenToday
                                                 ? `Đang chờ ${partnerName} chia sẻ...`
                                                 : `Chia sẻ khoảnh khắc của bạn để xem ${partnerName} viết gì hôm nay.`}
                                         </p>
                                     </div>
-                                    {/* <div className="flex items-center gap-2 text-rose-gold/40 text-xs tracking-widest uppercase">
-                                        <span className="w-2 h-2 rounded-full bg-rose-gold/30 animate-pulse" />
+                                    {/* <div className="flex items-center gap-2 text-primary/40 text-xs tracking-widest uppercase">
+                                        <span className="w-2 h-2 rounded-full bg-primary/30 animate-pulse" />
                                         Chờ bạn chia sẻ
                                     </div> */}
                                 </div>
@@ -410,9 +410,9 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                     className="max-w-2xl mx-auto space-y-6 pb-20"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-linear-to-r from-transparent via-rose-gold/20 to-transparent" />
-                        <h3 className="text-xl font-serif italic text-white/60">Kỷ niệm xưa</h3>
-                        <div className="h-px flex-1 bg-linear-to-r from-transparent via-rose-gold/20 to-transparent" />
+                        <div className="h-px flex-1 bg-linear-to-r from-transparent via-primary/20 to-transparent" />
+                        <h3 className="text-xl font-serif italic text-muted-foreground">Kỷ niệm xưa</h3>
+                        <div className="h-px flex-1 bg-linear-to-r from-transparent via-primary/20 to-transparent" />
                     </div>
 
                     <div className="space-y-6">
@@ -438,7 +438,7 @@ export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | 
                             <Button
                                 variant="ghost"
                                 onClick={() => setHistoryLimit(prev => prev + 5)}
-                                className="text-white/40 hover:text-rose-gold hover:bg-transparent"
+                                className="text-muted-foreground hover:text-primary hover:bg-transparent"
                             >
                                 Xem thêm
                                 <ChevronDown className="w-4 h-4 ml-2" />
@@ -460,7 +460,7 @@ function ImageWithZoom({ src, alt }: { src: string; alt: string }) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <div className="relative aspect-auto max-h-48 rounded-lg overflow-hidden cursor-zoom-in border border-white/10 group mt-2">
+                <div className="relative aspect-auto max-h-48 rounded-lg overflow-hidden cursor-zoom-in border border-border group mt-2">
                     <Image
                         src={src}
                         alt={alt}

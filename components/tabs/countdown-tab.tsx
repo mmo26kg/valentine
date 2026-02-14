@@ -70,23 +70,23 @@ function GreetingItem({ greeting, onDelete }: { greeting: any, onDelete: (id: st
 
     return (
         <div
-            className="flex justify-between items-center bg-white/5 p-3 rounded-lg group relative"
+            className="flex justify-between items-center bg-muted p-3 rounded-lg group relative"
         // {...longPressProps}
         >
-            <p className="text-sm text-white/90">{greeting.content}</p>
+            <p className="text-sm text-foreground/90">{greeting.content}</p>
 
             {/* Desktop Actions */}
             <Button
                 onClick={() => onDelete(greeting.id)}
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
+                className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
             >
                 <Trash2 className="w-3 h-3" />
             </Button>
 
             {/* Mobile Long Press Indicator */}
-            <div className="md:hidden text-white/20">
+            <div className="md:hidden text-muted-foreground/50">
                 <Settings className="w-3.5 h-3.5" />
             </div>
 
@@ -94,11 +94,11 @@ function GreetingItem({ greeting, onDelete }: { greeting: any, onDelete: (id: st
             <div className="absolute top-1/2 right-3 -translate-y-1/2 z-30 md:hidden pointer-events-none">
                 <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                     <DropdownMenuTrigger className="w-1 h-1 opacity-0 pointer-events-none" />
-                    <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white min-w-[120px]">
+                    <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground min-w-[120px]">
                         <DropdownMenuItem onClick={() => {
                             onDelete(greeting.id);
                             setDropdownOpen(false);
-                        }} className="focus:bg-red-500/20 focus:text-red-400 text-red-400 cursor-pointer gap-2">
+                        }} className="focus:bg-destructive/20 focus:text-destructive text-destructive cursor-pointer gap-2">
                             <Trash2 className="w-4 h-4" /> Xóa
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -130,17 +130,18 @@ export function GreetingConfigDialog({
         setNewContent("");
     };
 
+    // return (
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogContent className="bg-surface border-border text-foreground max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-center font-serif italic text-2xl text-rose-gold">
+                    <DialogTitle className="text-center font-serif italic text-2xl text-primary">
                         Cấu hình lời chào
                     </DialogTitle>
                 </DialogHeader>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 bg-white/5">
+                    <TabsList className="grid w-full grid-cols-4 bg-muted">
                         <TabsTrigger value="morning">Sáng</TabsTrigger>
                         <TabsTrigger value="afternoon">Trưa</TabsTrigger>
                         <TabsTrigger value="evening">Chiều</TabsTrigger>
@@ -150,26 +151,26 @@ export function GreetingConfigDialog({
                     {["morning", "afternoon", "evening", "night"].map((timeOfDay) => (
                         <TabsContent key={timeOfDay} value={timeOfDay} className="space-y-4 pt-4">
                             <div className="space-y-2">
-                                <p className="text-sm text-white/50">Thêm lời chào mới cho buổi {timeOfDay === "morning" ? "Sáng" : timeOfDay === "afternoon" ? "Trưa" : timeOfDay === "evening" ? "Chiều" : "Tối"}:</p>
+                                <p className="text-sm text-muted-foreground">Thêm lời chào mới cho buổi {timeOfDay === "morning" ? "Sáng" : timeOfDay === "afternoon" ? "Trưa" : timeOfDay === "evening" ? "Chiều" : "Tối"}:</p>
                                 <div className="flex gap-2">
                                     <Input
                                         value={newContent}
                                         onChange={(e) => setNewContent(e.target.value)}
                                         placeholder="Nhập lời chào..."
-                                        className="bg-white/5 border-white/10 text-white"
+                                        className="bg-muted border-input text-foreground"
                                         onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                                     />
-                                    <Button onClick={handleAdd} size="icon" className="bg-rose-gold text-surface hover:bg-rose-gold/90 shrink-0">
+                                    <Button onClick={handleAdd} size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
                                         <Plus className="w-4 h-4" />
                                     </Button>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <p className="text-sm text-white/50">Danh sách câu chào của bạn:</p>
+                                <p className="text-sm text-muted-foreground">Danh sách câu chào của bạn:</p>
                                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
                                     {myGreetings.filter(g => g.time_of_day === timeOfDay).length === 0 ? (
-                                        <p className="text-white/30 text-sm italic py-2 text-center">Chưa có câu chào nào.</p>
+                                        <p className="text-muted-foreground/60 text-sm italic py-2 text-center">Chưa có câu chào nào.</p>
                                     ) : (
                                         myGreetings
                                             .filter(g => g.time_of_day === timeOfDay)
@@ -247,7 +248,7 @@ function DynamicGreeting({ onEdit }: { onEdit: () => void }) {
                 variant="ghost"
                 size="icon"
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="h-6 w-6 text-rose-gold/40 hover:text-rose-gold hover:bg-rose-gold/10 rounded-full transition-all"
+                className="h-6 w-6 text-primary/40 hover:text-primary hover:bg-primary/10 rounded-full transition-all"
                 title="Thay đổi lời chào"
             >
                 <Settings className="w-3.5 h-3.5" />
@@ -324,7 +325,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
         <motion.div
             key={event.id}
             id={`event-${event.id}`}
-            className={`group relative glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[260px] ${isFeature ? "md:col-span-2" : ""
+            className={`group relative glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[260px] border border-border bg-card/80 ${isFeature ? "md:col-span-2" : ""
                 }`}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -335,7 +336,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/50 hover:text-white rounded-full transition-all"
+                    className="h-8 w-8 bg-background/20 hover:bg-background/40 text-muted-foreground hover:text-foreground rounded-full transition-all"
                     onClick={copyLink}
                     title="Sao chép liên kết"
                 >
@@ -346,22 +347,22 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/50 hover:text-white rounded-full transition-all"
+                            className="h-8 w-8 bg-background/20 hover:bg-background/40 text-muted-foreground hover:text-foreground rounded-full transition-all"
                         >
                             <Settings className="w-4 h-4" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white min-w-[150px]">
+                    <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground min-w-[150px]">
                         <DropdownMenuItem onClick={() => {
                             onEdit(event as CountdownEvent, { stopPropagation: () => { } } as any);
                             setDropdownOpen(false);
-                        }} className="focus:bg-white/10 focus:text-white cursor-pointer gap-2">
+                        }} className="focus:bg-muted focus:text-foreground cursor-pointer gap-2">
                             <Pencil className="w-4 h-4" /> Chỉnh sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
                             onDelete(event.id);
                             setDropdownOpen(false);
-                        }} className="focus:bg-red-500/20 focus:text-red-400 text-red-400 cursor-pointer gap-2">
+                        }} className="focus:bg-destructive/20 focus:text-destructive text-destructive cursor-pointer gap-2">
                             <Trash2 className="w-4 h-4" /> Xóa
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -369,20 +370,20 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             </div>
 
             {/* Decorative glow */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-gold/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
 
             <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-rose-gold/10 p-2 rounded-lg">
-                        <Icon className="w-5 h-5 text-rose-gold" />
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                        <Icon className="w-5 h-5 text-primary" />
                     </div>
 
                 </div>
                 <div>
 
-                    <h3 className="text-xl text-white font-light">{event.title}</h3>
-                    <p className="text-sm text-white/40 mt-2">
-                        <span className="text-xs text-white/40 border border-rose-gold/10 px-2.5 py-0.5 rounded-full capitalize w-fit mb-2 mr-4" >
+                    <h3 className="text-xl text-foreground font-light">{event.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                        <span className="text-xs text-muted-foreground border border-primary/10 px-2.5 py-0.5 rounded-full capitalize w-fit mb-2 mr-4" >
                             {event.type}
                         </span>
                         {format(event.targetDate, "MMM d, yyyy")}
@@ -394,44 +395,44 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             <div className={`relative z-10 ${isFeature ? "flex gap-8 mt-4" : "mt-6"}`}>
                 {time.isToday ? (
                     <div className="w-full text-center py-4">
-                        <span className="inline-block text-2xl md:text-3xl font-light text-rose-gold text-glow font-serif animate-pulse">
+                        <span className="inline-block text-2xl md:text-3xl font-light text-primary text-glow font-serif animate-pulse">
                             ✨ Đang diễn ra ✨
                         </span>
-                        <p className="text-sm text-white/50 mt-2">
+                        <p className="text-sm text-muted-foreground mt-2">
                             Hãy tận hưởng ngày đặc biệt này!
                         </p>
                     </div>
                 ) : isFeature ? (
                     <>
                         <div className="text-center">
-                            <span className="block text-5xl md:text-7xl font-light text-rose-gold text-glow leading-none font-serif">
+                            <span className="block text-5xl md:text-7xl font-light text-primary text-glow leading-none font-serif">
                                 {time.days}
                             </span>
-                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
+                            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground mt-2 block">
                                 Ngày
                             </span>
                         </div>
-                        <div className="h-auto w-px bg-rose-gold/10" />
+                        <div className="h-auto w-px bg-primary/10" />
                         <div className="text-center">
-                            <span className="block text-5xl md:text-7xl font-light text-rose-gold/60 leading-none font-serif">
+                            <span className="block text-5xl md:text-7xl font-light text-primary/60 leading-none font-serif">
                                 {time.hours}
                             </span>
-                            <span className="text-xs uppercase tracking-[0.2em] text-white/30 mt-2 block">
+                            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground mt-2 block">
                                 Giờ
                             </span>
                         </div>
                     </>
                 ) : (
-                    <div className="text-center bg-background/30 rounded-xl p-4 border border-rose-gold/5">
+                    <div className="text-center bg-background/30 rounded-xl p-4 border border-primary/5">
                         <div className="flex items-baseline justify-center gap-1">
-                            <span className="text-4xl font-light text-rose-gold text-glow font-serif">
+                            <span className="text-4xl font-light text-primary text-glow font-serif">
                                 {time.days}
                             </span>
-                            <span className="text-lg text-rose-gold/40">d</span>
+                            <span className="text-lg text-primary/40">d</span>
                         </div>
-                        <div className="w-full bg-white/5 h-1 mt-3 rounded-full overflow-hidden">
+                        <div className="w-full bg-primary/5 h-1 mt-3 rounded-full overflow-hidden">
                             <motion.div
-                                className="bg-rose-gold h-full shadow-[0_0_10px_rgba(201,160,160,0.6)]"
+                                className="bg-primary h-full shadow-[0_0_10px_rgba(var(--primary),0.6)]"
                                 initial={{ width: 0 }}
                                 animate={{
                                     width: `${Math.max(5, 100 - (time.days / 365) * 100)}%`,
@@ -439,7 +440,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
                                 transition={{ duration: 1, delay: 0.3 * index }}
                             />
                         </div>
-                        <p className="text-xs text-white/30 mt-2 text-right">
+                        <p className="text-xs text-muted-foreground mt-2 text-right">
                             {time.days < 7 ? "Chuẩn bị nhen!" : time.days < 30 ? "Đang đến gần!" : time.days < 60 ? "Sắp tới" : time.days < 90 ? "Đợi xíu" : "Còn lâu á"}
                         </p>
                     </div>
@@ -447,7 +448,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             </div>
 
             {isFeature && event.description && (
-                <p className="text-white/30 italic font-light font-serif mt-4 relative z-10">
+                <p className="text-muted-foreground italic font-light font-serif mt-4 relative z-10">
                     &ldquo;{event.description}&rdquo;
                 </p>
             )}
@@ -559,18 +560,18 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                 animate={{ opacity: 1, y: 0 }}
             >
                 <div>
-                    <div className="text-rose-gold text-lg italic font-serif mb-1 min-h-7">
+                    <div className="text-primary text-lg italic font-serif mb-1 min-h-7">
                         <DynamicGreeting onEdit={() => setIsGreetingConfigOpen(true)} />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-light text-white">
+                    <h1 className="text-4xl md:text-5xl font-light text-foreground">
                         Sự kiện sắp tới
                     </h1>
                 </div>
                 <div className="text-right hidden md:block">
-                    <p className="text-3xl font-light text-rose-gold/80 font-serif">
+                    <p className="text-3xl font-light text-primary/80 font-serif">
                         {todayDateString}
                     </p>
-                    <p className="text-sm text-white/30 uppercase tracking-widest">
+                    <p className="text-sm text-muted-foreground uppercase tracking-widest">
                         Hôm nay
                     </p>
                 </div>
@@ -583,28 +584,28 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
             >
-                <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-                    <div className="bg-rose-gold/10 p-2 rounded-lg">
-                        <CalendarHeart className="w-5 h-5 text-rose-gold" />
+                <div className="glass-card rounded-xl p-4 flex items-center gap-3 border border-border bg-card/80">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                        <CalendarHeart className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <p className="text-xs text-white/40 uppercase tracking-wider">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
                             Đang diễn ra
                         </p>
-                        <p className="text-xl font-medium text-white">
+                        <p className="text-xl font-medium text-foreground">
                             {processedEvents.length} Sự kiện
                         </p>
                     </div>
                 </div>
-                <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-                    <div className="bg-rose-gold/10 p-2 rounded-lg">
-                        <Heart className="w-5 h-5 text-rose-gold" />
+                <div className="glass-card rounded-xl p-4 flex items-center gap-3 border border-border bg-card/80">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                        <Heart className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <p className="text-xs text-white/40 uppercase tracking-wider">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
                             Tiếp theo
                         </p>
-                        <p className="text-xl font-medium text-white">
+                        <p className="text-xl font-medium text-foreground">
                             {processedEvents[0]?.title || "—"}
                         </p>
                     </div>
@@ -626,21 +627,22 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
 
 
                 {/* Add New Card */}
+                {/* Add New Card */}
                 <motion.button
                     onClick={openNew}
-                    className="group border-2 border-dashed border-rose-gold/15 rounded-2xl p-6 flex flex-col justify-center items-center gap-4 hover:border-rose-gold/40 hover:bg-rose-gold/5 transition-all duration-300 min-h-[260px]"
+                    className="group border-2 border-dashed border-primary/15 rounded-2xl p-6 flex flex-col justify-center items-center gap-4 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 min-h-[260px]"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                 >
-                    <div className="h-16 w-16 rounded-full bg-rose-gold/10 flex items-center justify-center group-hover:bg-rose-gold group-hover:shadow-[0_0_20px_rgba(201,160,160,0.5)] transition-all duration-300">
-                        <Plus className="w-7 h-7 text-rose-gold group-hover:text-background transition-colors" />
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:shadow-[0_0_20px_rgba(var(--primary),0.5)] transition-all duration-300">
+                        <Plus className="w-7 h-7 text-primary group-hover:text-background transition-colors" />
                     </div>
                     <div className="text-center">
-                        <h3 className="text-lg font-light text-rose-gold font-serif">
+                        <h3 className="text-lg font-light text-primary font-serif">
                             Thêm cột mốc mới
                         </h3>
-                        <p className="text-sm text-white/30 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             Tạo kỷ niệm mới để cùng mong chờ
                         </p>
                     </div>
@@ -648,49 +650,49 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
             </div>
             {/* Add/Edit Dialog */}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md">
+                <DialogContent className="bg-surface border-border text-foreground max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="text-center font-serif italic text-2xl text-rose-gold">
+                        <DialogTitle className="text-center font-serif italic text-2xl text-primary">
                             {editingCountdown?.id ? "Chỉnh sửa cột mốc" : "Thêm cột mốc"}
                         </DialogTitle>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <label className="text-sm text-white/50">Tên</label>
+                            <label className="text-sm text-muted-foreground">Tên</label>
                             <Input
                                 value={editingCountdown?.title || ""}
                                 onChange={(e) =>
                                     setEditingCountdown((prev) => prev ? ({ ...prev, title: e.target.value }) : null)
                                 }
                                 placeholder="Ví dụ: Kỷ niệm sinh nhật"
-                                className="bg-white/5 border-white/10 text-white"
+                                className="bg-muted border-primary/10 text-foreground"
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm text-white/50">Ngày</label>
+                                <label className="text-sm text-muted-foreground">Ngày</label>
                                 <Input
                                     type="date"
                                     value={editingCountdown?.date || ""}
                                     onChange={(e) =>
                                         setEditingCountdown((prev) => prev ? ({ ...prev, date: e.target.value }) : null)
                                     }
-                                    className="bg-white/5 border-white/10 text-white"
+                                    className="bg-muted border-primary/10 text-foreground"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm text-white/50">Loại</label>
+                                <label className="text-sm text-muted-foreground">Loại</label>
                                 <select
                                     value={editingCountdown?.type || "khác"}
                                     onChange={(e) =>
                                         setEditingCountdown((prev) => prev ? ({ ...prev, type: e.target.value as CountdownEvent["type"] }) : null)
                                     }
-                                    className="w-full h-10 rounded-md bg-white/5 border border-white/10 text-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-gold/50"
+                                    className="w-full h-10 rounded-md bg-muted border border-primary/10 text-foreground px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                 >
                                     {TYPES.map((t) => (
-                                        <option key={t} value={t} className="bg-surface">
+                                        <option key={t} value={t} className="bg-surface text-foreground">
                                             {t.charAt(0).toUpperCase() + t.slice(1)}
                                         </option>
                                     ))}
@@ -699,7 +701,7 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm text-white/50">Icon</label>
+                            <label className="text-sm text-muted-foreground">Icon</label>
                             <div className="flex flex-wrap gap-2">
                                 {ICONS.map(({ name, icon: Icon }) => (
                                     <button
@@ -710,8 +712,8 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                                         className={cn(
                                             "p-2 rounded-lg transition-all",
                                             editingCountdown?.icon === name
-                                                ? "bg-rose-gold text-background shadow-lg scale-110"
-                                                : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                                                ? "bg-primary text-primary-foreground shadow-lg scale-110"
+                                                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                         )}
                                     >
                                         <Icon className="w-5 h-5" />
@@ -721,20 +723,20 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                         </div>
 
                         <div className="space-y-4">
-                            <label className="text-sm text-white/50">Mô tả (Tùy chọn)</label>
+                            <label className="text-sm text-muted-foreground">Mô tả (Tùy chọn)</label>
                             <Input
                                 value={editingCountdown?.description || ""}
                                 onChange={(e) =>
                                     setEditingCountdown((prev) => prev ? ({ ...prev, description: e.target.value }) : null)
                                 }
                                 placeholder="Mô tả..."
-                                className="bg-white/5 border-white/10 text-white"
+                                className="bg-muted border-primary/10 text-foreground"
                             />
                         </div>
 
                         <Button
                             onClick={handleSave}
-                            className="w-full bg-rose-gold hover:bg-rose-gold-dark text-background mt-4"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-4"
                         >
                             <Save className="w-4 h-4 mr-2" />
                             Lưu cột mốc
@@ -745,13 +747,13 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-sm">
+                <DialogContent className="bg-surface border-border text-foreground max-w-sm">
                     <DialogHeader>
                         <DialogTitle className="text-center font-serif italic text-xl">
                             Xóa cột mốc
                         </DialogTitle>
                     </DialogHeader>
-                    <p className="text-center text-white/70 py-4">
+                    <p className="text-center text-muted-foreground py-4">
                         Bạn có chắc chắn muốn xóa cột mốc này?
                         <br />
                         Hành động này không thể được hoàn tác.
@@ -760,14 +762,14 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                         <Button
                             variant="ghost"
                             onClick={() => setDeleteId(null)}
-                            className="hover:bg-white/10 hover:text-white"
+                            className="hover:bg-muted"
                         >
                             Hủy
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
-                            className="bg-red-500/80 hover:bg-red-500"
+                            className="bg-destructive hover:bg-destructive/90"
                         >
                             Xóa
                         </Button>

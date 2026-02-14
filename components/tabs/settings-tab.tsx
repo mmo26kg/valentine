@@ -57,8 +57,8 @@ export function SettingsTab() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1 className="text-4xl font-light text-white">Settings</h1>
-                <p className="text-lg text-rose-gold/50 italic font-serif mt-2">
+                <h1 className="text-4xl font-light text-foreground">Settings</h1>
+                <p className="text-lg text-primary/50 italic font-serif mt-2">
                     Manage your shared space & preferences
                 </p>
             </motion.div>
@@ -69,36 +69,36 @@ export function SettingsTab() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
             >
-                <h2 className="text-xl font-medium text-rose-gold tracking-wide mb-4 ml-1">
+                <h2 className="text-xl font-medium text-primary tracking-wide mb-4 ml-1">
                     Profile & Relationship
                 </h2>
-                <div className="glass-card rounded-xl overflow-hidden">
+                <div className="glass-card rounded-xl overflow-hidden border border-border bg-card/50">
                     {/* Avatars */}
-                    <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 hover:bg-surface-hover transition-colors">
+                    <div className="p-6 border-b border-border flex flex-col sm:flex-row items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <div className="flex -space-x-4">
-                                    <div className="w-14 h-14 rounded-full bg-surface border-2 border-card flex items-center justify-center overflow-hidden">
-                                        <User className="w-6 h-6 text-rose-gold/60" />
+                                    <div className="w-14 h-14 rounded-full bg-background border-2 border-card flex items-center justify-center overflow-hidden">
+                                        <User className="w-6 h-6 text-primary/60" />
                                     </div>
-                                    <div className="w-14 h-14 rounded-full bg-surface border-2 border-card flex items-center justify-center overflow-hidden">
-                                        <User className="w-6 h-6 text-rose-gold-light/60" />
+                                    <div className="w-14 h-14 rounded-full bg-background border-2 border-card flex items-center justify-center overflow-hidden">
+                                        <User className="w-6 h-6 text-primary/60" />
                                     </div>
                                 </div>
-                                <button className="absolute -bottom-1 -right-2 bg-rose-gold text-background p-1.5 rounded-full shadow-md hover:bg-rose-gold-dark transition-colors">
+                                <button className="absolute -bottom-1 -right-2 bg-primary text-primary-foreground p-1.5 rounded-full shadow-md hover:bg-primary/90 transition-colors">
                                     <Pencil className="w-3 h-3" />
                                 </button>
                             </div>
                             <div>
-                                <h3 className="text-lg font-medium text-white">Your Avatars</h3>
-                                <p className="text-sm text-white/40">
+                                <h3 className="text-lg font-medium text-foreground">Your Avatars</h3>
+                                <p className="text-sm text-muted-foreground">
                                     Update how you appear to each other
                                 </p>
                             </div>
                         </div>
                         <Button
                             variant="outline"
-                            className="border-rose-gold/20 text-rose-gold hover:bg-rose-gold/10"
+                            className="border-primary/20 text-primary hover:bg-primary/10"
                         >
                             <ImageIcon className="w-4 h-4 mr-2" />
                             Manage Photos
@@ -106,16 +106,16 @@ export function SettingsTab() {
                     </div>
 
                     {/* Anniversary Date */}
-                    <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:bg-surface-hover transition-colors">
+                    <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-rose-gold/10">
-                                <Heart className="w-5 h-5 text-rose-gold" />
+                            <div className="p-3 rounded-full bg-primary/10">
+                                <Heart className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-medium text-white">
+                                <h3 className="text-lg font-medium text-foreground">
                                     Anniversary Date
                                 </h3>
-                                <p className="text-sm text-white/40">
+                                <p className="text-sm text-muted-foreground">
                                     Used for countdowns & milestones
                                 </p>
                             </div>
@@ -124,7 +124,7 @@ export function SettingsTab() {
                             type="date"
                             value={startDate}
                             onChange={(e) => onUpdateStartDate(e.target.value)}
-                            className="w-40 bg-transparent border-white/10 text-white focus-visible:ring-rose-gold/30 cursor-pointer"
+                            className="w-40 bg-transparent border-input text-foreground focus-visible:ring-primary/30 cursor-pointer"
                         />
                     </div>
                 </div>
@@ -136,49 +136,49 @@ export function SettingsTab() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                <h2 className="text-xl font-medium text-rose-gold tracking-wide mb-4 ml-1">
+                <h2 className="text-xl font-medium text-primary tracking-wide mb-4 ml-1">
                     Account Security
                 </h2>
-                <div className="glass-card rounded-xl overflow-hidden">
+                <div className="glass-card rounded-xl overflow-hidden border border-border bg-card/50">
                     {/* Email (decorative) */}
-                    <div className="p-6 border-b border-white/5 flex items-center justify-between hover:bg-surface-hover transition-colors">
+                    <div className="p-6 border-b border-border flex items-center justify-between hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-full bg-rose-gold/10">
-                                <Mail className="w-5 h-5 text-rose-gold" />
+                            <div className="p-3 rounded-full bg-primary/10">
+                                <Mail className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-medium text-white">
+                                <h3 className="text-lg font-medium text-foreground">
                                     Email Address
                                 </h3>
-                                <p className="text-sm text-white/40">love@example.com</p>
+                                <p className="text-sm text-muted-foreground">love@example.com</p>
                             </div>
                         </div>
-                        <span className="text-xs px-2 py-1 rounded bg-white/10 text-white/50">
+                        <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">
                             Verified
                         </span>
                     </div>
 
                     {/* Password */}
                     <div
-                        className="p-6 hover:bg-surface-hover transition-colors cursor-pointer group"
+                        className="p-6 hover:bg-muted/50 transition-colors cursor-pointer group"
                         onClick={() => setShowPasswordChange(!showPasswordChange)}
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-full bg-rose-gold/10">
-                                    <Lock className="w-5 h-5 text-rose-gold" />
+                                <div className="p-3 rounded-full bg-primary/10">
+                                    <Lock className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-medium text-white group-hover:text-rose-gold transition-colors">
+                                    <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
                                         Change Password
                                     </h3>
-                                    <p className="text-sm text-white/40">
+                                    <p className="text-sm text-muted-foreground">
                                         Current: {password.replace(/./g, "•")}
                                     </p>
                                 </div>
                             </div>
                             <ChevronRight
-                                className={`w-5 h-5 text-white/20 transition-transform ${showPasswordChange ? "rotate-90" : ""
+                                className={`w-5 h-5 text-muted-foreground transition-transform ${showPasswordChange ? "rotate-90" : ""
                                     }`}
                             />
                         </div>
@@ -195,19 +195,19 @@ export function SettingsTab() {
                                     placeholder="New password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="bg-background border-rose-gold/10 text-white placeholder:text-white/20"
+                                    className="bg-background border-primary/10 text-foreground placeholder:text-muted-foreground"
                                 />
                                 <Input
                                     type="password"
                                     placeholder="Confirm password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="bg-background border-rose-gold/10 text-white placeholder:text-white/20"
+                                    className="bg-background border-primary/10 text-foreground placeholder:text-muted-foreground"
                                 />
                                 <Button
                                     onClick={handleSavePassword}
                                     disabled={!newPassword || newPassword !== confirmPassword}
-                                    className="bg-rose-gold hover:bg-rose-gold-dark text-background disabled:opacity-30"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-30"
                                 >
                                     <Save className="w-4 h-4 mr-2" />
                                     Lưu mật khẩu mới
@@ -224,30 +224,30 @@ export function SettingsTab() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
             >
-                <h2 className="text-xl font-medium text-rose-gold tracking-wide mb-4 ml-1">
+                <h2 className="text-xl font-medium text-primary tracking-wide mb-4 ml-1">
                     Event Management
                 </h2>
-                <div className="glass-card rounded-xl overflow-hidden">
+                <div className="glass-card rounded-xl overflow-hidden border border-border bg-card/50">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <div className="p-6 flex items-center justify-between hover:bg-surface-hover transition-colors cursor-pointer group">
+                            <div className="p-6 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer group">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-full bg-rose-gold/10">
-                                        <Calendar className="w-5 h-5 text-rose-gold" />
+                                    <div className="p-3 rounded-full bg-primary/10">
+                                        <Calendar className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-medium text-white group-hover:text-rose-gold transition-colors">
+                                        <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
                                             Manage Special Events
                                         </h3>
-                                        <p className="text-sm text-white/40">
+                                        <p className="text-sm text-muted-foreground">
                                             Add or edit upcoming events & celebrations
                                         </p>
                                     </div>
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/60 transition-colors" />
+                                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                             </div>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl bg-surface border-rose-gold/10 text-white max-h-[85vh] overflow-y-auto">
+                        <DialogContent className="max-w-2xl bg-card border-border text-foreground max-h-[85vh] overflow-y-auto">
                             <EventManager />
                         </DialogContent>
                     </Dialog>
@@ -262,10 +262,10 @@ export function SettingsTab() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
             >
-                <h2 className="text-xl font-medium text-rose-gold tracking-wide mb-4 ml-1">
+                <h2 className="text-xl font-medium text-primary tracking-wide mb-4 ml-1">
                     Notifications
                 </h2>
-                <div className="glass-card rounded-xl overflow-hidden divide-y divide-white/5">
+                <div className="glass-card rounded-xl overflow-hidden divide-y divide-border border border-border bg-card/50">
                     {[
                         {
                             key: "daily" as const,
@@ -285,18 +285,18 @@ export function SettingsTab() {
                     ].map(({ key, title, desc }) => (
                         <div
                             key={key}
-                            className="p-6 flex items-center justify-between gap-4 hover:bg-surface-hover transition-colors"
+                            className="p-6 flex items-center justify-between gap-4 hover:bg-muted/50 transition-colors"
                         >
                             <div className="pr-4">
-                                <h3 className="text-lg font-medium text-white">{title}</h3>
-                                <p className="text-sm text-white/40 mt-1">{desc}</p>
+                                <h3 className="text-lg font-medium text-foreground">{title}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">{desc}</p>
                             </div>
                             <Switch
                                 checked={notifications[key]}
                                 onCheckedChange={(v) =>
                                     setNotifications((n) => ({ ...n, [key]: v }))
                                 }
-                                className="data-[state=checked]:bg-rose-gold"
+                                className="data-[state=checked]:bg-primary"
                             />
                         </div>
                     ))}
@@ -311,10 +311,10 @@ export function SettingsTab() {
                 transition={{ delay: 0.4 }}
             >
                 <div className="w-full flex justify-between items-center px-2 mt-4">
-                    <span className="text-xs text-white/20">Version 1.0.0</span>
+                    <span className="text-xs text-muted-foreground">Version 1.0.0</span>
                     <button
                         onClick={onLock}
-                        className="text-red-400 hover:text-red-300 text-sm flex items-center gap-1 transition-colors"
+                        className="text-destructive hover:text-destructive/80 text-sm flex items-center gap-1 transition-colors"
                     >
                         <LogOut className="w-4 h-4" />
                         Log Out

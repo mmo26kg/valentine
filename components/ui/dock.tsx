@@ -103,7 +103,9 @@ function Dock({
             <motion.div
                 aria-label="Application dock"
                 className={cn(
-                    "mx-auto flex w-fit gap-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 px-4",
+                    "mx-auto flex w-fit gap-4 rounded-2xl px-4",
+                    "bg-background/80 backdrop-blur-md border border-border shadow-lg",
+                    "dark:bg-white/5 dark:border-white/10",
                     className
                 )}
                 onMouseLeave={() => {

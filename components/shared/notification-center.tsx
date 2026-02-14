@@ -43,7 +43,7 @@ export function NotificationCenter({ onNavigate }: NotificationCenterProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative text-white/70 hover:text-rose-gold transition-colors">
+                <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-rose-gold transition-colors">
                     <Bell className="w-5 h-5" />
                     {unreadCount > 0 && (
                         <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 bg-red-500 border-none text-[10px]">
