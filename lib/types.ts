@@ -99,3 +99,11 @@ export interface AppNotification {
     notification_key?: string;
     created_at: string;
 }
+
+export interface Greeting {
+    id: string;
+    content: string;
+    time_of_day: "morning" | "afternoon" | "evening" | "night";
+    author_id: "him" | "her";
+    created_at?: string;
+}

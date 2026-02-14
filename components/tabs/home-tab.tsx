@@ -15,34 +15,102 @@ import { Textarea } from "@/components/ui/textarea";
 import { differenceInDays, format } from "date-fns";
 import { useUpload } from "@/hooks/use-upload";
 import { getVietnamDate } from "@/lib/date-utils";
+import { useValentine } from "@/providers/valentine-provider";
+import { usePostComments } from "@/lib/store"; // Added by user instruction
+import { EventManager } from "@/components/events/event-manager"; // Added by user instruction
 
 import {
     Dialog,
     DialogContent,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { useValentineAuth, useValentineData } from "@/providers/valentine-provider";
+import React, { memo } from "react";
 
-interface HomeTabProps {
-    startDate: string;
-    currentRole: "ảnh" | "ẻm";
-    partnerName: string;
-    myCaption: string;
-    partnerCaption: string;
-    hasWrittenToday: boolean;
-    captions: Record<string, Record<string, { content: string; media_url?: string | null }>>;
-    onSubmitCaption: (content: string, mediaUrl?: string | null) => void;
-}
+const HistoryItem = memo(({
+    date,
+    myNote,
+    partnerNote,
+    partnerName
+}: {
+    date: string,
+    myNote: any,
+    partnerNote: any,
+    partnerName: string
+}) => {
+    return (
+        <motion.div
+            className="glass-card rounded-xl p-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+        >
+            <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-4">
+                <span className="text-rose-gold font-serif">
+                    {format(new Date(date), "dd/MM/yyyy")}
+                </span>
+                <span className="text-xs text-white/30 uppercase tracking-widest">
+                    Nhật ký
+                </span>
+            </div>
 
-export function HomeTab({
-    startDate,
-    currentRole,
-    partnerName,
-    myCaption,
-    partnerCaption,
-    hasWrittenToday,
-    captions,
-    onSubmitCaption,
-}: HomeTabProps) {
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <p className="text-xs text-rose-gold/50 uppercase tracking-widest">Bạn</p>
+                    <p className="text-white/80 font-serif italic text-sm leading-relaxed">
+                        {myNote?.content}
+                    </p>
+                    {myNote?.media_url && (
+                        <ImageWithZoom
+                            src={myNote.media_url}
+                            alt="Your memory"
+                        />
+                    )}
+                </div>
+
+                <div className="space-y-2 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
+                    <p className="text-xs text-rose-gold/50 uppercase tracking-widest">{partnerName}</p>
+                    {partnerNote ? (
+                        <>
+                            <p className="text-white/80 font-serif italic text-sm leading-relaxed">
+                                {partnerNote.content}
+                            </p>
+                            {partnerNote.media_url && (
+                                <ImageWithZoom
+                                    src={partnerNote.media_url}
+                                    alt="Partner memory"
+                                />
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-white/20 italic text-sm">
+                            Không có nhật ký ngày này.
+                        </p>
+                    )}
+                </div>
+            </div>
+        </motion.div>
+    );
+});
+
+HistoryItem.displayName = "HistoryItem";
+
+export function HomeTab() {
+    const {
+        role: currentRole,
+        partnerName,
+        profiles
+    } = useValentineAuth();
+
+    const {
+        startDate,
+        myCaption,
+        partnerCaption,
+        hasWrittenToday,
+        captions,
+        onSubmitCaption,
+    } = useValentineData();
+
     const [captionText, setCaptionText] = useState("");
     const [uploadedMedia, setUploadedMedia] = useState<string | null>(null);
     const { uploadFile, isUploading } = useUpload();
@@ -137,6 +205,8 @@ export function HomeTab({
                             src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_1364.jpg"
                             alt="Couple"
                             fill
+                            priority
+                            sizes="(max-width: 768px) 100vw, 400px"
                             className="object-cover opacity-90"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
@@ -321,65 +391,14 @@ export function HomeTab({
                             const partnerRoleKey = currentRole === "ảnh" ? "ẻm" : "ảnh";
                             const partnerNote = captions[date]?.[partnerRoleKey];
 
-                            // Check if partner wrote note. If not, we might ideally hide it or show "Not shared".
-                            // But usually if I wrote, I want to see my note.
-                            // If partner didn't write, we can't show their note.
-
                             return (
-                                <motion.div
+                                <HistoryItem
                                     key={date}
-                                    className="glass-card rounded-xl p-6"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    whileInView={{ opacity: 1, scale: 1 }}
-                                    viewport={{ once: true }}
-                                >
-                                    <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-4">
-                                        <span className="text-rose-gold font-serif">
-                                            {format(new Date(date), "dd/MM/yyyy")}
-                                        </span>
-                                        <span className="text-xs text-white/30 uppercase tracking-widest">
-                                            Nhật ký
-                                        </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* My Note */}
-                                        <div className="space-y-2">
-                                            <p className="text-xs text-rose-gold/50 uppercase tracking-widest">Bạn</p>
-                                            <p className="text-white/80 font-serif italic text-sm leading-relaxed">
-                                                {myNote?.content}
-                                            </p>
-                                            {myNote?.media_url && (
-                                                <ImageWithZoom
-                                                    src={myNote.media_url}
-                                                    alt="Your memory"
-                                                />
-                                            )}
-                                        </div>
-
-                                        {/* Partner Note */}
-                                        <div className="space-y-2 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
-                                            <p className="text-xs text-rose-gold/50 uppercase tracking-widest">{partnerName}</p>
-                                            {partnerNote ? (
-                                                <>
-                                                    <p className="text-white/80 font-serif italic text-sm leading-relaxed">
-                                                        {partnerNote.content}
-                                                    </p>
-                                                    {partnerNote.media_url && (
-                                                        <ImageWithZoom
-                                                            src={partnerNote.media_url}
-                                                            alt="Partner memory"
-                                                        />
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <p className="text-white/20 italic text-sm">
-                                                    Không có nhật ký ngày này.
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                    date={date}
+                                    myNote={myNote}
+                                    partnerNote={partnerNote}
+                                    partnerName={partnerName}
+                                />
                             );
                         })}
                     </div>

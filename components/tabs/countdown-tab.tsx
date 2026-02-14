@@ -35,7 +35,7 @@ import { differenceInDays, differenceInHours, differenceInMinutes, format, start
 // import { DEFAULT_COUNTDOWN_EVENTS } from "@/lib/constants";
 import { getVietnamDate, formatVietnamDate } from "@/lib/date-utils";
 import type { CountdownEvent } from "@/lib/types";
-import { useCountdowns, useGreetings, useCurrentUser } from "@/lib/store";
+import { useValentine } from "@/providers/valentine-provider";
 import { DEFAULT_GREETINGS } from "@/lib/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLongPress } from "@/hooks/use-long-press";
@@ -106,15 +106,14 @@ function GreetingItem({ greeting, onDelete }: { greeting: any, onDelete: (id: st
     );
 }
 
-function GreetingConfigDialog({
+export function GreetingConfigDialog({
     open,
     onOpenChange
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void
 }) {
-    const { greetings, addGreeting, deleteGreeting } = useGreetings();
-    const { role } = useCurrentUser(); // "ảnh" or "ẻm"
+    const { greetings, addGreeting, deleteGreeting, role } = useValentine();
     const myAuthorId = role === "ảnh" ? "him" : "her";
 
     // Greetings I have written
@@ -192,8 +191,7 @@ function GreetingConfigDialog({
 
 function DynamicGreeting({ onEdit }: { onEdit: () => void }) {
     const [greeting, setGreeting] = useState("");
-    const { greetings } = useGreetings();
-    const { role } = useCurrentUser();
+    const { greetings, role } = useValentine();
     const partnerId = role === "ảnh" ? "her" : "him";
 
     useEffect(() => {
@@ -473,7 +471,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
 }
 
 export function CountdownTab() {
-    const { countdowns, addCountdown, updateCountdown, deleteCountdown } = useCountdowns();
+    const { countdowns, addCountdown, updateCountdown, deleteCountdown } = useValentine();
     const events = countdowns.length > 0 ? countdowns : [];
     const [, setTick] = useState(0);
     const now = getVietnamDate();

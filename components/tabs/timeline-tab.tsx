@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus,
@@ -22,6 +22,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useValentineAuth, useValentineData } from "@/providers/valentine-provider";
 import { Label } from "@/components/ui/label";
 import {
     Dialog,
@@ -40,7 +41,7 @@ import {
 import { format } from "date-fns";
 import { useUpload } from "@/hooks/use-upload";
 import { getVietnamDate, formatVietnamDate } from "@/lib/date-utils";
-import { usePostComments, useProfiles } from "@/lib/store";
+import { usePostComments } from "@/lib/store";
 import { Comment, Profile } from "@/lib/types";
 
 interface TimelinePost {
@@ -57,32 +58,19 @@ interface TimelinePost {
     reactions?: Record<string, string>;
 }
 
-interface TimelineTabProps {
-    posts: TimelinePost[];
-    currentRole: "ảnh" | "ẻm";
-    onAddPost: (post: Omit<TimelinePost, "id" | "created_at">) => void;
-    onDeletePost?: (id: string, mediaUrls: string[]) => void;
-    onUpdatePost?: (id: string, updates: Partial<TimelinePost>) => void;
-    onTogglePostReaction?: (postId: string, userId: string, emoji: string) => void;
-}
-
-function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
+const CommentItem = memo(({ comment, currentRole, profiles, onDelete, onReact }: {
     comment: Comment,
     currentRole: "ảnh" | "ẻm",
     profiles: Record<string, Profile>,
     onDelete: (id: string) => void,
     onReact: (id: string, userId: string, emoji: string) => void
-}) {
-    // Map user_id to profile role ('him'/'her')
-    const roleMap: Record<string, string> = { "him": "ảnh", "her": "ẻm", "ảnh": "him", "ẻm": "her" };
-    // comment.user_id is 'him' or 'her' usually
+}) => {
     const isOwner = comment.user_id === (currentRole === "ảnh" ? "him" : "her");
 
     const userProfile = profiles[comment.user_id];
     const avatar = userProfile?.avatar_url || "/images/default-avatar.png";
     const name = userProfile?.name || (comment.user_id === "him" ? "Anh" : "Em");
 
-    // Check reaction
     const myId = currentRole === "ảnh" ? "him" : "her";
     const hasReacted = comment.reactions?.[myId];
 
@@ -100,7 +88,6 @@ function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
                     <p className="text-white/80 leading-relaxed whitespace-pre-wrap wrap-break-word">{comment.content}</p>
                 </div>
 
-                {/* Reactions & Actions */}
                 <div className="flex items-center gap-4 text-xs text-white/40 pl-2">
                     <button
                         onClick={() => onReact(comment.id, myId, "❤️")}
@@ -123,9 +110,9 @@ function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
             </div>
         </div>
     );
-}
+});
 
-// --- Sub-components ---
+CommentItem.displayName = "CommentItem";
 
 function PostDetailView({
     post,
@@ -148,8 +135,7 @@ function PostDetailView({
     const [currentImageIndex, setCurrentImageIndex] = useState(initialIndex || 0);
 
     const myId = currentRole === "ảnh" ? "him" : "her";
-    const hasReacted = post.reactions?.[myId]; // Use simplified check or specific emoji checking
-    // If strict emoji check: const hasReacted = post.reactions?.[myId] === "❤️";
+    const hasReacted = post.reactions?.[myId];
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -174,7 +160,6 @@ function PostDetailView({
 
     return (
         <div className="flex flex-col md:flex-row h-full w-full bg-surface text-white overflow-hidden rounded-xl">
-            {/* Left: Media (or Top on mobile) */}
             <div className={`relative bg-black flex items-center justify-center ${hasMedia ? "w-full md:w-3/5 h-1/2 md:h-full" : "hidden"}`}>
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -195,7 +180,6 @@ function PostDetailView({
                     </motion.div>
                 </AnimatePresence>
 
-                {/* Navigation Arrows */}
                 {(post.media_urls?.length || 0) > 1 && (
                     <>
                         <button
@@ -213,7 +197,6 @@ function PostDetailView({
                     </>
                 )}
 
-                {/* Thumbnails Overlay (Bottom of media) */}
                 {(post.media_urls?.length || 0) > 1 && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-full px-4 no-scrollbar z-10">
                         {post.media_urls?.map((url, idx) => (
@@ -230,16 +213,13 @@ function PostDetailView({
                 )}
             </div>
 
-            {/* Right: Info & Comments (or Bottom on mobile) */}
             <div className={`flex flex-col h-full bg-surface border-l border-white/5 ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>
-                {/* Header Info */}
                 <div className="px-4 py-2 border-b border-white/5 shrink-0">
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-xl font-serif italic text-white mb-1">{post.title}</h2>
                             <p className="text-rose-gold/50 text-xs uppercase tracking-widest">{format(new Date(post.event_date), "d MMMM, yyyy")}</p>
                         </div>
-
                     </div>
                 </div>
                 {post.location && (
@@ -252,7 +232,6 @@ function PostDetailView({
                     {post.content}
                 </p>
 
-                {/* Reactions */}
                 <div className="px-4 py-2 border-t border-white/5 flex items-center gap-4">
                     <button
                         onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
@@ -271,7 +250,6 @@ function PostDetailView({
                     </button>
                 </div>
 
-                {/* Comments List (Scrollable) */}
                 <div className="flex-1 overflow-y-auto px-4 space-y-4 custom-scrollbar">
                     {comments.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-white/20">
@@ -292,7 +270,6 @@ function PostDetailView({
                     )}
                 </div>
 
-                {/* Input Area (Sticky Bottom) */}
                 <div className="p-4 border-t border-white/5 bg-surface shrink-0">
                     <div className="flex gap-2">
                         <div className="relative flex-1">
@@ -317,7 +294,6 @@ function PostDetailView({
                 </div>
             </div>
         </div>
-
     );
 }
 
@@ -325,7 +301,6 @@ function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index:
     const count = mediaUrls.length;
     if (count === 0) return null;
 
-    // 1 Image
     if (count === 1) {
         return (
             <div
@@ -342,7 +317,6 @@ function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index:
         );
     }
 
-    // 2 Images
     if (count === 2) {
         return (
             <div className="grid grid-cols-2 gap-0.5 w-full aspect-video overflow-hidden">
@@ -360,7 +334,6 @@ function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index:
         );
     }
 
-    // 3 Images
     if (count === 3) {
         return (
             <div className="grid grid-cols-2 gap-0.5 w-full aspect-video overflow-hidden">
@@ -388,7 +361,6 @@ function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index:
         );
     }
 
-    // 4+ Images
     return (
         <div className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full aspect-video overflow-hidden">
             {mediaUrls.slice(0, 4).map((url, i) => (
@@ -410,7 +382,7 @@ function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index:
     );
 }
 
-function TimelinePostCard({
+const TimelinePostCard = memo(({
     post, currentRole, openGallery, handleEdit, handleDelete, profiles, onTogglePostReaction
 }: {
     post: TimelinePost,
@@ -420,17 +392,15 @@ function TimelinePostCard({
     handleDelete: (post: TimelinePost) => void,
     profiles: Record<string, Profile>,
     onTogglePostReaction: (postId: string, userId: string, emoji: string) => void
-}) {
+}) => {
     const { comments, addComment, toggleReaction, deleteComment } = usePostComments(post.id);
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Reaction state
     const myId = currentRole === "ảnh" ? "him" : "her";
     const hasReacted = post.reactions?.[myId];
 
-    // Limit displayed comments
     const VISIBLE_COMMENTS = 3;
     const displayedComments = comments.slice(0, VISIBLE_COMMENTS);
     const hasMoreComments = comments.length > VISIBLE_COMMENTS;
@@ -536,7 +506,6 @@ function TimelinePostCard({
                                         />
                                     ))}
 
-                                    {/* Show "View More" button if needed */}
                                     {hasMoreComments && (
                                         <button
                                             onClick={() => openGallery(post, 0)}
@@ -551,7 +520,6 @@ function TimelinePostCard({
                                     )}
                                 </div>
 
-                                {/* Mini Input Inline */}
                                 <div className="flex gap-2">
                                     <Input
                                         value={newComment}
@@ -576,21 +544,32 @@ function TimelinePostCard({
             </div>
         </div>
     );
-}
+});
 
-export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpdatePost, onTogglePostReaction }: TimelineTabProps) {
+TimelinePostCard.displayName = "TimelinePostCard";
+
+export function TimelineTab() {
+    const {
+        role: currentRole,
+        profiles
+    } = useValentineAuth();
+
+    const {
+        posts,
+        addPost: onAddPost,
+        deletePost: onDeletePost,
+        updatePost: onUpdatePost,
+        togglePostReaction: onTogglePostReaction,
+    } = useValentineData();
+
     const { uploadFile, isUploading: uploading } = useUpload();
-    const { profiles } = useProfiles();
     const [filterYear, setFilterYear] = useState<string | null>(null);
     const [addOpen, setAddOpen] = useState(false);
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
-    // Gallery / Detail State
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<TimelinePost | null>(null);
     const [selectedPostIndex, setSelectedPostIndex] = useState(0);
-    // currentImageIndex is handled inside PostDetailView now usually, but we keep it if we want init state
-    // Actually PostDetailView handles its own index state to be self-contained for the view
 
     const [newPost, setNewPost] = useState<{
         title: string;
@@ -608,28 +587,24 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
         media_urls: [],
     });
 
-    // Handle Delete
-    const handleDelete = (post: TimelinePost) => {
+    const handleDelete = useCallback((post: TimelinePost) => {
         if (confirm("Bạn có chắc muốn xóa kỷ niệm này không? Hành động này không thể hoàn tác.")) {
             const urlsToDelete = post.media_urls || (post.media_url ? [post.media_url] : []);
             onDeletePost?.(post.id, urlsToDelete);
         }
-    };
+    }, [onDeletePost]);
 
-    const openGallery = (post: TimelinePost, index: number = 0) => {
+    const openGallery = useCallback((post: TimelinePost, index: number = 0) => {
         setSelectedPost(post);
         setSelectedPostIndex(index);
         setGalleryOpen(true);
-    };
+    }, []);
 
-    // ... (rest of filtering logic) => SAME 
-    // Get unique years
     const years = useMemo(() => {
         const yearSet = new Set(posts.map((p) => p.event_date.substring(0, 4)));
         return Array.from(yearSet).sort().reverse();
     }, [posts]);
 
-    // Filter posts
     const filtered = useMemo(() => {
         let result = [...posts];
         if (filterYear) result = result.filter((p) => p.event_date.startsWith(filterYear));
@@ -638,7 +613,6 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
         );
     }, [posts, filterYear]);
 
-    // Group by year for timeline markers
     const grouped = useMemo(() => {
         const map: Record<string, TimelinePost[]> = {};
         filtered.forEach((p) => {
@@ -666,7 +640,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
             onAddPost({
                 ...newPost,
                 user_id: currentRole,
-                media_url: newPost.media_urls[0] || null, // Backwards compatibility
+                media_url: newPost.media_urls[0] || null,
                 media_urls: newPost.media_urls,
             });
         }
@@ -700,9 +674,23 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
         setAddOpen(true);
     };
 
+    const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        for (let i = 0; i < files.length; i++) {
+            const url = await uploadFile(files[i]);
+            if (url) {
+                setNewPost(prev => ({
+                    ...prev,
+                    media_urls: [...prev.media_urls, url]
+                }));
+            }
+        }
+    };
+
     return (
-        <div className="space-y-8">
-            {/* Header */}
+        <div className="space-y-8 pb-20">
             <motion.div
                 className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -715,7 +703,6 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                     <h1 className="text-4xl font-serif italic text-white">Hành trình yêu</h1>
                 </div>
 
-                {/* Filters */}
                 <div className="flex flex-wrap gap-2">
                     {years.map((y) => (
                         <button
@@ -741,9 +728,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                 </div>
             </motion.div>
 
-            {/* Timeline */}
             <div className="relative">
-                {/* Center line */}
                 <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-[2px] bg-rose-gold/10 hidden md:block" />
 
                 {years.map((year) => {
@@ -752,7 +737,6 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
 
                     return (
                         <div key={year}>
-                            {/* Year Marker */}
                             <motion.div
                                 className="flex justify-center mb-8"
                                 initial={{ opacity: 0, scale: 0.8 }}
@@ -763,7 +747,6 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                                 </div>
                             </motion.div>
 
-                            {/* Posts */}
                             {yearPosts.map((post, i) => {
                                 const isLeft = i % 2 === 0;
                                 const d = new Date(post.event_date);
@@ -777,7 +760,6 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: i * 0.1 }}
                                     >
-                                        {/* Date side */}
                                         <div
                                             className={`flex-1 ${isLeft ? "md:text-right" : "md:text-left"
                                                 }`}
@@ -796,13 +778,9 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                                             )}
                                         </div>
 
-                                        {/* Center dot */}
-                                        <div className="hidden md:flex items-center justify-center">
-                                            <div className="w-4 h-4 rounded-full border-2 border-rose-gold/30 bg-background z-10" />
-                                        </div>
+                                        <div className="relative z-10 shrink-0 w-4 h-4 rounded-full bg-background border-2 border-rose-gold shadow-[0_0_10px_rgba(234,179,164,0.5)] hidden md:block" />
 
-                                        {/* Content side */}
-                                        <div className="flex-1">
+                                        <div className="flex-1 w-full">
                                             <TimelinePostCard
                                                 post={post}
                                                 currentRole={currentRole}
@@ -810,146 +788,130 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                                                 handleEdit={handleEdit}
                                                 handleDelete={handleDelete}
                                                 profiles={profiles}
-                                                onTogglePostReaction={onTogglePostReaction!}
+                                                onTogglePostReaction={onTogglePostReaction}
                                             />
                                         </div>
                                     </motion.div>
                                 );
                             })}
                         </div>
-                    )
+                    );
                 })}
             </div>
 
-            {/* Add/Edit Memory FAB */}
-            <Dialog open={addOpen} onOpenChange={(open) => {
-                if (!open) handleCloseDialog();
-                else setAddOpen(true);
-            }}>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
                 <DialogTrigger asChild>
-                    <motion.button
-                        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-rose-gold text-background shadow-lg shadow-rose-gold/20 flex items-center justify-center z-40 hover:scale-110 transition-transform"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                    <Button
+                        className="fixed bottom-24 right-8 h-14 w-14 rounded-full bg-rose-gold hover:bg-rose-gold/80 shadow-lg shadow-rose-gold/20 z-50 p-0"
                     >
-                        <Plus className="w-7 h-7" />
-                    </motion.button>
+                        <Plus className="w-6 h-6" />
+                    </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogContent className="bg-surface border-rose-gold/20 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-serif italic text-center text-white">
-                            {editingPostId ? "Chỉnh sửa kỷ niệm" : "Thêm kỷ niệm mới"}
+                        <DialogTitle className="font-serif italic text-2xl text-rose-gold">
+                            {editingPostId ? "Chỉnh sửa kỷ niệm" : "Lưu giữ khoảnh khắc"}
                         </DialogTitle>
-                        <p className="text-center text-rose-gold/50 font-serif text-sm">
-                            Lưu giữ khoảnh khắc này mãi mãi
-                        </p>
                     </DialogHeader>
 
-                    <div className="space-y-4 mt-4">
-                        {/* Upload area */}
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {(newPost.media_urls || []).map((url, index) => (
-                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden group border border-rose-gold/10">
-                                    <Image
-                                        src={url}
-                                        alt={`Upload ${index}`}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                    <button
-                                        onClick={() => setNewPost(p => ({
-                                            ...p,
-                                            media_urls: p.media_urls.filter((_, i) => i !== index)
-                                        }))}
-                                        className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </div>
-                            ))}
-                            <div className="relative border-2 border-dashed border-rose-gold/20 rounded-xl flex flex-col items-center justify-center p-4 hover:border-rose-gold/40 transition-colors aspect-square cursor-pointer group">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    className="absolute inset-0 opacity-0 cursor-pointer z-20"
-                                    onChange={async (e) => {
-                                        const files = Array.from(e.target.files || []);
-                                        if (files.length > 0) {
-                                            const uploadedUrls: string[] = [];
-                                            // Handle upload one by one for now
-                                            for (const file of files) {
-                                                const url = await uploadFile(file);
-                                                if (url) uploadedUrls.push(url);
-                                            }
-                                            setNewPost(p => ({ ...p, media_urls: [...p.media_urls, ...uploadedUrls] }));
-                                        }
-                                    }}
+                    <div className="space-y-6 py-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-xs uppercase tracking-widest text-white/40">Tiêu đề</Label>
+                                <Input
+                                    value={newPost.title}
+                                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                                    className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
+                                    placeholder="VD: Buổi hẹn đầu tiên"
                                 />
-                                {uploading ? (
-                                    <div className="animate-spin w-6 h-6 border-2 border-rose-gold border-t-transparent rounded-full" />
-                                ) : (
-                                    <Plus className="w-8 h-8 text-rose-gold/40 group-hover:text-rose-gold transition-colors" />
-                                )}
-                                <p className="text-xs text-rose-gold/40 mt-2">Thêm ảnh</p>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs uppercase tracking-widest text-white/40">Ngày</Label>
+                                <Input
+                                    type="date"
+                                    value={newPost.event_date}
+                                    onChange={(e) => setNewPost({ ...newPost, event_date: e.target.value })}
+                                    className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
+                                />
                             </div>
                         </div>
 
-                        <div>
-                            <Label className="text-white/60 mb-2">Tiêu đề</Label>
-                            <Input
-                                value={newPost.title}
-                                onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))}
-                                placeholder="Chuyện gì đã xảy ra?"
-                                className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30"
-                            />
-                        </div>
-
-                        <div>
-                            <Label className="text-white/60 mb-2">Ngày</Label>
-                            <Input
-                                type="date"
-                                value={newPost.event_date}
-                                onChange={(e) => setNewPost((p) => ({ ...p, event_date: e.target.value }))}
-                                className="bg-background border-rose-gold/10 text-white focus-visible:ring-rose-gold/30"
-                            />
-                        </div>
-
-                        <div>
-                            <Label className="text-white/60 mb-2">Chia sẻ suy nghĩ</Label>
-                            <Textarea
-                                value={newPost.content}
-                                onChange={(e) => setNewPost((p) => ({ ...p, content: e.target.value }))}
-                                placeholder="Điều gì làm khoảnh khắc này đặc biệt?"
-                                className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 min-h-[100px] focus-visible:ring-rose-gold/30 font-serif"
-                            />
-                        </div>
-
-                        <div>
-                            <Label className="text-white/60 mb-2">Địa điểm (tùy chọn)</Label>
+                        <div className="space-y-2">
+                            <Label className="text-xs uppercase tracking-widest text-white/40">Địa điểm</Label>
                             <Input
                                 value={newPost.location}
-                                onChange={(e) => setNewPost((p) => ({ ...p, location: e.target.value }))}
-                                placeholder="Ở đâu thế?"
-                                className="bg-background border-rose-gold/10 text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30"
+                                onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
+                                className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
+                                placeholder="VD: Đà Lạt, Việt Nam"
                             />
                         </div>
 
+                        <div className="space-y-2">
+                            <Label className="text-xs uppercase tracking-widest text-white/40">Nội dung</Label>
+                            <Textarea
+                                value={newPost.content}
+                                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                                className="bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 min-h-[120px]"
+                                placeholder="Hãy viết gì đó cho khoảnh khắc này..."
+                            />
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label className="text-xs uppercase tracking-widest text-white/40">Hình ảnh</Label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {newPost.media_urls.map((url, i) => (
+                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
+                                        <Image src={url} alt="Uploaded" fill className="object-cover" />
+                                        <button
+                                            onClick={() => setNewPost({
+                                                ...newPost,
+                                                media_urls: newPost.media_urls.filter((_, idx) => idx !== i)
+                                            })}
+                                            className="absolute top-1 right-1 bg-black/50 p-1 rounded-full text-white/70 hover:text-red-400"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-white/10 hover:border-rose-gold/30 transition-colors cursor-pointer bg-white/5 group">
+                                    <Camera className="w-6 h-6 text-white/20 group-hover:text-rose-gold/40 mb-2" />
+                                    <span className="text-[10px] text-white/20 group-hover:text-rose-gold/40 uppercase tracking-widest">
+                                        {uploading ? "Đang tải..." : "Thêm ảnh"}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleMediaUpload}
+                                        disabled={uploading}
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            variant="ghost"
+                            onClick={handleCloseDialog}
+                            className="text-white/40 hover:text-white hover:bg-white/5"
+                        >
+                            Hủy
+                        </Button>
                         <Button
                             onClick={handleSubmit}
-                            disabled={!newPost.title.trim() || !newPost.content.trim() || uploading}
-                            className="w-full bg-rose-gold hover:bg-rose-gold-dark text-background font-serif py-5 disabled:opacity-30"
+                            disabled={!newPost.title || !newPost.content || uploading}
+                            className="bg-rose-gold hover:bg-rose-gold/80"
                         >
-                            {uploading ? "Đang tải lên..." : (editingPostId ? "Lưu thay đổi" : "Đăng lên dòng thời gian")}
+                            {editingPostId ? "Cập nhật" : "Tạo kỷ niệm"}
                         </Button>
-                    </div>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Post Detail Dialog (Was Gallery) */}
             <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogContent className="!max-w-[95vw] !w-[1400px] !h-[90vh] p-0 bg-transparent border-none overflow-hidden flex items-center justify-center">
+                <DialogContent className="max-w-[95vw]! w-[1400px]! h-[90vh]! p-0 bg-transparent border-none">
                     {selectedPost && (
                         <PostDetailView
                             post={selectedPost}
@@ -957,7 +919,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                             profiles={profiles}
                             onClose={() => setGalleryOpen(false)}
                             initialIndex={selectedPostIndex}
-                            onTogglePostReaction={onTogglePostReaction!}
+                            onTogglePostReaction={onTogglePostReaction}
                         />
                     )}
                 </DialogContent>

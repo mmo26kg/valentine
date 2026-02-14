@@ -19,22 +19,18 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { EventManager } from "@/components/events/event-manager";
+import { useValentine } from "@/providers/valentine-provider";
 
-interface SettingsTabProps {
-    startDate: string;
-    onUpdateStartDate: (date: string) => void;
-    password: string;
-    onChangePassword: (newPassword: string) => void;
-    onLock: () => void;
-}
+export function SettingsTab() {
+    const {
+        startDate,
+        setStartDate: onUpdateStartDate,
+        myProfile,
+        onChangePassword,
+        lock: onLock
+    } = useValentine();
 
-export function SettingsTab({
-    startDate,
-    onUpdateStartDate,
-    password,
-    onChangePassword,
-    onLock,
-}: SettingsTabProps) {
+    const password = myProfile?.password || "19042025";
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPasswordChange, setShowPasswordChange] = useState(false);

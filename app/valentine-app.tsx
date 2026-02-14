@@ -5,39 +5,34 @@ import { SecretLockScreen } from "@/components/auth/secret-lock";
 import { LoveCaptcha } from "@/components/auth/love-captcha";
 import { EventScreen } from "@/components/auth/event-screen";
 import { MainApp } from "@/components/main-app";
-import {
-    useCurrentUser,
-    useUnlocked,
-    useStartDate,
-    useDailyCaptions,
-    useTimelinePosts,
-    useProfiles,
-} from "@/lib/store";
+import { ValentineProvider, useValentine } from "@/providers/valentine-provider";
 import { format } from "date-fns";
 import { SPECIAL_EVENTS } from "@/lib/constants";
 
 export default function ValentineApp() {
-    const { role, setRole } = useCurrentUser();
-    const { unlocked, captchaPassed, eventDismissed, unlock, passCaptcha, dismissEvent, lock } =
-        useUnlocked();
-    const { startDate, setStartDate } = useStartDate();
-    const { captions, setCaption, getCaption, hasWrittenToday } = useDailyCaptions();
-    const { profiles, updateProfile } = useProfiles();
-    const { posts, addPost, updatePost, deletePost, togglePostReaction } = useTimelinePosts();
+    return (
+        <ValentineProvider>
+            <ValentineAppContent />
+        </ValentineProvider>
+    );
+}
 
-    const todayStr = format(new Date(), "yyyy-MM-dd");
-    const partnerRole = role === "ảnh" ? "ẻm" : "ảnh";
-    const myCaptionObj = getCaption(todayStr, role);
-    const partnerCaptionObj = getCaption(todayStr, partnerRole);
-
-    const myCaptionContent = myCaptionObj?.content || "";
-    const partnerCaptionContent = partnerCaptionObj?.content || "";
-
-    // Map UI role to DB ID
-    const dbId = role === "ảnh" ? "him" : "her";
+function ValentineAppContent() {
+    const {
+        role,
+        setRole,
+        unlocked,
+        captchaPassed,
+        eventDismissed,
+        unlock,
+        passCaptcha,
+        dismissEvent,
+        lock,
+        myProfile,
+    } = useValentine();
+    const partnerRole = (role === "ảnh" ? "ẻm" : "ảnh") as "ảnh" | "ẻm";
 
     // Password logic: Use profile password, default to '19042025' if not set
-    const myProfile = profiles[dbId];
     const correctPassword = myProfile?.password || "19042025";
 
     // Step 1: Locked
@@ -82,27 +77,6 @@ export default function ValentineApp() {
 
     // Step 4: Main App
     return (
-        <MainApp
-            currentRole={role}
-            startDate={startDate}
-            password={myProfile?.password || "19042025"} // Pass user password logic
-            myCaption={myCaptionContent}
-            partnerCaption={partnerCaptionContent}
-            hasWrittenToday={hasWrittenToday(todayStr, role)}
-            captions={captions}
-            onSubmitCaption={(content, mediaUrl) => setCaption(todayStr, role, content, mediaUrl)}
-            posts={posts}
-            onAddPost={addPost}
-            onUpdatePost={updatePost}
-            onDeletePost={deletePost}
-            onUpdateStartDate={setStartDate}
-            onChangePassword={(newPass) => {
-                if (myProfile) {
-                    updateProfile({ ...myProfile, password: newPass });
-                }
-            }}
-            onLock={lock}
-            onTogglePostReaction={togglePostReaction}
-        />
+        <MainApp />
     );
 }

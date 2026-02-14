@@ -19,8 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-// import { SAMPLE_USERS } from "@/lib/constants";
-import { useLove, useProfiles, useLoveStats } from "@/lib/store";
+import { useLove, useLoveStats } from "@/lib/store";
+import { useValentine } from "@/providers/valentine-provider";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Profile } from "@/lib/types";
 import { FallingHearts } from "../shared/falling-hearts";
@@ -32,15 +32,9 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface ProfileTabProps {
-    currentRole: "ảnh" | "ẻm";
-    profiles: Record<string, Profile>;
-    updateProfile: (profile: Profile) => Promise<boolean>;
-}
-
 // Helper to merge DB profile with default
 const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
-    const defaultUser = {
+    const defaultProfile: Profile = {
         id: roleId,
         name: roleId === "him" ? "Anh" : "Em",
         avatar_url: roleId === "him" ? "/images/default-avatar-him.png" : "/images/default-avatar-her.png",
@@ -49,17 +43,6 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
         personality_tags: [],
         likes: [],
         dislikes: []
-    };
-    // Map defaultUser (which has different shape) to Profile
-    const defaultProfile: Profile = {
-        id: roleId,
-        name: defaultUser.name,
-        avatar_url: defaultUser.avatar_url,
-        tagline: defaultUser.tagline,
-        bio: defaultUser.bio,
-        personality_tags: defaultUser.personality_tags,
-        likes: defaultUser.likes,
-        dislikes: defaultUser.dislikes
     };
 
     if (!dbProfile) return defaultProfile;
@@ -77,8 +60,10 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
     };
 };
 
-// Helper Component for Likes/Dislikes
-interface ItemListProps {
+function ItemList({
+    title, icon, items, editing,
+    newItemValue, onNewItemChange, onAdd, onRemove
+}: {
     title: string;
     icon: React.ReactNode;
     items: string[];
@@ -87,15 +72,9 @@ interface ItemListProps {
     onNewItemChange: (value: string) => void;
     onAdd: () => void;
     onRemove: (item: string) => void;
-}
-
-function ItemList({
-    title, icon, items, editing,
-    newItemValue, onNewItemChange, onAdd, onRemove
-}: ItemListProps) {
+}) {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const MAX_VISIBLE = isMobile ? 4 : 8;
-    // Show all items if editing, otherwise slice
     const visibleItems = editing ? items : items.slice(0, MAX_VISIBLE);
     const hiddenCount = items.length - MAX_VISIBLE;
     const showMore = !editing && hiddenCount > 0;
@@ -192,11 +171,9 @@ function ProfileCard({
     const [name, setName] = useState(user.name || "");
     const [tagline, setTagline] = useState(user.tagline || "");
 
-    // Tag management
     const [newTag, setNewTag] = useState("");
     const [tags, setTags] = useState<string[]>(user.personality_tags || []);
 
-    // Likes/Dislikes management
     const [newLike, setNewLike] = useState("");
     const [likes, setLikes] = useState<string[]>(user.likes || []);
 
@@ -276,12 +253,10 @@ function ProfileCard({
             const data = await res.json();
             const publicUrl = data.publicUrl;
 
-            // Immediately save new avatar
             await onSave({
                 ...user,
                 avatar_url: publicUrl
             });
-            // toast.success("Avatar updated!");
         } catch (err) {
             console.error(err);
             alert("Failed to upload avatar");
@@ -290,7 +265,6 @@ function ProfileCard({
         }
     };
 
-    // Format cooldown
     const formatCooldown = (ms: number) => {
         const seconds = Math.ceil(ms / 1000);
         const m = Math.floor(seconds / 60);
@@ -312,7 +286,6 @@ function ProfileCard({
                 onChange={handleFileChange}
             />
 
-            {/* Cover Image */}
             <div className="relative h-32 overflow-hidden shrink-0">
                 <Image
                     src={
@@ -326,7 +299,6 @@ function ProfileCard({
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-[#1a1528] to-transparent" />
 
-                {/* Edit button */}
                 {isOwner && (
                     <button
                         onClick={() => {
@@ -348,7 +320,6 @@ function ProfileCard({
                 )}
             </div>
 
-            {/* Avatar */}
             <div className="flex flex-col items-center -mt-12 px-6 pb-8 relative z-0 grow">
                 <div className="relative group">
                     <div
@@ -402,7 +373,6 @@ function ProfileCard({
                     </div>
                 </div>
 
-                {/* About */}
                 <div className="w-full mt-6">
                     <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
                         Giới thiệu
@@ -420,7 +390,6 @@ function ProfileCard({
                     </div>
                 </div>
 
-                {/* Personality Tags */}
                 <div className="w-full mt-6">
                     <h3 className="text-xs uppercase tracking-widest text-rose-gold/60 mb-3">
                         Tính cách
@@ -462,8 +431,6 @@ function ProfileCard({
                     </div>
                 </div>
 
-
-                {/* Likes & Dislikes */}
                 <div className="w-full mt-6 grid grid-cols-2 gap-4">
                     <ItemList
                         title="Sở thích"
@@ -552,13 +519,10 @@ function ProfileCard({
     );
 }
 
-
-export function ProfileTab({ currentRole, profiles, updateProfile }: ProfileTabProps) {
-    // const { profiles, updateProfile } = useProfiles(); // Removed internal hook usage
-    console.log("Current profiles state:", profiles);
+export function ProfileTab() {
+    const { role: currentRole, profiles, updateProfile } = useValentine();
     const { sendLove, loveCount, cooldownRemaining } = useLove(currentRole);
     const apiStats = useLoveStats();
-    // If apiStats is missing/loading, default to 0
     const stats = apiStats || { him: 0, her: 0 };
 
     const himProfile = mergeProfile("him", profiles["him"]);
@@ -566,11 +530,9 @@ export function ProfileTab({ currentRole, profiles, updateProfile }: ProfileTabP
 
     const [showHearts, setShowHearts] = useState(false);
 
-    // Wrapper for sendLove to trigger animation
     const handleSendLove = async () => {
         const sent = await sendLove();
         if (sent) {
-            // toast.success("Đã gửi chút tình iu! 💖");
             setShowHearts(true);
             setTimeout(() => setShowHearts(false), 5000);
         }
