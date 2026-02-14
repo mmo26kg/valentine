@@ -9,7 +9,9 @@ import {
     User,
     LogOut,
     Settings,
+    MessageCircle, // Added
 } from "lucide-react";
+import { ChatTab } from "@/components/tabs/chat-tab"; // Added
 import { Tabs } from "@/components/ui/tabs";
 import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -44,6 +46,7 @@ const TABS = [
     { value: "home", label: "Trang chủ", icon: Home },
     { value: "countdown", label: "Đếm ngược", icon: Timer },
     { value: "timeline", label: "Kỷ niệm", icon: BookHeart },
+    { value: "chat", label: "Trò chuyện", icon: MessageCircle }, // Added
     { value: "profile", label: "Hồ sơ", icon: User },
     // { value: "settings", label: "Cài đặt", icon: Settings },
 ];
@@ -56,9 +59,11 @@ export function MainApp() {
         home: 0,
         timeline: 0,
         countdown: 0,
+        chat: 0,
         profile: 0,
         settings: 0
     });
+    const [chatContext, setChatContext] = useState<{ type: "post" | "event" | "caption", id: string } | null>(null);
 
     const handleTabChange = (tab: string) => {
         if (activeTab === tab) {
@@ -87,8 +92,14 @@ export function MainApp() {
         const captionParam = searchParams.get("caption");
         const countdownParam = searchParams.get("countdown");
 
+        const chatRef = searchParams.get("chat_ref");
+        const chatType = searchParams.get("chat_type");
+
         if (tabParam && TABS.some(t => t.value === tabParam)) {
             setActiveTab(tabParam);
+            if (chatRef && chatType) {
+                setChatContext({ type: chatType as any, id: chatRef });
+            }
         } else if (postParam) {
             setActiveTab("timeline");
         } else if (captionParam) {
@@ -221,6 +232,18 @@ export function MainApp() {
                                 transition={{ duration: 0.3 }}
                             >
                                 <ProfileTab />
+                            </motion.div>
+                        )}
+
+                        {activeTab === "chat" && (
+                            <motion.div
+                                key={`chat-${refreshKeys.chat}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <ChatTab initialContext={chatContext || undefined} />
                             </motion.div>
                         )}
 

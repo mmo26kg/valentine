@@ -16,6 +16,7 @@ import {
     MoreHorizontal,
     Settings,
     Link as LinkIcon,
+    MessageCircle, // Added
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -342,6 +343,18 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
                 >
                     <LinkIcon className="w-4 h-4" />
                 </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 bg-background/20 hover:bg-background/40 text-muted-foreground hover:text-foreground rounded-full transition-all"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/?tab=chat&chat_type=event&chat_ref=${event.id}`;
+                    }}
+                    title="Chat về sự kiện này"
+                >
+                    <MessageCircle className="w-4 h-4" />
+                </Button>
                 <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -650,7 +663,7 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
             </div>
             {/* Add/Edit Dialog */}
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="bg-surface border-border text-foreground max-w-md">
+                <DialogContent className="bg-surface border-border text-foreground ">
                     <DialogHeader>
                         <DialogTitle className="text-center font-serif italic text-2xl text-primary">
                             {editingCountdown?.id ? "Chỉnh sửa cột mốc" : "Thêm cột mốc"}
@@ -670,7 +683,7 @@ export function CountdownTab({ initialEventId }: { initialEventId?: string | nul
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm text-muted-foreground">Ngày</label>
                                 <Input

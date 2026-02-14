@@ -107,3 +107,17 @@ export interface Greeting {
     author_id: "him" | "her";
     created_at?: string;
 }
+
+export interface ChatMessage {
+    id: string;
+    sender_id: string;
+    content: string;
+    media_url?: string | null;
+    media_urls?: string[] | null;
+    media_type?: "image" | "video" | "file";
+    is_edited?: boolean;
+    reply_to_type?: "post" | "event" | "caption";
+    reply_to_ref_id?: string;
+    is_read: boolean;
+    created_at: string;
+}

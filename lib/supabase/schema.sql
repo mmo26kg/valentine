@@ -133,3 +133,29 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA valentine TO anon, authenticated, service_r
 GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.comments TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.greetings TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.notifications TO anon, authenticated, service_role;
+
+-- Create messages table
+CREATE TABLE IF NOT EXISTS valentine.messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    sender_id TEXT NOT NULL, -- 'him' or 'her'
+    content TEXT,
+    media_url TEXT,
+    media_urls TEXT[], -- Array of URLs for multiple attachments
+    media_type TEXT, -- 'image', 'video', 'file'
+    is_edited BOOLEAN DEFAULT false,
+    reply_to_id UUID, -- Parent message ID (optional, for direct replies in future)
+    reply_to_type TEXT, -- 'post', 'event', 'caption' (optional, for context)
+    reply_to_ref_id TEXT, -- ID of the post/event/caption being discussed
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE valentine.messages ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Allow public access to messages" ON valentine.messages FOR ALL USING (true) WITH CHECK (true);
+
+-- Grants
+GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.messages TO anon, authenticated, service_role;

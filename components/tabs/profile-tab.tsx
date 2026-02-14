@@ -23,6 +23,7 @@ import { useLove, useLoveStats } from "@/lib/store";
 import { useValentine } from "@/providers/valentine-provider";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Profile } from "@/lib/types";
+import { useUpload } from "@/hooks/use-upload";
 import { FallingHearts } from "../shared/falling-hearts";
 import {
     Dialog,
@@ -182,7 +183,7 @@ function ProfileCard({
     const [dislikes, setDislikes] = useState<string[]>(user.dislikes || []);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const { uploadFile, isUploading } = useUpload();
 
     const handleAddTag = () => {
         if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -239,30 +240,13 @@ function ProfileCard({
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
+        const publicUrl = await uploadFile(file);
 
-            const res = await fetch("/api/upload", {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!res.ok) throw new Error("Upload failed");
-
-            const data = await res.json();
-            const publicUrl = data.publicUrl;
-
+        if (publicUrl) {
             await onSave({
                 ...user,
                 avatar_url: publicUrl
             });
-        } catch (err) {
-            console.error(err);
-            toast.error("Tải ảnh đại diện thất bại");
-        } finally {
-            setIsUploading(false);
         }
     };
 

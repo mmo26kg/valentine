@@ -181,6 +181,13 @@ function PostDetailView({
 
     return (
         <div className="flex flex-col md:flex-row h-full w-full bg-background text-foreground overflow-hidden rounded-xl relative">
+            <button
+                onClick={onClose}
+                className="absolute top-3 right-3 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white md:top-4 md:right-4 md:bg-transparent md:text-muted-foreground md:hover:bg-muted md:hover:text-foreground transition-all shadow-sm"
+                title="Đóng"
+            >
+                <X className="w-6 h-6 md:w-6 md:h-6" />
+            </button>
             {/* Image Section: Fixed height on mobile, full height on desktop */}
             <div className={`relative bg-black flex items-center justify-center shrink-0 ${hasMedia ? "w-full md:w-3/5 h-[40vh] md:h-full" : "hidden"}`}>
                 <AnimatePresence mode="wait">
@@ -288,6 +295,24 @@ function PostDetailView({
                                     {Object.keys(post.reactions || {}).length}
                                 </span>
                             )}
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                const url = `/?tab=chat&chat_type=post&chat_ref=${post.id}`;
+                                window.history.pushState({}, "", url);
+                                // Force reload of search params in MainApp if needed, but pushState + a way to notify MainApp is better.
+                                // Actually, since we are in the same app, we can just use router.push if available, or just standard navigation.
+                                // But here we are deep in components. 
+                                // Let's use window.location.href for full reload or better, finding a way to use router.
+                                // TimelineTab doesn't have router.
+                                // Let's try simple window.location.assign which causes refresh, ensuring state is picked up.
+                                window.location.href = url;
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:text-primary"
+                        >
+                            <MessageCircle className="w-4 h-4" />
+                            Chat
                         </button>
                     </div>
 
@@ -589,6 +614,18 @@ const TimelinePostCard = memo(({
                             title="Sao chép liên kết"
                         >
                             <LinkIcon className="w-4 h-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.location.href = `/?tab=chat&chat_type=post&chat_ref=${post.id}`;
+                            }}
+                            title="Chat về kỷ niệm này"
+                        >
+                            <MessageCircle className="w-4 h-4" />
                         </Button>
                         {post.user_id === currentRole && (
                             <DropdownMenu>
@@ -953,7 +990,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                         <Plus className="w-6 h-6" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] bg-card text-card-foreground border-border">
+                <DialogContent showCloseButton={false} className=" bg-card text-card-foreground border-border">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-serif italic text-foreground">
                             {editingPostId ? "Chỉnh sửa kỷ niệm" : "Thêm kỷ niệm mới"}
@@ -1049,7 +1086,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
             </Dialog>
 
             <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogContent className="max-w-[95vw]! w-[1400px]! h-[90vh]! p-0 bg-transparent border-none">
+                <DialogContent showCloseButton={false} className="max-w-[95vw]! w-[1400px]! h-[90vh]! p-0 bg-transparent border-none">
                     {selectedPost && (
                         <PostDetailView
                             post={selectedPost}

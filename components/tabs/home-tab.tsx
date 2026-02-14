@@ -10,6 +10,7 @@ import {
     X,
     Download,
     Link as LinkIcon,
+    MessageCircle, // Added
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -67,6 +68,18 @@ const HistoryItem = memo(({
                         title="Sao chép liên kết"
                     >
                         <LinkIcon className="w-3 h-3" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/?tab=chat&chat_type=caption&chat_ref=${date}`;
+                        }}
+                        title="Chat về ngày này"
+                    >
+                        <MessageCircle className="w-3 h-3" />
                     </Button>
                 </div>
                 <span className="text-xs text-muted-foreground uppercase tracking-widest">

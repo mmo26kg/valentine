@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TimelinePost, SpecialEvent, CountdownEvent, Profile, Comment, AppNotification } from "./types";
+import { TimelinePost, SpecialEvent, CountdownEvent, Profile, Comment, AppNotification, ChatMessage } from "./types";
 import { supabase } from "@/lib/supabase";
 import { formatVietnamDate } from "@/lib/date-utils";
 import { toast } from "sonner";
@@ -1151,5 +1151,236 @@ export function useGreetings() {
 
     return { greetings, addGreeting, deleteGreeting };
 }
+
+/** Chat Logic (Shared via Supabase) */
+export function useChat() {
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const { role } = useCurrentUser();
+
+    const fetchMessages = useCallback(async () => {
+        const { data, error } = await supabase
+            .from("messages")
+            .select("*")
+            .order("created_at", { ascending: true });
+
+        if (error) {
+            console.error("Error fetching messages:", error);
+        } else if (data) {
+            setMessages(data as ChatMessage[]);
+        }
+    }, []);
+
+    useEffect(() => {
+        void fetchMessages();
+
+        const channel = supabase
+            .channel("messages_chat")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "valentine", table: "messages" },
+                () => {
+                    fetchMessages();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [fetchMessages]);
+
+    const sendMessage = useCallback(async (content: string, replyTo?: { type: "post" | "event" | "caption", id: string }) => {
+        if (!role) return;
+
+        const payload: Partial<ChatMessage> = {
+            sender_id: role === "ảnh" ? "him" : "her",
+            content,
+            is_read: false
+        };
+
+        if (replyTo) {
+            payload.reply_to_type = replyTo.type as any;
+            payload.reply_to_ref_id = replyTo.id;
+        }
+
+        const { error } = await supabase.from("messages").insert([payload]);
+
+        if (error) {
+            console.error("Error sending message:", error);
+            toast.error("Gửi tin nhắn thất bại");
+        } else {
+            // Send notification
+            const senderName = role === "ảnh" ? "Anh" : "Em";
+            const recipientId = role === "ảnh" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Tin nhắn mới! 💬",
+                body: `${senderName}: ${content}`,
+                type: "chat",
+                link: "chat"
+            });
+        }
+    }, [role]);
+
+    const sendFiles = useCallback(async (files: File[], type: "image" | "video" | "file", replyTo?: { type: "post" | "event" | "caption", id: string }) => {
+        if (!role || files.length === 0) return;
+
+        try {
+            // 1. Convert HEIC files to JPG if needed
+            const processedFiles = await Promise.all(files.map(async (file) => {
+                const { convertHeicToJpg } = await import("./file-utils");
+                return convertHeicToJpg(file);
+            }));
+
+            // 2. Upload all files to R2 in parallel
+            const uploadPromises = processedFiles.map(async (file) => {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const uploadRes = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!uploadRes.ok) throw new Error("Upload failed");
+
+                const { publicUrl } = await uploadRes.json();
+                return publicUrl;
+            });
+
+            const uploadAllPromise = Promise.all(uploadPromises);
+
+            toast.promise(uploadAllPromise, {
+                loading: `Đang tải ${files.length} tệp lên...`,
+                success: 'Tải lên thành công!',
+                error: 'Lỗi tải tập tin',
+            });
+
+            const uploadedUrls = await uploadAllPromise;
+
+            // 3. Insert message with media_urls (array)
+            const payload: Partial<ChatMessage> = {
+                sender_id: role === "ảnh" ? "him" : "her",
+                content: "",
+                media_urls: uploadedUrls,
+                media_type: type,
+                is_read: false
+            };
+
+            // Legacy support: set first URL as media_url
+            if (uploadedUrls.length > 0) {
+                payload.media_url = uploadedUrls[0];
+            }
+
+            if (replyTo) {
+                payload.reply_to_type = replyTo.type as any;
+                payload.reply_to_ref_id = replyTo.id;
+            }
+
+            const insertPromise = (async () => {
+                const { error } = await supabase.from("messages").insert([payload]);
+                if (error) throw error;
+                return;
+            })();
+
+            toast.promise(insertPromise, {
+                loading: 'Đang gửi tin nhắn...',
+                success: 'Đã gửi tin nhắn!',
+                error: 'Gửi thất bại',
+            });
+
+            try {
+                await insertPromise;
+
+                // Send notification
+                const senderName = role === "ảnh" ? "Anh" : "Em";
+                const recipientId = role === "ảnh" ? "her" : "him";
+                const fileCount = files.length;
+                const fileLabel = type === 'image' ? 'ảnh' : type === 'video' ? 'video' : 'tập tin';
+                sendNotification({
+                    user_id: recipientId,
+                    title: "Tin nhắn mới! 📎",
+                    body: `${senderName} đã gửi ${fileCount} ${fileLabel}.`,
+                    type: "chat",
+                    link: "chat"
+                });
+            } catch (error) {
+                console.error("Error sending files message:", error);
+                // toast.error is handled by promise
+            }
+
+        } catch (err) {
+            console.error("Error uploading files:", err);
+            // toast.error is handled by promise
+        }
+    }, [role]);
+
+    const editMessage = useCallback(async (messageId: string, newContent: string) => {
+        // Optimistic update
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, content: newContent, is_edited: true } : m));
+
+        const { error } = await supabase
+            .from("messages")
+            .update({ content: newContent, is_edited: true })
+            .eq("id", messageId);
+
+        if (error) {
+            console.error("Error editing message:", error);
+            toast.error("Sửa tin nhắn thất bại");
+            // Revert would require fetching original content or storing it. 
+            // For now, let's just re-fetch to be safe or rely on realtime to correct it if it failed?
+            // Realtime might not fire if update failed. Better to re-fetch if error, or just let it slide.
+            fetchMessages();
+        }
+    }, [fetchMessages]);
+
+    const deleteMessage = useCallback(async (messageId: string) => {
+        // Optimistic delete
+        setMessages(prev => prev.filter(m => m.id !== messageId));
+
+        const { error } = await supabase
+            .from("messages")
+            .delete()
+            .eq("id", messageId);
+
+        if (error) {
+            console.error("Error deleting message:", error);
+            toast.error("Xóa tin nhắn thất bại");
+            fetchMessages(); // Revert
+        }
+    }, [fetchMessages]);
+
+    const markAsRead = useCallback(async (messageId: string) => {
+        const { error } = await supabase
+            .from("messages")
+            .update({ is_read: true })
+            .eq("id", messageId);
+
+        if (error) {
+            console.error("Error marking message as read:", error);
+        } else {
+            setMessages(prev => prev.map(m => m.id === messageId ? { ...m, is_read: true } : m));
+        }
+    }, [supabase]);
+
+    const markAllRead = useCallback(async () => {
+        if (!role) return;
+        const partnerId = role === "ảnh" ? "her" : "him";
+
+        const { error } = await supabase
+            .from("messages")
+            .update({ is_read: true })
+            .eq("sender_id", partnerId)
+            .eq("is_read", false);
+
+        if (!error) {
+            setMessages(prev => prev.map(m => m.sender_id === partnerId ? { ...m, is_read: true } : m));
+        }
+    }, [role, supabase]);
+
+    return { messages, sendMessage, sendFiles, editMessage, deleteMessage, markAsRead, markAllRead };
+}
+
+
 
 
