@@ -9,7 +9,7 @@ import {
     User,
     LogOut,
 } from "lucide-react";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { AmbientBackground } from "@/components/shared/ambient-background";
 import { HomeTab } from "@/components/tabs/home-tab";
 import { CountdownTab } from "@/components/tabs/countdown-tab";
@@ -27,7 +27,7 @@ const TABS = [
     { value: "countdown", label: "Đếm ngược", icon: Timer },
     { value: "timeline", label: "Kỷ niệm", icon: BookHeart },
     { value: "profile", label: "Hồ sơ", icon: User },
-    // { value: "settings", label: "Cài đặt", icon: Settings },
+    // { value: "settings", label: "Cài đặt", icon: Settings }, // Settings icon not imported? wait, I need to check imports
 ];
 
 interface MainAppProps {
@@ -51,6 +51,8 @@ interface MainAppProps {
         location?: string;
     }>;
     onAddPost: (post: Omit<MainAppProps["posts"][0], "id" | "created_at">) => void;
+    onUpdatePost: (id: string, updates: Partial<MainAppProps["posts"][0]>) => void;
+    onDeletePost: (id: string, mediaUrls: string[]) => void;
     onUpdateStartDate: (date: string) => void;
     onChangePassword: (pw: string) => void;
     onLock: () => void;
@@ -67,6 +69,8 @@ export function MainApp({
     onSubmitCaption,
     posts,
     onAddPost,
+    onUpdatePost,
+    onDeletePost,
     onUpdateStartDate,
     onChangePassword,
     onLock,
@@ -118,7 +122,7 @@ export function MainApp({
                 </header>
 
                 {/* Content */}
-                <main className="max-w-5xl mx-auto px-4 py-8 pb-28">
+                <main className="max-w-6xl mx-auto px-4 py-8 pb-28">
                     <AnimatePresence mode="wait">
                         {activeTab === "home" && (
                             <motion.div
@@ -165,6 +169,8 @@ export function MainApp({
                                     posts={posts}
                                     currentRole={currentRole}
                                     onAddPost={onAddPost}
+                                    onUpdatePost={onUpdatePost}
+                                    onDeletePost={onDeletePost}
                                 />
                             </motion.div>
                         )}
@@ -181,8 +187,8 @@ export function MainApp({
                             </motion.div>
                         )}
 
-                        {/* Settings Tab (hidden in dock but can be enabled if needed) */}
-                        {/* {activeTab === "settings" && (
+                        {/* Settings Tab */}
+                        {activeTab === "settings" && (
                             <motion.div
                                 key="settings"
                                 initial={{ opacity: 0, y: 20 }}
@@ -198,7 +204,7 @@ export function MainApp({
                                     onLock={onLock}
                                 />
                             </motion.div>
-                        )} */}
+                        )}
                     </AnimatePresence>
                 </main>
 

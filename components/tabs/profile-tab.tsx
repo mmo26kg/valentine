@@ -52,14 +52,14 @@ function ProfileCard({
                 <Image
                     src={
                         user.role === "him"
-                            ? "https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=600"
-                            : "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600"
+                            ? "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/ky-hieu-cung-cu-giai.png"
+                            : "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/Hinh-anh-bieu-tuong-cung-kim-nguu-1.jpg"
                     }
                     alt="Cover"
                     fill
                     className="object-cover opacity-60"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-card to-transparent" />
 
                 {/* Edit button */}
                 {isOwner && (
@@ -76,7 +76,7 @@ function ProfileCard({
             <div className="flex flex-col items-center -mt-12 px-6 pb-8">
                 <div className="relative">
                     <div className="w-24 h-24 rounded-full bg-surface border-4 border-card flex items-center justify-center overflow-hidden">
-                        <User className="w-10 h-10 text-rose-gold/60" />
+                        <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                     {isOwner && (
                         <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-green-500 border-2 border-card" />

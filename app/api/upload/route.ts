@@ -2,14 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { r2 } from "@/lib/r2";
 
-// Next.js App Router allows increasing body size limit
-// however, Vercel/similar might still have hard limits (4.5MB).
-// For a personal project or VPS, checking config is key.
-export const config = {
-    api: {
-        bodyParser: false, // We handle parsing via formData
-    },
-};
+
 
 export async function POST(request: NextRequest) {
     try {

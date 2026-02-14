@@ -23,7 +23,7 @@ export default function ValentineApp() {
     const { password, setPassword } = usePassword();
     const { startDate, setStartDate } = useStartDate();
     const { captions, setCaption, getCaption, hasWrittenToday } = useDailyCaptions();
-    const { posts, addPost } = useTimelinePosts();
+    const { posts, addPost, updatePost, deletePost } = useTimelinePosts();
 
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const partnerRole = role === "ảnh" ? "ẻm" : "ảnh";
@@ -37,7 +37,45 @@ export default function ValentineApp() {
     const myCaptionContent = myCaptionObj?.content || "";
     const partnerCaptionContent = partnerCaptionObj?.content || "";
 
-    // ... (rest of component) ...
+    // Step 1: Locked
+    if (!unlocked) {
+        return (
+            <AnimatePresence mode="wait">
+                <SecretLockScreen
+                    key="lock"
+                    correctPassword={password}
+                    onUnlock={unlock}
+                    currentRole={role}
+                    onSelectRole={setRole}
+                />
+            </AnimatePresence>
+        );
+    }
+
+    // Step 2: Love Captcha
+    if (!captchaPassed) {
+        return (
+            <AnimatePresence mode="wait">
+                <LoveCaptcha key="captcha" onPass={passCaptcha} />
+            </AnimatePresence>
+        );
+    }
+
+    // Step 3: Special Event Check
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayEventStr = `${month}-${day}`;
+
+    const isSpecialEvent = SPECIAL_EVENTS.some((e) => e.date === todayEventStr);
+
+    if (isSpecialEvent && !eventDismissed) {
+        return (
+            <AnimatePresence mode="wait">
+                <EventScreen key="event" onDismiss={dismissEvent} />
+            </AnimatePresence>
+        );
+    }
 
     // Step 4: Main App
     return (
@@ -52,6 +90,8 @@ export default function ValentineApp() {
             onSubmitCaption={(content, mediaUrl) => setCaption(todayStr, role, content, mediaUrl)}
             posts={posts}
             onAddPost={addPost}
+            onUpdatePost={updatePost}
+            onDeletePost={deletePost}
             onUpdateStartDate={setStartDate}
             onChangePassword={setPassword}
             onLock={lock}

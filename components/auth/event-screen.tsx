@@ -6,21 +6,22 @@ import { ArrowRight, X, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AmbientBackground } from "@/components/shared/ambient-background";
 import { FallingHearts } from "@/components/shared/falling-hearts";
-import { SPECIAL_EVENTS } from "@/lib/constants";
+import { useEvents } from "@/lib/store";
 
 interface EventScreenProps {
     onDismiss: () => void;
 }
 
 export function EventScreen({ onDismiss }: EventScreenProps) {
+    const { events } = useEvents();
     const today = new Date();
     const monthDay = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
         today.getDate()
     ).padStart(2, "0")}`;
 
     const event = useMemo(
-        () => SPECIAL_EVENTS.find((e) => e.date === monthDay),
-        [monthDay]
+        () => events.find((e) => e.date === monthDay),
+        [events, monthDay]
     );
 
     if (!event) return null;
@@ -101,7 +102,7 @@ export function EventScreen({ onDismiss }: EventScreenProps) {
                         size="lg"
                         className="bg-rose-gold hover:bg-rose-gold-dark text-background px-10 py-6 text-base font-serif tracking-wide shadow-lg shadow-rose-gold/20 group"
                     >
-                        Continue to Our Space
+                        Tiếp tục đến không gian của chúng ta
                         <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
                 </motion.div>
@@ -112,7 +113,7 @@ export function EventScreen({ onDismiss }: EventScreenProps) {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.6 }}
                 >
-                    Your daily memory is waiting...
+                    Những kỉ niệm của chúng ta đang chờ...
                 </motion.p>
             </motion.div>
         </motion.div>

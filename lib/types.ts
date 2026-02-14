@@ -25,6 +25,7 @@ export interface TimelinePost {
     title: string;
     content: string;
     media_url: string | null;
+    media_urls?: string[]; // New field for multiple images
     event_date: string;
     type: "photo" | "video" | "text" | "milestone";
     created_at: string;
@@ -45,15 +46,15 @@ export interface CountdownEvent {
     title: string;
     date: string;
     icon: string;
-    type: "birthday" | "anniversary" | "holiday" | "custom";
+    type: "sinh nhật" | "kỷ niệm" | "ngày lễ" | "khác";
     description?: string;
     image_url?: string;
 }
 
 export interface SpecialEvent {
-    name: string;
-    date: string;
+    id: string;
     title: string;
+    date: string;
     message: string;
     icon: string;
 }

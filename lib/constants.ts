@@ -7,15 +7,15 @@ export const DEFAULT_PASSWORD = "1402"; // Valentine's Day format ddmm
 // ─── Special Events ───
 export const SPECIAL_EVENTS: SpecialEvent[] = [
     {
-        name: "valentine",
+        id: "valentine",
         date: "02-14",
         title: "Happy Valentine's Day",
         message:
-            "To my partner in crime and my greatest love.\nHere is to celebrating us today and every day.",
+            `Chúc ẻm của ngày Valentine đầy ý nghĩa và hạnh phúc. \n Anh thức tới 2h sáng để làm web này đấy. Buồn ngủ ghê ớ 🥱. \n Iu bé nhiềuuuuu... 🌹`,
         icon: "💕",
     },
     {
-        name: "women",
+        id: "women",
         date: "03-08",
         title: "Happy Women's Day",
         message:
@@ -23,7 +23,7 @@ export const SPECIAL_EVENTS: SpecialEvent[] = [
         icon: "🌹",
     },
     {
-        name: "christmas",
+        id: "christmas",
         date: "12-25",
         title: "Merry Christmas, My Love",
         message:
@@ -31,7 +31,7 @@ export const SPECIAL_EVENTS: SpecialEvent[] = [
         icon: "🎄",
     },
     {
-        name: "newyear",
+        id: "newyear",
         date: "01-01",
         title: "Happy New Year Together",
         message:
@@ -41,40 +41,40 @@ export const SPECIAL_EVENTS: SpecialEvent[] = [
 ];
 
 // ─── Default Countdown Events ───
-export const DEFAULT_COUNTDOWN_EVENTS: CountdownEvent[] = [
-    {
-        id: "1",
-        title: "Valentine's Day",
-        date: "2026-02-14",
-        icon: "heart",
-        type: "holiday",
-        description: "Our special day of love",
-    },
-    {
-        id: "2",
-        title: "Anniversary",
-        date: "2025-04-19",
-        icon: "diamond",
-        type: "anniversary",
-        description: "The day it all began",
-    },
-    {
-        id: "3",
-        title: "Sinh nhật Ẻm",
-        date: "2026-05-10",
-        icon: "cake",
-        type: "birthday",
-        description: "Make it unforgettable",
-    },
-    {
-        id: "4",
-        title: "Sinh nhật Ảnh",
-        date: "2026-06-26",
-        icon: "gift",
-        type: "birthday",
-        description: "A day to celebrate him",
-    },
-];
+// export const DEFAULT_COUNTDOWN_EVENTS: CountdownEvent[] = [
+//     {
+//         id: "1",
+//         title: "Valentine's Day",
+//         date: "2026-02-14",
+//         icon: "heart",
+//         type: "holiday",
+//         description: "Our special day of love",
+//     },
+//     {
+//         id: "2",
+//         title: "Anniversary",
+//         date: "2025-04-19",
+//         icon: "diamond",
+//         type: "anniversary",
+//         description: "The day it all began",
+//     },
+//     {
+//         id: "3",
+//         title: "Sinh nhật Ẻm",
+//         date: "2026-05-10",
+//         icon: "cake",
+//         type: "birthday",
+//         description: "Make it unforgettable",
+//     },
+//     {
+//         id: "4",
+//         title: "Sinh nhật Ảnh",
+//         date: "2026-06-26",
+//         icon: "gift",
+//         type: "birthday",
+//         description: "A day to celebrate him",
+//     },
+// ];
 
 // ─── Sample Timeline Posts ───
 export const SAMPLE_TIMELINE_POSTS = [
@@ -136,7 +136,7 @@ export const SAMPLE_USERS = {
     him: {
         id: "ảnh",
         name: "Pink Duck 🏹",
-        avatar_url: null,
+        avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG",
         role: "him" as const,
         bio: "Là 1 BA và 1 lập trình diên tham dọng. Nghiện cafe và thích ăn cay",
         personality_tags: ["Tham dọng", "Vloger", "Cafe", "Ớt"],
@@ -146,7 +146,7 @@ export const SAMPLE_USERS = {
     her: {
         id: "ẻm",
         name: "Mĩn Bì 💘",
-        avatar_url: null,
+        avatar_url: "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg",
         role: "her" as const,
         bio: "1 BA mới nhú, dễ nhạy cảm, hong thích đi làm nhưng muốn có nhiều tiền, thích dọn dẹp, hong thích ra đường - lâu lâu cũng có thích.",
         personality_tags: ["BA", "Dễ nhạy cảm", "Thích dọn dẹp", "Thích ra đường"],

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { differenceInDays, format } from "date-fns";
 import { useUpload } from "@/hooks/use-upload";
+import { getVietnamDate } from "@/lib/date-utils";
 
 interface HomeTabProps {
     startDate: string;
@@ -43,11 +44,11 @@ export function HomeTab({
     // History State
     const [historyLimit, setHistoryLimit] = useState(5);
 
-    const today = useMemo(() => new Date(), []);
+    const today = useMemo(() => getVietnamDate(), []);
     const todayStr = format(today, "yyyy-MM-dd");
 
     const daysTogether = useMemo(
-        () => differenceInDays(today, new Date(startDate)),
+        () => differenceInDays(today, getVietnamDate(startDate)),
         [startDate, today]
     );
 
@@ -64,7 +65,7 @@ export function HomeTab({
                 // console.log(`Date: ${date}, HasNote: ${userHasNote}, IsToday: ${date === todayStr}`);
                 return userHasNote && date !== todayStr;
             })
-            .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+            .sort((a, b) => getVietnamDate(b).getTime() - getVietnamDate(a).getTime());
 
         console.log("HomeTab - Computed History Dates:", dates);
         return dates;
@@ -91,8 +92,8 @@ export function HomeTab({
     };
 
     return (
-        <div className="space-y-16 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
+        <div className="space-y-16 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="space-y-4 col-span-1">
                     {/* Hero: Days Counter */}
                     <motion.div
@@ -147,11 +148,11 @@ export function HomeTab({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                 >
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-serif italic text-white">Nhật ký hôm nay</h2>
-                        <span className="text-rose-gold/50 text-sm border border-rose-gold/10 px-3 py-1 rounded-full font-serif">
+                    <div className="flex flex-col items-start justify-between">
+                        <span className="mb-2 text-rose-gold/50 text-sm border border-rose-gold/10 px-3 py-1 rounded-full font-serif">
                             {format(today, "MMMM d, yyyy")}
                         </span>
+                        <h2 className="text-2xl  font-serif italic text-white">Nhật ký hôm nay</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
@@ -196,7 +197,7 @@ export function HomeTab({
                             ) : (
                                 <>
                                     <Textarea
-                                        placeholder="Hôm nay của bạn thế nào?"
+                                        placeholder={`Hôm nay của ${currentRole} thế nào?`}
                                         value={captionText}
                                         onChange={(e) => setCaptionText(e.target.value)}
                                         className="bg-background/30 border-rose-gold/10 min-h-[100px] resize-none text-white placeholder:text-white/20 focus-visible:ring-rose-gold/30 font-serif"
@@ -282,10 +283,10 @@ export function HomeTab({
                                                 : `Chia sẻ khoảnh khắc của bạn để xem ${partnerName} viết gì hôm nay.`}
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-2 text-rose-gold/40 text-xs tracking-widest uppercase">
+                                    {/* <div className="flex items-center gap-2 text-rose-gold/40 text-xs tracking-widest uppercase">
                                         <span className="w-2 h-2 rounded-full bg-rose-gold/30 animate-pulse" />
                                         Chờ bạn chia sẻ
-                                    </div>
+                                    </div> */}
                                 </div>
                             )}
 

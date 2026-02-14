@@ -12,10 +12,13 @@ import {
     Pencil,
     Image as ImageIcon,
     Save,
+    Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { EventManager } from "@/components/events/event-manager";
 
 interface SettingsTabProps {
     startDate: string;
@@ -218,6 +221,44 @@ export function SettingsTab({
                     </div>
                 </div>
             </motion.section>
+
+            {/* Event Management */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+            >
+                <h2 className="text-xl font-medium text-rose-gold tracking-wide mb-4 ml-1">
+                    Event Management
+                </h2>
+                <div className="glass-card rounded-xl overflow-hidden">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <div className="p-6 flex items-center justify-between hover:bg-surface-hover transition-colors cursor-pointer group">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-full bg-rose-gold/10">
+                                        <Calendar className="w-5 h-5 text-rose-gold" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-medium text-white group-hover:text-rose-gold transition-colors">
+                                            Manage Special Events
+                                        </h3>
+                                        <p className="text-sm text-white/40">
+                                            Add or edit upcoming events & celebrations
+                                        </p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/60 transition-colors" />
+                            </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl bg-surface border-rose-gold/10 text-white max-h-[85vh] overflow-y-auto">
+                            <EventManager />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </motion.section>
+
+
 
             {/* Notifications */}
             <motion.section
