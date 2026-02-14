@@ -38,7 +38,7 @@ import type { CountdownEvent } from "@/lib/types";
 import { useValentine } from "@/providers/valentine-provider";
 import { DEFAULT_GREETINGS } from "@/lib/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLongPress } from "@/hooks/use-long-press";
+// import { useLongPress } from "@/hooks/use-long-press";
 
 const ICON_MAP: Record<string, React.ElementType> = {
     heart: Heart,
@@ -237,29 +237,18 @@ function DynamicGreeting({ onEdit }: { onEdit: () => void }) {
         return () => clearInterval(interval);
     }, [greetings, role, partnerId]);
 
-    const longPressProps = useLongPress(() => {
-        onEdit();
-    });
-
     return (
-        <span
-            className="group flex items-center gap-2 relative"
-            {...longPressProps}
-        >
+        <span className="group flex items-center gap-2 relative">
             {greeting}
-
-            {/* Mobile Long Press Indicator */}
-            <div className="md:hidden text-rose-gold/30">
-                <Settings className="w-3 h-3" />
-            </div>
 
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-rose-gold hidden md:flex"
+                className="h-6 w-6 text-rose-gold/40 hover:text-rose-gold hover:bg-rose-gold/10 rounded-full transition-all"
+                title="Thay đổi lời chào"
             >
-                <Pencil className="w-3 h-3" />
+                <Settings className="w-3.5 h-3.5" />
             </Button>
         </span>
     );
@@ -322,10 +311,6 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
     const Icon = ICON_MAP[event.icon] || Heart;
     const isFeature = index === 0;
 
-    const longPressProps = useLongPress(() => {
-        setDropdownOpen(true);
-    });
-
     return (
         <motion.div
             key={event.id}
@@ -334,17 +319,19 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * index }}
-            {...longPressProps}
         >
-            {/* Mobile Long Press Indicator */}
-            <div className="absolute top-4 right-4 md:hidden text-white/20">
-                <Settings className="w-4 h-4 animate-pulse-slow" />
-            </div>
-
-            {/* Hidden Dropdown for Mobile Long Press */}
+            {/* Actions Menu */}
             <div className="absolute top-4 right-4 z-30">
                 <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                    <DropdownMenuTrigger className="w-1 h-1 opacity-0 pointer-events-none" />
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/50 hover:text-white rounded-full transition-all"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-[#1a1528] border-rose-gold/20 text-white min-w-[150px]">
                         <DropdownMenuItem onClick={() => {
                             onEdit(event as CountdownEvent, { stopPropagation: () => { } } as any);
@@ -366,17 +353,19 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             <div className="absolute top-0 right-0 w-32 h-32 bg-rose-gold/5 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none" />
 
             <div className="relative z-10 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                     <div className="bg-rose-gold/10 p-2 rounded-lg">
                         <Icon className="w-5 h-5 text-rose-gold" />
                     </div>
-                    <span className="text-xs text-rose-gold/50 border border-rose-gold/10 px-2 py-0.5 rounded-full capitalize">
-                        {event.type}
-                    </span>
+
                 </div>
                 <div>
+
                     <h3 className="text-xl text-white font-light">{event.title}</h3>
-                    <p className="text-sm text-white/40">
+                    <p className="text-sm text-white/40 mt-2">
+                        <span className="text-xs text-white/40 border border-rose-gold/10 px-2.5 py-0.5 rounded-full capitalize w-fit mb-2 mr-4" >
+                            {event.type}
+                        </span>
                         {format(event.targetDate, "MMM d, yyyy")}
                     </p>
                 </div>
@@ -444,28 +433,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
                 </p>
             )}
 
-            {/* Actions - Visible on hover (Desktop) */}
-            <div className="absolute top-4 right-4 z-20 hidden md:flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={(e) => onEdit(event as CountdownEvent, e)}
-                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white rounded-full"
-                >
-                    <Pencil className="w-4 h-4" />
-                </Button>
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(event.id);
-                    }}
-                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/70 hover:text-red-400 rounded-full"
-                >
-                    <Trash2 className="w-4 h-4" />
-                </Button>
-            </div>
+
         </motion.div>
     );
 }
@@ -558,9 +526,9 @@ export function CountdownTab() {
                 animate={{ opacity: 1, y: 0 }}
             >
                 <div>
-                    <p className="text-rose-gold text-lg italic font-serif mb-1 min-h-7">
+                    <div className="text-rose-gold text-lg italic font-serif mb-1 min-h-7">
                         <DynamicGreeting onEdit={() => setIsGreetingConfigOpen(true)} />
-                    </p>
+                    </div>
                     <h1 className="text-4xl md:text-5xl font-light text-white">
                         Sự kiện sắp tới
                     </h1>
@@ -577,7 +545,7 @@ export function CountdownTab() {
 
             {/* Stats */}
             <motion.div
-                className="grid grid-cols-2 gap-4"
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -736,7 +704,7 @@ export function CountdownTab() {
                             className="w-full bg-rose-gold hover:bg-rose-gold-dark text-background mt-4"
                         >
                             <Save className="w-4 h-4 mr-2" />
-                            Lưu countdown
+                            Lưu cột mốc
                         </Button>
                     </div>
                 </DialogContent>

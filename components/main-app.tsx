@@ -102,8 +102,13 @@ export function MainApp() {
                                             {currentRole === "ảnh" ? profiles.him?.name : profiles.her?.name}
                                         </span>
                                         <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center overflow-hidden">
-                                            {/* <User className="w-4 h-4 text-rose-gold/60" /> */}
-                                            <img src={currentUserAvatarURL || ""} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
+                                            {currentUserAvatarURL ? (
+                                                <img src={currentUserAvatarURL} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
+                                            ) : (
+                                                <div className="w-full h-full bg-rose-gold/10 flex items-center justify-center text-rose-gold/30 text-[10px]">
+                                                    {currentRole === "ảnh" ? "Anh" : "Em"}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </DropdownMenuTrigger>
