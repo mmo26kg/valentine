@@ -123,6 +123,176 @@ function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
     );
 }
 
+// --- Sub-components ---
+
+function PostDetailView({
+    post,
+    currentRole,
+    profiles,
+    onClose
+}: {
+    post: TimelinePost,
+    currentRole: "ảnh" | "ẻm",
+    profiles: Record<string, Profile>,
+    onClose: () => void
+}) {
+    const { comments, addComment, toggleReaction, deleteComment } = usePostComments(post.id);
+    const [newComment, setNewComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const handleAddComment = async () => {
+        if (!newComment.trim()) return;
+        setIsSubmitting(true);
+        const myId = currentRole === "ảnh" ? "him" : "her";
+        await addComment(newComment.trim(), myId);
+        setNewComment("");
+        setIsSubmitting(false);
+    };
+
+    const nextImage = () => {
+        const total = (post.media_urls?.length || (post.media_url ? 1 : 0));
+        setCurrentImageIndex((prev) => (prev + 1) % total);
+    };
+
+    const prevImage = () => {
+        const total = (post.media_urls?.length || (post.media_url ? 1 : 0));
+        setCurrentImageIndex((prev) => (prev - 1 + total) % total);
+    };
+
+    const hasMedia = (post.media_urls?.length || 0) > 0 || !!post.media_url;
+
+    return (
+        <div className="flex flex-col md:flex-row h-full w-full bg-surface text-white overflow-hidden rounded-xl">
+            {/* Left: Media (or Top on mobile) */}
+            <div className={`relative bg-black flex items-center justify-center ${hasMedia ? "w-full md:w-3/5 h-1/2 md:h-full" : "hidden"}`}>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentImageIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="relative w-full h-full"
+                    >
+                        {hasMedia && (
+                            <Image
+                                src={post.media_urls?.[currentImageIndex] || post.media_url!}
+                                alt="Detail"
+                                fill
+                                className="object-contain"
+                            />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Navigation Arrows */}
+                {(post.media_urls?.length || 0) > 1 && (
+                    <>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors z-10"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors z-10"
+                        >
+                            <ChevronRight className="w-6 h-6" />
+                        </button>
+                    </>
+                )}
+
+                {/* Thumbnails Overlay (Bottom of media) */}
+                {(post.media_urls?.length || 0) > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-full px-4 no-scrollbar z-10">
+                        {post.media_urls?.map((url, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentImageIndex(idx)}
+                                className={`relative w-10 h-10 rounded-md overflow-hidden shrink-0 border-2 transition-all ${idx === currentImageIndex ? "border-rose-gold scale-110" : "border-white/20 opacity-70 hover:opacity-100"
+                                    }`}
+                            >
+                                <Image src={url} alt="thumb" fill className="object-cover" />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Right: Info & Comments (or Bottom on mobile) */}
+            <div className={`flex flex-col h-full bg-surface border-l border-white/5 ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>
+                {/* Header Info */}
+                <div className="p-4 border-b border-white/5 shrink-0">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className="text-xl font-serif italic text-white mb-1">{post.title}</h2>
+                            <p className="text-rose-gold/50 text-xs uppercase tracking-widest">{format(new Date(post.event_date), "d MMMM, yyyy")}</p>
+                        </div>
+                        {/* <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+                            <X className="w-6 h-6" />
+                        </button> */}
+                    </div>
+                    {post.location && (
+                        <div className="flex items-center gap-1 mt-2 text-sm text-white/40">
+                            <MapPin className="w-3 h-3" />
+                            {post.location}
+                        </div>
+                    )}
+                    <p className="mt-4 text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic">
+                        {post.content}
+                    </p>
+                </div>
+
+                {/* Comments List (Scrollable) */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    {comments.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-white/20">
+                            <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
+                            <p className="text-sm italic">Chưa có bình luận nào</p>
+                        </div>
+                    ) : (
+                        comments.map(comment => (
+                            <CommentItem
+                                key={comment.id}
+                                comment={comment}
+                                currentRole={currentRole}
+                                profiles={profiles}
+                                onDelete={deleteComment}
+                                onReact={toggleReaction}
+                            />
+                        ))
+                    )}
+                </div>
+
+                {/* Input Area (Sticky Bottom) */}
+                <div className="p-4 border-t border-white/5 bg-surface shrink-0">
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <Input
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                                placeholder="Viết bình luận..."
+                                className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
+                            />
+                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
+                        </div>
+                        <Button
+                            size="icon"
+                            onClick={handleAddComment}
+                            disabled={!newComment.trim() || isSubmitting}
+                            className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
+                        >
+                            <Send className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function TimelinePostCard({
     post, currentRole, openGallery, handleEdit, handleDelete, profiles
 }: {
@@ -137,6 +307,11 @@ function TimelinePostCard({
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Limit displayed comments
+    const VISIBLE_COMMENTS = 3;
+    const displayedComments = comments.slice(0, VISIBLE_COMMENTS);
+    const hasMoreComments = comments.length > VISIBLE_COMMENTS;
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -166,7 +341,7 @@ function TimelinePostCard({
                         </div>
                     )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-white text-sm font-serif italic">Xem album</span>
+                        <span className="text-white text-sm font-serif italic">Xem chi tiết</span>
                     </div>
                 </div>
             ) : post.media_url ? (
@@ -187,9 +362,15 @@ function TimelinePostCard({
                 {!post.media_url && !post.media_urls?.length && (
                     <Quote className="w-6 h-6 text-rose-gold/20 mb-2" />
                 )}
-                <p className="text-white/60 font-serif italic leading-relaxed text-sm">
-                    {post.content}
-                </p>
+                <div
+                    onClick={() => openGallery(post, 0)}
+                    className="cursor-pointer group/content"
+                >
+                    <p className="text-white/60 font-serif italic leading-relaxed text-sm group-hover/content:text-white/80 transition-colors">
+                        {post.content}
+                    </p>
+                </div>
+
                 <div className="flex items-center gap-3 mt-4 text-xs text-white/20 border-t border-white/5 pt-3">
                     <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
                         <Heart className="w-3 h-3" /> Thích
@@ -240,27 +421,9 @@ function TimelinePostCard({
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="pt-4 space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newComment}
-                                        onChange={(e) => setNewComment(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                                        placeholder="Viết bình luận..."
-                                        className="h-9 text-xs bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30"
-                                    />
-                                    <Button
-                                        size="sm"
-                                        onClick={handleAddComment}
-                                        disabled={!newComment.trim() || isSubmitting}
-                                        className="h-9 w-9 p-0 bg-rose-gold hover:bg-rose-gold/80"
-                                    >
-                                        <Send className="w-4 h-4" />
-                                    </Button>
-                                </div>
-
-                                <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                                    {comments.map(comment => (
+                            <div className="pt-4 space-y-3">
+                                <div className="space-y-3">
+                                    {displayedComments.map(comment => (
                                         <CommentItem
                                             key={comment.id}
                                             comment={comment}
@@ -270,9 +433,39 @@ function TimelinePostCard({
                                             onReact={toggleReaction}
                                         />
                                     ))}
+
+                                    {/* Show "View More" button if needed */}
+                                    {hasMoreComments && (
+                                        <button
+                                            onClick={() => openGallery(post, 0)}
+                                            className="w-full text-left text-xs text-rose-gold/70 hover:text-rose-gold transition-colors py-1 pl-1"
+                                        >
+                                            Xem thêm {comments.length - VISIBLE_COMMENTS} bình luận khác...
+                                        </button>
+                                    )}
+
                                     {comments.length === 0 && (
                                         <p className="text-center text-white/20 text-xs py-2 italic">Chưa có bình luận nào.</p>
                                     )}
+                                </div>
+
+                                {/* Mini Input Inline */}
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                                        placeholder="Viết bình luận..."
+                                        className="h-8 text-xs bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        onClick={handleAddComment}
+                                        disabled={!newComment.trim() || isSubmitting}
+                                        className="h-8 w-8 p-0 rounded-full bg-rose-gold hover:bg-rose-gold/80"
+                                    >
+                                        <Send className="w-3 h-3" />
+                                    </Button>
                                 </div>
                             </div>
                         </motion.div>
@@ -290,10 +483,11 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
     const [addOpen, setAddOpen] = useState(false);
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
-    // Gallery State
+    // Gallery / Detail State
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<TimelinePost | null>(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    // currentImageIndex is handled inside PostDetailView now usually, but we keep it if we want init state
+    // Actually PostDetailView handles its own index state to be self-contained for the view
 
     const [newPost, setNewPost] = useState<{
         title: string;
@@ -321,22 +515,11 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
 
     const openGallery = (post: TimelinePost, index: number = 0) => {
         setSelectedPost(post);
-        setCurrentImageIndex(index);
+        // We can pass index if we want deep linking to specific image, but for now defaults to 0
         setGalleryOpen(true);
     };
 
-    const nextImage = () => {
-        if (!selectedPost) return;
-        const total = (selectedPost.media_urls?.length || (selectedPost.media_url ? 1 : 0));
-        setCurrentImageIndex((prev) => (prev + 1) % total);
-    };
-
-    const prevImage = () => {
-        if (!selectedPost) return;
-        const total = (selectedPost.media_urls?.length || (selectedPost.media_url ? 1 : 0));
-        setCurrentImageIndex((prev) => (prev - 1 + total) % total);
-    };
-
+    // ... (rest of filtering logic) => SAME 
     // Get unique years
     const years = useMemo(() => {
         const yearSet = new Set(posts.map((p) => p.event_date.substring(0, 4)));
@@ -660,67 +843,16 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                 </DialogContent>
             </Dialog>
 
-            {/* Gallery Dialog */}
+            {/* Post Detail Dialog (Was Gallery) */}
             <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogContent className="max-w-4xl bg-black/90 border-none p-0 overflow-hidden h-[90vh] flex flex-col justify-center">
+                <DialogContent className="max-w-7xl! w-full p-0 overflow-hidden h-[90vh] md:h-[90vh] border-none bg-transparent">
                     {selectedPost && (
-                        <div className="relative w-full h-full flex flex-col">
-
-
-                            <div className="flex-1 relative flex items-center justify-center bg-black">
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={currentImageIndex}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="relative w-full h-full p-4"
-                                    >
-                                        <Image
-                                            src={selectedPost.media_urls?.[currentImageIndex] || selectedPost.media_url!}
-                                            alt="Gallery"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </motion.div>
-                                </AnimatePresence>
-
-                                {/* Navigation */}
-                                {(selectedPost.media_urls?.length || 0) > 1 && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors"
-                                        >
-                                            <ChevronLeft className="w-6 h-6" />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors"
-                                        >
-                                            <ChevronRight className="w-6 h-6" />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="p-6 bg-surface/90 backdrop-blur-md border-t border-white/10 shrink-0">
-                                <h3 className="text-xl font-serif italic text-white mb-2">{selectedPost.title}</h3>
-                                <p className="text-white/70 text-sm max-h-32 overflow-y-auto">{selectedPost.content}</p>
-                                <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                                    {selectedPost.media_urls?.map((url, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setCurrentImageIndex(idx)}
-                                            className={`relative w-16 h-16 rounded-md overflow-hidden shrink-0 border-2 transition-colors ${idx === currentImageIndex ? "border-rose-gold" : "border-transparent opacity-50 hover:opacity-100"
-                                                }`}
-                                        >
-                                            <Image src={url} alt="thumbnail" fill className="object-cover" />
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <PostDetailView
+                            post={selectedPost}
+                            currentRole={currentRole}
+                            profiles={profiles}
+                            onClose={() => setGalleryOpen(false)}
+                        />
                     )}
                 </DialogContent>
             </Dialog>
