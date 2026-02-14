@@ -17,8 +17,10 @@ import {
     MessageCircle,
     Send,
     Smile,
+    Download,
 } from "lucide-react";
 import Image from "next/image";
+import { downloadImage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -158,6 +160,14 @@ function PostDetailView({
 
     const hasMedia = (post.media_urls?.length || 0) > 0 || !!post.media_url;
 
+    const currentImageUrl = post.media_urls?.[currentImageIndex] || post.media_url!;
+
+    const handleDownload = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const filename = `valentine-${post.title.replace(/\s+/g, '-').toLowerCase()}-${currentImageIndex}.jpg`;
+        downloadImage(currentImageUrl, filename);
+    };
+
     return (
         <div className="flex flex-col md:flex-row h-full w-full bg-surface text-white overflow-hidden rounded-xl">
             <div className={`relative bg-black flex items-center justify-center ${hasMedia ? "w-full md:w-3/5 h-1/2 md:h-full" : "hidden"}`}>
@@ -211,6 +221,23 @@ function PostDetailView({
                         ))}
                     </div>
                 )}
+
+                {hasMedia && (
+                    <button
+                        onClick={handleDownload}
+                        className="absolute top-4 left-4 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors z-[100]"
+                        title="Tải ảnh"
+                    >
+                        <Download className="w-5 h-5" />
+                    </button>
+                )}
+
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors z-[100]"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             <div className={`flex flex-col h-full bg-surface border-l border-white/5 ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>

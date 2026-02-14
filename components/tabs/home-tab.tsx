@@ -8,8 +8,10 @@ import {
     Image as ImageIcon,
     ChevronDown,
     X,
+    Download,
 } from "lucide-react";
 import Image from "next/image";
+import { downloadImage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { differenceInDays, format } from "date-fns";
@@ -422,26 +424,41 @@ export function HomeTab() {
 }
 
 function ImageWithZoom({ src, alt }: { src: string; alt: string }) {
+    const handleDownload = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        downloadImage(src, `valentine-memory-${Date.now()}.jpg`);
+    };
+
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <div className="relative aspect-video rounded-lg overflow-hidden border border-rose-gold/10 mt-2 cursor-pointer hover:brightness-110 transition-all">
+                <div className="relative aspect-auto max-h-48 rounded-lg overflow-hidden cursor-zoom-in border border-white/10 group mt-2">
                     <Image
                         src={src}
                         alt={alt}
-                        fill
-                        className="object-cover"
+                        width={400}
+                        height={300}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                 </div>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl w-full bg-transparent border-none shadow-none p-0 flex items-center justify-center">
-                <div className="relative w-full h-[80vh]">
-                    <Image
+            <DialogContent className="max-w-[95vw] md:max-w-3xl p-0 bg-transparent border-none">
+                <div className="relative w-full aspect-auto flex items-center justify-center">
+                    <img
                         src={src}
                         alt={alt}
-                        fill
-                        className="object-contain"
+                        className="max-w-full max-h-[85vh] object-contain rounded-lg"
                     />
+                    <button
+                        onClick={handleDownload}
+                        className="absolute top-4 right-12 bg-black/50 p-2 rounded-full text-white/70 hover:text-white hover:bg-black/70 transition-colors"
+                        title="Tải ảnh"
+                    >
+                        <Download className="w-5 h-5" />
+                    </button>
                 </div>
             </DialogContent>
         </Dialog>
