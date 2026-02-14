@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id TEXT PRIMARY KEY, -- 'him' or 'her'
     name TEXT NOT NULL,
     avatar_url TEXT,
+    tagline TEXT,
     bio TEXT,
     personality_tags TEXT[],
     likes TEXT[],

@@ -36,6 +36,7 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
         id: roleId,
         name: roleId === "him" ? "Anh" : "Em",
         avatar_url: roleId === "him" ? "/images/default-avatar-him.png" : "/images/default-avatar-her.png",
+        tagline: "Đang cảm thấy được yêu & hạnh phúc",
         bio: "",
         personality_tags: [],
         likes: [],
@@ -46,6 +47,7 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
         id: roleId,
         name: defaultUser.name,
         avatar_url: defaultUser.avatar_url,
+        tagline: defaultUser.tagline,
         bio: defaultUser.bio,
         personality_tags: defaultUser.personality_tags,
         likes: defaultUser.likes,
@@ -59,6 +61,7 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
         ...dbProfile,
         name: dbProfile.name || defaultProfile.name,
         avatar_url: dbProfile.avatar_url || defaultProfile.avatar_url,
+        tagline: dbProfile.tagline || defaultProfile.tagline,
         bio: dbProfile.bio || defaultProfile.bio,
         personality_tags: dbProfile.personality_tags || defaultProfile.personality_tags,
         likes: dbProfile.likes || defaultProfile.likes,
@@ -86,6 +89,7 @@ function ProfileCard({
     const [editing, setEditing] = useState(false);
     const [bio, setBio] = useState(user.bio || "");
     const [name, setName] = useState(user.name || "");
+    const [tagline, setTagline] = useState(user.tagline || "");
 
     // Tag management
     const [newTag, setNewTag] = useState("");
@@ -135,6 +139,7 @@ function ProfileCard({
         const success = await onSave({
             ...user,
             name,
+            tagline,
             bio,
             personality_tags: tags,
             likes,
@@ -281,9 +286,19 @@ function ProfileCard({
                         <h2 className="text-2xl font-serif text-white">{user.name}</h2>
                     )}
 
-                    <p className="text-rose-gold/50 italic font-serif text-sm mt-1">
-                        &ldquo;Đang cảm thấy được yêu & hạnh phúc&rdquo;
-                    </p>
+                    <div className="mt-1 flex justify-center">
+                        {editing ? (
+                            <Textarea
+                                value={tagline}
+                                onChange={(e) => setTagline(e.target.value)}
+                                className="bg-white/5 border-rose-gold/10 text-white text-sm min-h-[40px] font-serif focus-visible:ring-rose-gold/50"
+                            />
+                        ) : (
+                            <p className="text-rose-gold/50 italic font-serif text-sm">
+                                &ldquo;{user.tagline || "Đang cảm thấy được yêu & hạnh phúc"}&rdquo;
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 {/* About */}

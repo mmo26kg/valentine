@@ -63,6 +63,7 @@ export interface Profile {
     id: string; // 'him' | 'her'
     name: string;
     avatar_url: string | null;
+    tagline?: string; // New field
     bio?: string;
     personality_tags?: string[];
     likes?: string[];
