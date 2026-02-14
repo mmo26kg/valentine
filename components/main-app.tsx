@@ -77,6 +77,7 @@ export function MainApp({
 }: MainAppProps) {
     const [activeTab, setActiveTab] = useState("home");
     const partnerName = currentRole === "ảnh" ? "Mĩn Bì" : "Pink Duck";
+    const currentUserAvatarURL = currentRole === "ảnh" ? "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG" : "https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg";
 
     return (
         <div className="min-h-screen relative">
@@ -104,8 +105,9 @@ export function MainApp({
                                     <span className="hidden sm:inline font-serif italic">
                                         {currentRole === "ảnh" ? "Pink Duck" : "Mĩn Bì"}
                                     </span>
-                                    <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center">
-                                        <User className="w-4 h-4 text-rose-gold/60" />
+                                    <div className="w-8 h-8 rounded-full bg-surface border border-rose-gold/20 flex items-center justify-center overflow-hidden">
+                                        {/* <User className="w-4 h-4 text-rose-gold/60" /> */}
+                                        <img src={currentUserAvatarURL} className="" alt="Logo" width={32} height={32} />
                                     </div>
                                 </div>
                             </DropdownMenuTrigger>
