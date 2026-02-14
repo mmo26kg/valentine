@@ -75,12 +75,26 @@ CREATE TABLE IF NOT EXISTS valentine.greetings (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create notifications table
+CREATE TABLE IF NOT EXISTS valentine.notifications (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id TEXT NOT NULL, -- The recipient ('him' or 'her')
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    type TEXT, -- e.g., 'timeline', 'countdown', 'love', 'profile'
+    link TEXT, -- Deep link tab or path
+    is_read BOOLEAN DEFAULT false,
+    notification_key TEXT UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable RLS
 ALTER TABLE valentine.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE valentine.love_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE valentine.posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE valentine.comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE valentine.greetings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE valentine.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Create policies (Allow all for simplistic couple app usage)
 -- Drop existing policies first to avoid error if they exist
@@ -91,6 +105,7 @@ BEGIN
     DROP POLICY IF EXISTS "Allow public access to posts" ON valentine.posts;
     DROP POLICY IF EXISTS "Allow public access to comments" ON valentine.comments;
     DROP POLICY IF EXISTS "Allow public access to greetings" ON valentine.greetings;
+    DROP POLICY IF EXISTS "Allow public access to notifications" ON valentine.notifications;
 EXCEPTION
     WHEN undefined_object THEN null;
 END $$;
@@ -100,6 +115,7 @@ CREATE POLICY "Allow public access to love_logs" ON valentine.love_logs FOR ALL 
 CREATE POLICY "Allow public access to posts" ON valentine.posts FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public access to comments" ON valentine.comments FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public access to greetings" ON valentine.greetings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public access to notifications" ON valentine.notifications FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert initial data if not exists
 INSERT INTO valentine.profiles (id, name, avatar_url, bio, personality_tags, likes, dislikes)
@@ -116,3 +132,4 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA valentine TO anon, authenticated, service_r
 -- Additional specific grants for comments just in case
 GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.comments TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.greetings TO anon, authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON valentine.notifications TO anon, authenticated, service_role;

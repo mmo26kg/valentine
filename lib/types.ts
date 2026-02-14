@@ -87,3 +87,15 @@ export interface LoveLog {
     sender_id: string;
     created_at: string;
 }
+
+export interface AppNotification {
+    id: string;
+    user_id: string;
+    title: string;
+    body: string;
+    type?: string;
+    link?: string;
+    is_read: boolean;
+    notification_key?: string;
+    created_at: string;
+}

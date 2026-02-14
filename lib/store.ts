@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TimelinePost, SpecialEvent, CountdownEvent, Profile, Comment } from "./types";
+import { TimelinePost, SpecialEvent, CountdownEvent, Profile, Comment, AppNotification } from "./types";
 import { supabase } from "@/lib/supabase";
 import { formatVietnamDate } from "@/lib/date-utils";
 
@@ -17,6 +17,20 @@ function getItem<T>(key: string, fallback: T): T {
 function setItem<T>(key: string, value: T) {
     if (typeof window === "undefined") return;
     localStorage.setItem(key, JSON.stringify(value));
+}
+
+export async function sendNotification(payload: { user_id: string; title: string; body: string; type?: string; link?: string; notification_key?: string }) {
+    try {
+        const { error } = await supabase
+            .from("notifications")
+            .insert([{ ...payload, is_read: false }]);
+        // Ignore unique constraint violation (duplicate notification_key)
+        if (error && error.code !== "23505") {
+            console.error("Error sending notification:", error);
+        }
+    } catch (err) {
+        console.error("Unexpected error sending notification:", err);
+    }
 }
 
 // ─── Custom Hooks ───
@@ -205,6 +219,17 @@ export function useDailyCaptions() {
             await supabase
                 .from("captions")
                 .upsert({ date, role, content, media_url }, { onConflict: "date,role" });
+
+            // Send notification to the other person
+            const senderName = role === "ảnh" ? "Anh" : "Em";
+            const recipientId = role === "ảnh" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Có Caption mới! ✨",
+                body: `${senderName} vừa cập nhật cảm nghĩ ngày hôm nay.`,
+                type: "caption",
+                link: "timeline" // or however your app routes
+            });
         },
         []
     );
@@ -301,10 +326,16 @@ export function useTimelinePosts() {
                 // Revert optimistic update
                 setPostsState((prev) => prev.filter(p => p.id !== tempId));
             } else {
-                // IMPORTANT: Refetch to ensure we have the DB state, though our ID is consistent now.
-                // This might be redundant but safe.
-                // Actually, if we just rely on realtime subscription, it might take a split second.
-                // But since we set the ID explicitly, the local state 'newPost' IS correct.
+                // Send notification
+                const senderName = post.user_id === "him" ? "Anh" : "Em";
+                const recipientId = post.user_id === "him" ? "her" : "him";
+                sendNotification({
+                    user_id: recipientId,
+                    title: "Kỷ niệm mới! 📸",
+                    body: `${senderName} vừa thêm một bài viết mới vào dòng thời gian.`,
+                    type: "timeline",
+                    link: "timeline"
+                });
             }
         },
         []
@@ -325,6 +356,20 @@ export function useTimelinePosts() {
             if (error) {
                 console.error("Error updating post:", error);
                 fetchPosts();
+            } else {
+                // Send notification
+                const post = posts.find(p => p.id === id);
+                if (post) {
+                    const senderName = post.user_id === "him" ? "Anh" : "Em";
+                    const recipientId = post.user_id === "him" ? "her" : "him";
+                    sendNotification({
+                        user_id: recipientId,
+                        title: "Kỷ niệm đã cập nhật! ✍️",
+                        body: `${senderName} vừa chỉnh sửa bài viết: "${post.title || 'Không có tiêu đề'}"`,
+                        type: "timeline",
+                        link: "timeline"
+                    });
+                }
             }
         },
         []
@@ -385,8 +430,19 @@ export function useTimelinePosts() {
         if (error) {
             console.error("Error toggling post reaction:", error);
             fetchPosts();
+        } else if (emoji !== currentEmoji && emoji) {
+            // Send notification ONLY if a new reaction was added (not removed)
+            const senderName = userId === "him" ? "Anh" : "Em";
+            const recipientId = userId === "him" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Thả tim! ❤️",
+                body: `${senderName} vừa bày tỏ cảm xúc "${emoji}" lên bài viết của bạn.`,
+                type: "reaction",
+                link: "timeline"
+            });
         }
-    }, [posts]);
+    }, [posts, fetchPosts]);
 
     return { posts, addPost, updatePost, deletePost, togglePostReaction };
 }
@@ -452,6 +508,7 @@ export const useEvents = () => {
 
 export const useCountdowns = () => {
     const [countdowns, setCountdowns] = useState<CountdownEvent[]>([]);
+    const { role } = useCurrentUser();
 
     const fetchCountdowns = useCallback(async () => {
         const { data, error } = await supabase
@@ -483,8 +540,19 @@ export const useCountdowns = () => {
         if (error) {
             console.error("Error adding countdown:", error);
             fetchCountdowns();
+        } else {
+            // Send notification
+            const senderName = role === "ảnh" ? "Anh" : "Em";
+            const recipientId = role === "ảnh" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Sự kiện mới! 📅",
+                body: `${senderName} vừa thêm một sự kiện countdown mới: "${countdown.title}"`,
+                type: "countdown",
+                link: "countdowns"
+            });
         }
-    }, [fetchCountdowns]);
+    }, [fetchCountdowns, role]);
 
     const updateCountdown = useCallback(async (id: string, updates: Partial<CountdownEvent>) => {
         setCountdowns(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
@@ -565,6 +633,18 @@ export function useProfiles() {
             }
 
             console.log("Profile updated successfully:", data);
+
+            // Send notification to the other person
+            const senderName = profile.id === "him" ? "Anh" : "Em";
+            const recipientId = profile.id === "him" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Profile cập nhật! 👤",
+                body: `${senderName} vừa cập nhật thông tin cá nhân.`,
+                type: "profile",
+                link: "profile"
+            });
+
             return true;
         } catch (err) {
             console.error("Unexpected error updating profile:", err);
@@ -575,6 +655,112 @@ export function useProfiles() {
     }, [fetchProfiles]);
 
     return { profiles, updateProfile, refreshProfiles: fetchProfiles };
+}
+
+/** Notifications (Shared via Supabase) */
+export function useNotifications() {
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const { role } = useCurrentUser();
+
+    const fetchNotifications = useCallback(async () => {
+        if (!role) return;
+        const recipientId = role === "ảnh" ? "him" : "her";
+        const { data, error } = await supabase
+            .from("notifications")
+            .select("*")
+            .eq("user_id", recipientId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching notifications:", error);
+        } else if (data) {
+            setNotifications(data as AppNotification[]);
+        }
+    }, [role]);
+
+    useEffect(() => {
+        if (!role) return;
+        void fetchNotifications();
+
+        const channel = supabase
+            .channel("notifications_changes")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "valentine",
+                    table: "notifications",
+                    filter: `user_id=eq.${role === "ảnh" ? "him" : "her"}`,
+                },
+                () => {
+                    fetchNotifications();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [role, fetchNotifications]);
+
+    const addNotification = useCallback(async (payload: Omit<AppNotification, "id" | "is_read" | "created_at">) => {
+        const { error } = await supabase
+            .from("notifications")
+            .insert([{ ...payload, is_read: false }]);
+
+        if (error) {
+            console.error("Error adding notification:", error);
+        }
+    }, []);
+
+    const markAsRead = useCallback(async (id: string) => {
+        setNotifications((prev) =>
+            prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+        );
+
+        const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", id);
+
+        if (error) {
+            console.error("Error marking notification as read:", error);
+            fetchNotifications();
+        }
+    }, [fetchNotifications]);
+
+    const markAllAsRead = useCallback(async () => {
+        if (!role) return;
+        const recipientId = role === "ảnh" ? "him" : "her";
+        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+
+        const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("user_id", recipientId)
+            .eq("is_read", false);
+
+        if (error) {
+            console.error("Error marking all notifications as read:", error);
+            fetchNotifications();
+        }
+    }, [role, fetchNotifications]);
+
+    const deleteNotification = useCallback(async (id: string) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+        const { error } = await supabase
+            .from("notifications")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            console.error("Error deleting notification:", error);
+            fetchNotifications();
+        }
+    }, [fetchNotifications]);
+
+    return { notifications, addNotification, markAsRead, markAllAsRead, deleteNotification };
 }
 
 /** Love Logic */
@@ -687,6 +873,17 @@ export function useLove(currentRole: "ảnh" | "ẻm") {
             console.error("Error sending love:", error);
             // Revert invalidation if needed, or just let it fail silently (cooldown already consumed locally)
             return false;
+        } else {
+            // Send notification
+            const senderName = currentRole === "ảnh" ? "Anh" : "Em";
+            const recipientId = currentRole === "ảnh" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Gửi ngàn lời yêu! 💖",
+                body: `${senderName} vừa gửi cho bạn một trái tim.`,
+                type: "love",
+                link: "profile"
+            });
         }
         return true;
     }, [currentRole, lastSentTime]);
@@ -815,6 +1012,17 @@ export function usePostComments(postId: string) {
         if (error) {
             console.error("Error adding comment:", error);
             setComments(prev => prev.filter(c => c.id !== tempId));
+        } else {
+            // Send notification to the other person 
+            const senderName = userId === "him" ? "Anh" : "Em";
+            const recipientId = userId === "him" ? "her" : "him";
+            sendNotification({
+                user_id: recipientId,
+                title: "Bình luận mới! 💬",
+                body: `${senderName} vừa bình luận: "${content.trim()}"`,
+                type: "comment",
+                link: "timeline"
+            });
         }
     }, [postId]);
 
