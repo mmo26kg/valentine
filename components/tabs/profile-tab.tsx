@@ -31,6 +31,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 // Helper to merge DB profile with default
 const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
@@ -259,7 +260,7 @@ function ProfileCard({
             });
         } catch (err) {
             console.error(err);
-            alert("Failed to upload avatar");
+            toast.error("Tải ảnh đại diện thất bại");
         } finally {
             setIsUploading(false);
         }
@@ -485,7 +486,7 @@ function ProfileCard({
                                     if (loveProps.cooldownRemaining === 0) {
                                         const sent = await loveProps.sendLove();
                                         if (sent) {
-                                            // toast.success("Đã gửi chút tình iu! 💖");
+                                            toast.success("Đã gửi chút tình iu! 💖");
                                         }
                                     }
                                 }}

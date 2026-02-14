@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { TimelinePost, SpecialEvent, CountdownEvent, Profile, Comment, AppNotification } from "./types";
 import { supabase } from "@/lib/supabase";
 import { formatVietnamDate } from "@/lib/date-utils";
+import { toast } from "sonner";
 
 // ─── Local Storage Helpers (for session data) ───
 function getItem<T>(key: string, fallback: T): T {
@@ -228,7 +229,7 @@ export function useDailyCaptions() {
                 title: "Có Caption mới! ✨",
                 body: `${senderName} vừa cập nhật cảm nghĩ ngày hôm nay.`,
                 type: "caption",
-                link: "timeline" // or however your app routes
+                link: `home?caption=${date}`
             });
         },
         []
@@ -334,7 +335,7 @@ export function useTimelinePosts() {
                     title: "Kỷ niệm mới! 📸",
                     body: `${senderName} vừa thêm một bài viết mới vào dòng thời gian.`,
                     type: "timeline",
-                    link: "timeline"
+                    link: `timeline?post=${tempId}`
                 });
             }
         },
@@ -367,7 +368,7 @@ export function useTimelinePosts() {
                         title: "Kỷ niệm đã cập nhật! ✍️",
                         body: `${senderName} vừa chỉnh sửa bài viết: "${post.title || 'Không có tiêu đề'}"`,
                         type: "timeline",
-                        link: "timeline"
+                        link: `timeline?post=${id}`
                     });
                 }
             }
@@ -439,7 +440,7 @@ export function useTimelinePosts() {
                 title: "Thả tim! ❤️",
                 body: `${senderName} vừa bày tỏ cảm xúc "${emoji}" lên bài viết của bạn.`,
                 type: "reaction",
-                link: "timeline"
+                link: `timeline?post=${postId}`
             });
         }
     }, [posts, fetchPosts]);
@@ -549,7 +550,7 @@ export const useCountdowns = () => {
                 title: "Sự kiện mới! 📅",
                 body: `${senderName} vừa thêm một sự kiện countdown mới: "${countdown.title}"`,
                 type: "countdown",
-                link: "countdowns"
+                link: `countdown?countdown=${newCountdown.id}`
             });
         }
     }, [fetchCountdowns, role]);
@@ -627,7 +628,7 @@ export function useProfiles() {
 
             if (error) {
                 console.error("Error updating profile (Supabase):", error);
-                alert(`Lỗi lưu hồ sơ: ${error.message} (${error.code})`);
+                toast.error(`Lỗi lưu hồ sơ: ${error.message} (${error.code})`);
                 fetchProfiles(); // Revert
                 return false;
             }
@@ -648,7 +649,7 @@ export function useProfiles() {
             return true;
         } catch (err) {
             console.error("Unexpected error updating profile:", err);
-            alert("Lỗi không xác định khi lưu hồ sơ");
+            toast.error("Lỗi không xác định khi lưu hồ sơ");
             fetchProfiles();
             return false;
         }

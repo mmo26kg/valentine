@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import dynamic from 'next/dynamic';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AmbientBackground } from "@/components/shared/ambient-background";
 
 // Lazy load tab components
@@ -47,7 +48,54 @@ const TABS = [
 ];
 
 export function MainApp() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState("home");
+    const [refreshKeys, setRefreshKeys] = useState<Record<string, number>>({
+        home: 0,
+        timeline: 0,
+        countdown: 0,
+        profile: 0,
+        settings: 0
+    });
+
+    const handleTabChange = (tab: string) => {
+        if (activeTab === tab) {
+            setRefreshKeys(prev => ({
+                ...prev,
+                [tab]: prev[tab] + 1
+            }));
+        } else {
+            setActiveTab(tab);
+            router.push(`/?tab=${tab}`);
+        }
+    };
+
+    const handleNavigate = (link: string) => {
+        if (link.includes("?")) {
+            const [tab, search] = link.split("?");
+            router.push(`/?tab=${tab}&${search}`);
+        } else {
+            handleTabChange(link);
+        }
+    };
+
+    useEffect(() => {
+        const tabParam = searchParams.get("tab");
+        const postParam = searchParams.get("post");
+        const captionParam = searchParams.get("caption");
+        const countdownParam = searchParams.get("countdown");
+
+        if (tabParam && TABS.some(t => t.value === tabParam)) {
+            setActiveTab(tabParam);
+        } else if (postParam) {
+            setActiveTab("timeline");
+        } else if (captionParam) {
+            setActiveTab("home");
+        } else if (countdownParam) {
+            setActiveTab("countdown");
+        }
+    }, [searchParams]);
     const {
         role: currentRole,
         startDate,
@@ -94,7 +142,7 @@ export function MainApp() {
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <NotificationCenter onNavigate={setActiveTab} />
+                            <NotificationCenter onNavigate={handleNavigate} />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <div className="flex items-center gap-2 text-white/40 text-sm cursor-pointer hover:text-white transition-colors">
@@ -128,43 +176,43 @@ export function MainApp() {
                     <AnimatePresence mode="wait">
                         {activeTab === "home" && (
                             <motion.div
-                                key="home"
+                                key={`home-${refreshKeys.home}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <HomeTab />
+                                <HomeTab initialCaptionDate={searchParams.get("caption")} />
                             </motion.div>
                         )}
 
                         {activeTab === "countdown" && (
                             <motion.div
-                                key="countdown"
+                                key={`countdown-${refreshKeys.countdown}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <CountdownTab />
+                                <CountdownTab initialEventId={searchParams.get("countdown")} />
                             </motion.div>
                         )}
 
                         {activeTab === "timeline" && (
                             <motion.div
-                                key="timeline"
+                                key={`timeline-${refreshKeys.timeline}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <TimelineTab />
+                                <TimelineTab initialPostId={searchParams.get("post")} />
                             </motion.div>
                         )}
 
                         {activeTab === "profile" && (
                             <motion.div
-                                key="profile"
+                                key={`profile-${refreshKeys.profile}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
@@ -177,7 +225,7 @@ export function MainApp() {
                         {/* Settings Tab */}
                         {activeTab === "settings" && (
                             <motion.div
-                                key="settings"
+                                key={`settings-${refreshKeys.settings}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
@@ -197,7 +245,7 @@ export function MainApp() {
                                 <DockItem
                                     key={value}
                                     active={activeTab === value}
-                                    onClick={() => setActiveTab(value)}
+                                    onClick={() => handleTabChange(value)}
                                 >
                                     <DockLabel>{label}</DockLabel>
                                     <DockIcon>

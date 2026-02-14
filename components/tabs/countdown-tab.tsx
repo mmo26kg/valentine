@@ -15,7 +15,9 @@ import {
     Save,
     MoreHorizontal,
     Settings,
+    Link as LinkIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -62,14 +64,14 @@ const TYPES = ["Ngày lễ", "Kỷ niệm", "Sinh nhật", "Khác", "Đi chơi"]
 
 function GreetingItem({ greeting, onDelete }: { greeting: any, onDelete: (id: string) => void }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const longPressProps = useLongPress(() => {
-        setDropdownOpen(true);
-    });
+    // const longPressProps = useLongPress(() => {
+    //     setDropdownOpen(true);
+    // });
 
     return (
         <div
             className="flex justify-between items-center bg-white/5 p-3 rounded-lg group relative"
-            {...longPressProps}
+        // {...longPressProps}
         >
             <p className="text-sm text-white/90">{greeting.content}</p>
 
@@ -311,9 +313,17 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
     const Icon = ICON_MAP[event.icon] || Heart;
     const isFeature = index === 0;
 
+    const copyLink = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}${window.location.pathname}?countdown=${event.id}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Đã sao chép liên kết sự kiện! 🗓️");
+    };
+
     return (
         <motion.div
             key={event.id}
+            id={`event-${event.id}`}
             className={`group relative glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[260px] ${isFeature ? "md:col-span-2" : ""
                 }`}
             initial={{ opacity: 0, y: 30 }}
@@ -321,7 +331,16 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
             transition={{ delay: 0.1 * index }}
         >
             {/* Actions Menu */}
-            <div className="absolute top-4 right-4 z-30">
+            <div className="absolute top-4 right-4 z-30 flex gap-2">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 bg-black/20 hover:bg-black/40 text-white/50 hover:text-white rounded-full transition-all"
+                    onClick={copyLink}
+                    title="Sao chép liên kết"
+                >
+                    <LinkIcon className="w-4 h-4" />
+                </Button>
                 <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -438,7 +457,7 @@ function CountdownCard({ event, index, now, onEdit, onDelete }: CountdownCardPro
     );
 }
 
-export function CountdownTab() {
+export function CountdownTab({ initialEventId }: { initialEventId?: string | null }) {
     const { countdowns, addCountdown, updateCountdown, deleteCountdown } = useValentine();
     const events = countdowns.length > 0 ? countdowns : [];
     const [, setTick] = useState(0);
@@ -514,6 +533,20 @@ export function CountdownTab() {
         const interval = setInterval(() => setTick((t) => t + 1), 60000);
         return () => clearInterval(interval);
     }, []);
+
+    // Deep Link Effect
+    useEffect(() => {
+        if (initialEventId) {
+            const element = document.getElementById(`event-${initialEventId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "center" });
+                element.classList.add("ring-2", "ring-rose-gold", "ring-offset-4", "ring-offset-background");
+                setTimeout(() => {
+                    element.classList.remove("ring-2", "ring-rose-gold", "ring-offset-4", "ring-offset-background");
+                }, 3000);
+            }
+        }
+    }, [initialEventId, processedEvents]);
 
     const todayDateString = formatVietnamDate(undefined, "MMMM d");
 

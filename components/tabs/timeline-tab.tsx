@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useMemo, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Plus,
@@ -19,7 +19,9 @@ import {
     Smile,
     Download,
     Maximize2,
+    Link as LinkIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import Image from "next/image";
 import { downloadImage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -140,6 +142,13 @@ function PostDetailView({
 
     const myId = currentRole === "ảnh" ? "him" : "her";
     const hasReacted = post.reactions?.[myId];
+
+    const copyLink = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}${window.location.pathname}?post=${post.id}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Đã sao chép liên kết kỷ niệm! ❤️");
+    };
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -337,12 +346,12 @@ function PostDetailView({
             <AnimatePresence>
                 {isFullScreen && (
                     <motion.div
-                        className="fixed inset-0 z-[200] bg-black flex flex-col"
+                        className="fixed inset-0 z-200 bg-black flex flex-col"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
-                        <div className="absolute top-4 right-4 z-[210] flex gap-4">
+                        <div className="absolute top-4 right-4 z-210 flex gap-4">
                             <button
                                 onClick={handleDownload}
                                 className="bg-black/50 p-3 rounded-full text-white/70 hover:text-white"
@@ -573,6 +582,20 @@ const TimelinePostCard = memo(({
                     </button>
 
                     <div className="ml-auto flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-white/40 hover:text-rose-gold transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const url = `${window.location.origin}${window.location.pathname}?post=${post.id}`;
+                                navigator.clipboard.writeText(url);
+                                toast.success("Đã sao chép liên kết kỷ niệm! ❤️");
+                            }}
+                            title="Sao chép liên kết"
+                        >
+                            <LinkIcon className="w-4 h-4" />
+                        </Button>
                         {post.user_id === currentRole && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -664,7 +687,7 @@ const TimelinePostCard = memo(({
 
 TimelinePostCard.displayName = "TimelinePostCard";
 
-export function TimelineTab() {
+export function TimelineTab({ initialPostId }: { initialPostId?: string | null }) {
     const {
         role: currentRole,
         profiles
@@ -738,6 +761,19 @@ export function TimelineTab() {
         });
         return map;
     }, [filtered]);
+
+    // Deep Link Effect
+    useEffect(() => {
+        if (initialPostId && posts.length > 0) {
+            const post = posts.find(p => p.id === initialPostId);
+            if (post) {
+                // Ensure we don't re-open it constantly if it's already open
+                if (selectedPost?.id !== post.id) {
+                    openGallery(post);
+                }
+            }
+        }
+    }, [initialPostId, posts, openGallery, selectedPost]);
 
     const handleSubmit = () => {
         if (!newPost.title.trim() || !newPost.content.trim()) return;

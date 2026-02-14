@@ -9,7 +9,9 @@ import {
     ChevronDown,
     X,
     Download,
+    Link as LinkIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import Image from "next/image";
 import { downloadImage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { useValentineAuth, useValentineData } from "@/providers/valentine-provider";
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 
 const HistoryItem = memo(({
     date,
@@ -48,9 +50,25 @@ const HistoryItem = memo(({
             viewport={{ once: true }}
         >
             <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-4">
-                <span className="text-rose-gold font-serif">
-                    {format(new Date(date), "dd/MM/yyyy")}
-                </span>
+                <div className="flex items-center gap-3">
+                    <span className="text-rose-gold font-serif">
+                        {format(new Date(date), "dd/MM/yyyy")}
+                    </span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-white/20 hover:text-rose-gold transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}${window.location.pathname}?caption=${date}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success("Đã sao chép liên kết kỷ niệm! ❤️");
+                        }}
+                        title="Sao chép liên kết"
+                    >
+                        <LinkIcon className="w-3 h-3" />
+                    </Button>
+                </div>
                 <span className="text-xs text-white/30 uppercase tracking-widest">
                     Nhật ký
                 </span>
@@ -97,7 +115,7 @@ const HistoryItem = memo(({
 
 HistoryItem.displayName = "HistoryItem";
 
-export function HomeTab() {
+export function HomeTab({ initialCaptionDate }: { initialCaptionDate?: string | null }) {
     const {
         role: currentRole,
         partnerName,
@@ -149,6 +167,16 @@ export function HomeTab() {
 
     const visibleHistory = history.slice(0, historyLimit);
     const hasMoreHistory = history.length > historyLimit;
+
+    // Deep Link Effect: If initialCaptionDate is provided, make sure it's in history and expand limit if needed
+    useEffect(() => {
+        if (initialCaptionDate) {
+            const index = history.indexOf(initialCaptionDate);
+            if (index !== -1 && index >= historyLimit) {
+                setHistoryLimit(index + 1);
+            }
+        }
+    }, [initialCaptionDate, history, historyLimit]);
 
     const handleSubmit = () => {
         if (!captionText.trim()) return;
