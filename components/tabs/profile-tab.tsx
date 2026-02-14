@@ -23,6 +23,13 @@ import { Input } from "@/components/ui/input";
 import { useLove, useProfiles } from "@/lib/store";
 import { Profile } from "@/lib/types";
 import { FallingHearts } from "../shared/falling-hearts";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ProfileTabProps {
     currentRole: "ảnh" | "ẻm";
@@ -68,6 +75,97 @@ const mergeProfile = (roleId: "him" | "her", dbProfile?: Profile): Profile => {
         dislikes: dbProfile.dislikes || defaultProfile.dislikes,
     };
 };
+
+// Helper Component for Likes/Dislikes
+interface ItemListProps {
+    title: string;
+    icon: React.ReactNode;
+    items: string[];
+    editing: boolean;
+    newItemValue: string;
+    onNewItemChange: (value: string) => void;
+    onAdd: () => void;
+    onRemove: (item: string) => void;
+}
+
+function ItemList({
+    title, icon, items, editing,
+    newItemValue, onNewItemChange, onAdd, onRemove
+}: ItemListProps) {
+    const MAX_VISIBLE = 8;
+    // Show all items if editing, otherwise slice
+    const visibleItems = editing ? items : items.slice(0, MAX_VISIBLE);
+    const hiddenCount = items.length - MAX_VISIBLE;
+    const showMore = !editing && hiddenCount > 0;
+
+    return (
+        <div className="glass-card rounded-lg p-4 flex flex-col h-full">
+            <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
+                {icon}
+                <span className="uppercase tracking-widest">{title}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 content-start grow">
+                {visibleItems.map((item, idx) => (
+                    <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-white/5 hover:bg-white/10 transition-colors rounded-full px-2 py-1.5 h-[20px]">
+                        <p className="text-white/70 text-[10px] leading-tight wrap-break-word pr-1 lowercase font-sans">
+                            # {item}
+                        </p>
+                        {editing && (
+                            <button onClick={() => onRemove(item)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity ml-1 shrink-0 mt-0.5">
+                                <X className="w-3 h-3" />
+                            </button>
+                        )}
+                    </div>
+                ))}
+
+                {showMore && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <button className="flex items-center justify-center bg-white/5 rounded px-2 py-1.5 text-xs text-rose-gold/60 hover:text-rose-gold hover:bg-white/10 transition-colors col-span-2 border border-dashed border-rose-gold/20 h-[32px]">
+                                <Plus className="w-3 h-3 mr-1" /> Xem thêm {hiddenCount} mục
+                            </button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-[#1a1528] border-rose-gold/20 text-white max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-rose-gold font-serif text-xl">
+                                    {icon} {title}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="grid grid-cols-2 gap-3 mt-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                {items.map((item, idx) => (
+                                    <div key={`${item}-${idx}`} className="bg-white/5 rounded px-3 py-2 text-sm text-white/90 font-serif border border-white/10">
+                                        {item}
+                                    </div>
+                                ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
+            </div>
+
+            {editing && (
+                <div className="flex gap-1 mt-3 pt-3 border-t border-white/5 w-full">
+                    <Input
+                        value={newItemValue}
+                        onChange={(e) => onNewItemChange(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && onAdd()}
+                        placeholder="Thêm..."
+                        className="h-8 text-xs bg-transparent border-rose-gold/20 text-white px-2 focus-visible:ring-rose-gold/50 min-w-0"
+                    />
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={onAdd}
+                        className="h-8 w-8 p-0 text-rose-gold hover:bg-rose-gold/10 shrink-0"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </Button>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function ProfileCard({
     roleId,
@@ -361,86 +459,29 @@ function ProfileCard({
                     </div>
                 </div>
 
+
                 {/* Likes & Dislikes */}
                 <div className="w-full mt-6 grid grid-cols-2 gap-4">
-                    <div className="glass-card rounded-lg p-4 flex flex-col">
-                        <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
-                            <ThumbsUp className="w-3 h-3" />
-                            <span className="uppercase tracking-widest">Sở thích</span>
-                        </div>
-                        <div className="space-y-1.5 grow">
-                            {(likes || []).map((like) => (
-                                <div key={like} className="flex justify-between items-start group/item">
-                                    <p className="text-white/50 text-sm italic font-serif">
-                                        {like}
-                                    </p>
-                                    {editing && (
-                                        <button onClick={() => handleRemoveLike(like)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            {editing && (
-                                <div className="flex gap-1 mt-2">
-                                    <Input
-                                        value={newLike}
-                                        onChange={(e) => setNewLike(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && handleAddLike()}
-                                        placeholder="Thêm..."
-                                        className="h-7 text-xs bg-transparent border-rose-gold/20 text-white px-2 focus-visible:ring-rose-gold/50 min-w-0"
-                                    />
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={handleAddLike}
-                                        className="h-7 w-7 p-0 text-rose-gold hover:bg-rose-gold/10 shrink-0"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="glass-card rounded-lg p-4 flex flex-col">
-                        <div className="flex items-center gap-2 text-xs text-rose-gold/60 mb-3">
-                            <ThumbsDown className="w-3 h-3" />
-                            <span className="uppercase tracking-widest">Ghét</span>
-                        </div>
-                        <div className="space-y-1.5 grow">
-                            {(dislikes || []).map((dislike) => (
-                                <div key={dislike} className="flex justify-between items-start group/item">
-                                    <p className="text-white/50 text-sm italic font-serif">
-                                        {dislike}
-                                    </p>
-                                    {editing && (
-                                        <button onClick={() => handleRemoveDislike(dislike)} className="text-white/20 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                            <X className="w-3 h-3" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            {editing && (
-                                <div className="flex gap-1 mt-2">
-                                    <Input
-                                        value={newDislike}
-                                        onChange={(e) => setNewDislike(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && handleAddDislike()}
-                                        placeholder="Thêm..."
-                                        className="h-7 text-xs bg-transparent border-rose-gold/20 text-white px-2 focus-visible:ring-rose-gold/50 min-w-0"
-                                    />
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={handleAddDislike}
-                                        className="h-7 w-7 p-0 text-rose-gold hover:bg-rose-gold/10 shrink-0"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <ItemList
+                        title="Sở thích"
+                        icon={<ThumbsUp className="w-3 h-3" />}
+                        items={likes || []}
+                        editing={editing}
+                        newItemValue={newLike}
+                        onNewItemChange={setNewLike}
+                        onAdd={handleAddLike}
+                        onRemove={handleRemoveLike}
+                    />
+                    <ItemList
+                        title="Ghét"
+                        icon={<ThumbsDown className="w-3 h-3" />}
+                        items={dislikes || []}
+                        editing={editing}
+                        newItemValue={newDislike}
+                        onNewItemChange={setNewDislike}
+                        onAdd={handleAddDislike}
+                        onRemove={handleRemoveDislike}
+                    />
                 </div>
 
                 <div className="mt-auto pt-6 w-full">
