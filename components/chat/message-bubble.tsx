@@ -1,5 +1,6 @@
 import { ChatMessage } from "@/lib/types";
 import { useCurrentUser } from "@/lib/store";
+import { useValentineAuth } from "@/providers/valentine-provider";
 import { cn } from "@/lib/utils";
 import { formatVietnamDate } from "@/lib/date-utils";
 import { Check, CheckCheck, FileText, Play, MoreHorizontal, Pencil, Trash2, X, Save } from "lucide-react";
@@ -25,10 +26,14 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit, onDelete }: MessageBubbleProps) {
     const { role } = useCurrentUser();
+    const { profiles } = useValentineAuth();
     const isMe = role === (message.sender_id === "him" ? "ảnh" : "ẻm");
     const [imageOpen, setImageOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(message.content);
+
+    const senderProfile = profiles[message.sender_id === "him" ? "him" : "her"];
+    const avatarUrl = senderProfile?.avatar_url || (message.sender_id === "him" ? "/images/default-avatar-him.png" : "/images/default-avatar-her.png");
 
     const handleSaveEdit = async () => {
         if (editContent.trim() !== message.content) {
@@ -42,10 +47,11 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
             {/* Avatar for partner */}
             {!isMe && showAvatar && (
                 <div className="w-8 h-8 rounded-full overflow-hidden mr-2 shrink-0 border border-border">
-                    {/* Placeholder or real avatar logic passed down? For now simple placeholders based on sender_id */}
-                    <div className={cn("w-full h-full flex items-center justify-center text-[10px] font-bold text-white", message.sender_id === "him" ? "bg-blue-400" : "bg-pink-400")}>
-                        {message.sender_id === "him" ? "A" : "E"}
-                    </div>
+                    <img
+                        src={avatarUrl}
+                        alt={message.sender_id === "him" ? "Anh" : "Em"}
+                        className="w-full h-full object-cover"
+                    />
                 </div>
             )}
 
@@ -138,7 +144,7 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
                                         <img
                                             src={message.media_url}
                                             alt="Attachment"
-                                            className="max-h-60 object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
+                                            className="max-h-60 max-w-sm object-cover cursor-zoom-in hover:opacity-95 transition-opacity rounded-md"
                                         />
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none flex items-center justify-center">

@@ -11,7 +11,7 @@ import {
     Settings,
     MessageCircle, // Added
 } from "lucide-react";
-import { ChatTab } from "@/components/tabs/chat-tab"; // Added
+import { ChatScreen } from "@/components/chat/chat-screen"; // Added
 import { Tabs } from "@/components/ui/tabs";
 import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -46,7 +46,7 @@ const TABS = [
     { value: "home", label: "Trang chủ", icon: Home },
     { value: "countdown", label: "Đếm ngược", icon: Timer },
     { value: "timeline", label: "Kỷ niệm", icon: BookHeart },
-    { value: "chat", label: "Trò chuyện", icon: MessageCircle }, // Added
+    // { value: "chat", label: "Trò chuyện", icon: MessageCircle }, // Removed
     { value: "profile", label: "Hồ sơ", icon: User },
     // { value: "settings", label: "Cài đặt", icon: Settings },
 ];
@@ -54,6 +54,7 @@ const TABS = [
 export function MainApp() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const [showChat, setShowChat] = useState(false);
     const [activeTab, setActiveTab] = useState("home");
     const [refreshKeys, setRefreshKeys] = useState<Record<string, number>>({
         home: 0,
@@ -97,9 +98,6 @@ export function MainApp() {
 
         if (tabParam && TABS.some(t => t.value === tabParam)) {
             setActiveTab(tabParam);
-            if (chatRef && chatType) {
-                setChatContext({ type: chatType as any, id: chatRef });
-            }
         } else if (postParam) {
             setActiveTab("timeline");
         } else if (captionParam) {
@@ -107,31 +105,25 @@ export function MainApp() {
         } else if (countdownParam) {
             setActiveTab("countdown");
         }
+
+        if (tabParam === "chat" || (chatRef && chatType)) {
+            // If URL says chat, open chat screen and remove param to avoid stuck state?
+            // Or just open it.
+            setShowChat(true);
+            if (chatRef && chatType) {
+                setChatContext({ type: chatType as any, id: chatRef });
+            }
+        }
     }, [searchParams]);
+
     const {
         role: currentRole,
         startDate,
         myProfile,
-        myCaption,
-        partnerCaption,
-        hasWrittenToday,
-        captions,
-        onSubmitCaption,
-        posts,
-        addPost: onAddPost,
-        updatePost: onUpdatePost,
-        deletePost: onDeletePost,
-        setStartDate: onUpdateStartDate,
-        onChangePassword,
-        lock: onLock,
-        togglePostReaction: onTogglePostReaction,
-        partnerName,
         currentUserAvatarURL,
         profiles,
-        updateProfile
+        lock: onLock,
     } = useValentine();
-
-    const password = myProfile?.password || "19042025";
 
     return (
         <div className="min-h-screen relative">
@@ -154,6 +146,15 @@ export function MainApp() {
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full text-muted-foreground hover:text-primary relative"
+                                onClick={() => setShowChat(true)}
+                            >
+                                <MessageCircle className="w-5 h-5" />
+                                {/* Add unread badge here if needed */}
+                            </Button>
                             <ModeToggle />
                             <NotificationCenter onNavigate={handleNavigate} />
                             <DropdownMenu>
@@ -235,18 +236,6 @@ export function MainApp() {
                             </motion.div>
                         )}
 
-                        {activeTab === "chat" && (
-                            <motion.div
-                                key={`chat-${refreshKeys.chat}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <ChatTab initialContext={chatContext || undefined} />
-                            </motion.div>
-                        )}
-
                         {/* Settings Tab */}
                         {activeTab === "settings" && (
                             <motion.div
@@ -261,6 +250,16 @@ export function MainApp() {
                         )}
                     </AnimatePresence>
                 </main>
+
+                {/* Chat Screen Overlay */}
+                <AnimatePresence>
+                    {showChat && (
+                        <ChatScreen
+                            onClose={() => setShowChat(false)}
+                            initialContext={chatContext || undefined}
+                        />
+                    )}
+                </AnimatePresence>
 
                 {/* Bottom Navigation */}
                 <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">

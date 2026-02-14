@@ -66,10 +66,10 @@ export function ChatInput({ onSendMessage, onSendFile, replyTo, onCancelReply }:
     };
 
     return (
-        <div className="p-3 bg-background border-t border-border/50 sticky bottom-0 z-20 backdrop-blur-lg bg-background/95 supports-[backdrop-filter]:bg-background/60">
+        <div className="p-1">
             {/* Reply Context Preview */}
             {replyTo && (
-                <div className="flex items-center justify-between bg-muted/50 p-2 rounded-t-lg mb-2 border border-border/50">
+                <div className="flex items-center justify-between bg-muted/90 backdrop-blur-md p-2 rounded-t-2xl mb-2 border border-border/50 shadow-sm">
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                         <span className="font-semibold text-primary">Đang trả lời:</span>
                         <LinkPreviewCard type={replyTo.type} id={replyTo.id} />
@@ -101,7 +101,7 @@ export function ChatInput({ onSendMessage, onSendFile, replyTo, onCancelReply }:
                     </Button>
                 </div>
 
-                <div className="flex-1 relative rounded-2xl bg-muted/40 border-border/50 focus-within:bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all border">
+                <div className="flex-1 relative rounded-full bg-muted/80 hover:bg-muted/90 backdrop-blur-sm border border-white/10 focus-within:bg-background/80 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-sm">
                     <Textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
