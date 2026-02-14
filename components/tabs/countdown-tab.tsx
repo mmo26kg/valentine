@@ -381,7 +381,7 @@ export function CountdownTab() {
                 <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-center font-serif italic text-2xl text-rose-gold">
-                            {editingCountdown?.id ? "Edit Countdown" : "New Countdown"}
+                            {editingCountdown?.id ? "Chỉnh sửa cột mốc" : "Thêm cột mốc"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -393,7 +393,7 @@ export function CountdownTab() {
                                 onChange={(e) =>
                                     setEditingCountdown((prev) => prev ? ({ ...prev, title: e.target.value }) : null)
                                 }
-                                placeholder="e.g. Anniversary"
+                                placeholder="Ví dụ: Kỷ niệm sinh nhật"
                                 className="bg-white/5 border-white/10 text-white"
                             />
                         </div>
@@ -457,7 +457,7 @@ export function CountdownTab() {
                                 onChange={(e) =>
                                     setEditingCountdown((prev) => prev ? ({ ...prev, description: e.target.value }) : null)
                                 }
-                                placeholder="Short description..."
+                                placeholder="Mô tả..."
                                 className="bg-white/5 border-white/10 text-white"
                             />
                         </div>
