@@ -282,7 +282,11 @@ export function useTimelinePosts() {
             .order("created_at", { ascending: false });
 
         if (data && data.length > 0) {
-            setPostsState(data);
+            const formatted = data.map(p => ({
+                ...p,
+                reactions: p.reactions || {}
+            }));
+            setPostsState(formatted);
         } else {
             // Fallback/Seed if empty? logic can be added here, 
             // but for now we assume DB is source of truth.
@@ -401,7 +405,35 @@ export function useTimelinePosts() {
         []
     );
 
-    return { posts, addPost, updatePost, deletePost };
+    const togglePostReaction = useCallback(async (postId: string, userId: string, emoji: string = "❤️") => {
+        const post = posts.find(p => p.id === postId);
+        if (!post) return;
+
+        const currentReactions = post.reactions || {};
+        const currentEmoji = currentReactions[userId];
+        const newReactions = { ...currentReactions };
+
+        if (currentEmoji === emoji) {
+            delete newReactions[userId];
+        } else {
+            newReactions[userId] = emoji;
+        }
+
+        // Optimistic update
+        setPostsState(prev => prev.map(p => p.id === postId ? { ...p, reactions: newReactions } : p));
+
+        const { error } = await supabase
+            .from("posts")
+            .update({ reactions: newReactions })
+            .eq("id", postId);
+
+        if (error) {
+            console.error("Error toggling post reaction:", error);
+            fetchPosts();
+        }
+    }, [posts]);
+
+    return { posts, addPost, updatePost, deletePost, togglePostReaction };
 }
 
 export const useEvents = () => {
@@ -707,6 +739,51 @@ export function useLove(currentRole: "ảnh" | "ẻm") {
     return { loveCount, sendLove, cooldownRemaining };
 }
 
+/** Love Statistics (Total Counts) */
+export function useLoveStats() {
+    const [stats, setStats] = useState<{ him: number; her: number }>({ him: 0, her: 0 });
+
+    const fetchStats = useCallback(async () => {
+        // Count for Him (received from Her)
+        const { count: countForHim } = await supabase
+            .from("love_logs")
+            .select("*", { count: "exact", head: true })
+            .eq("sender_id", "her");
+
+        // Count for Her (received from Him)
+        const { count: countForHer } = await supabase
+            .from("love_logs")
+            .select("*", { count: "exact", head: true })
+            .eq("sender_id", "him");
+
+        setStats({
+            him: countForHim || 0,
+            her: countForHer || 0
+        });
+    }, []);
+
+    useEffect(() => {
+        void fetchStats();
+
+        const channel = supabase
+            .channel("love_stats_changes")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "love_logs" },
+                () => {
+                    fetchStats();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [fetchStats]);
+
+    return stats;
+}
+
 export function usePostComments(postId: string) {
     const [comments, setComments] = useState<Comment[]>([]);
 
@@ -809,9 +886,17 @@ export function usePostComments(postId: string) {
 
         if (error) {
             console.error("Error toggling reaction:", error);
-            fetchComments();
+            // Revert
+            const revertReactions = { ...comment.reactions };
+            if (currentReaction) {
+                revertReactions[userId] = currentReaction;
+            } else {
+                delete revertReactions[userId];
+            }
+            const revertedComment = { ...comment, reactions: revertReactions };
+            setComments(prev => prev.map(c => c.id === commentId ? revertedComment : c));
         }
-    }, [comments, fetchComments]);
+    }, [comments]);
 
     const deleteComment = useCallback(async (commentId: string) => {
         setComments(prev => prev.filter(c => c.id !== commentId));
@@ -820,3 +905,87 @@ export function usePostComments(postId: string) {
 
     return { comments, addComment, toggleReaction, deleteComment };
 }
+
+/** Greetings (Shared via Supabase) */
+export interface Greeting {
+    id: string;
+    content: string;
+    time_of_day: "morning" | "afternoon" | "evening" | "night";
+    author_id: "him" | "her";
+    created_at?: string;
+}
+
+export function useGreetings() {
+    const [greetings, setGreetings] = useState<Greeting[]>([]);
+
+    const fetchGreetings = useCallback(async () => {
+        const { data, error } = await supabase
+            .from("greetings")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching greetings:", error);
+        } else if (data) {
+            setGreetings(data as Greeting[]);
+        }
+    }, []);
+
+    useEffect(() => {
+        void fetchGreetings();
+
+        const channel = supabase
+            .channel("greetings_changes")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "valentine", table: "greetings" },
+                () => {
+                    fetchGreetings();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [fetchGreetings]);
+
+    const addGreeting = useCallback(async (content: string, timeOfDay: string, authorId: string) => {
+        const tempId = crypto.randomUUID();
+        const newGreeting: Greeting = {
+            id: tempId,
+            content,
+            time_of_day: timeOfDay as any,
+            author_id: authorId as any,
+            created_at: new Date().toISOString(),
+        };
+
+        setGreetings(prev => [newGreeting, ...prev]);
+
+        const { error } = await supabase.from("greetings").insert({
+            id: tempId,
+            content,
+            time_of_day: timeOfDay,
+            author_id: authorId
+        });
+
+        if (error) {
+            console.error("Error adding greeting:", error);
+            setGreetings(prev => prev.filter(g => g.id !== tempId));
+        }
+    }, []);
+
+    const deleteGreeting = useCallback(async (id: string) => {
+        setGreetings(prev => prev.filter(g => g.id !== id));
+        const { error } = await supabase.from("greetings").delete().eq("id", id);
+        if (error) {
+            console.error("Error deleting greeting:", error);
+            // Revert logic could be added here if needed, but simple delete usually safe enough
+            fetchGreetings();
+        }
+    }, [fetchGreetings]);
+
+    return { greetings, addGreeting, deleteGreeting };
+}
+
+

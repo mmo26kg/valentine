@@ -23,7 +23,7 @@ export default function ValentineApp() {
     const { password, setPassword } = usePassword();
     const { startDate, setStartDate } = useStartDate();
     const { captions, setCaption, getCaption, hasWrittenToday } = useDailyCaptions();
-    const { posts, addPost, updatePost, deletePost } = useTimelinePosts();
+    const { posts, addPost, updatePost, deletePost, togglePostReaction } = useTimelinePosts();
 
     const todayStr = format(new Date(), "yyyy-MM-dd");
     const partnerRole = role === "ảnh" ? "ẻm" : "ảnh";
@@ -95,6 +95,7 @@ export default function ValentineApp() {
             onUpdateStartDate={setStartDate}
             onChangePassword={setPassword}
             onLock={lock}
+            onTogglePostReaction={togglePostReaction}
         />
     );
 }

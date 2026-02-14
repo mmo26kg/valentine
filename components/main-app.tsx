@@ -58,6 +58,7 @@ interface MainAppProps {
     onUpdateStartDate: (date: string) => void;
     onChangePassword: (pw: string) => void;
     onLock: () => void;
+    onTogglePostReaction: (postId: string, userId: string, emoji: string) => void;
 }
 
 export function MainApp({
@@ -76,6 +77,7 @@ export function MainApp({
     onUpdateStartDate,
     onChangePassword,
     onLock,
+    onTogglePostReaction,
 }: MainAppProps) {
     const [activeTab, setActiveTab] = useState("home");
     const { profiles, updateProfile } = useProfiles();
@@ -183,6 +185,7 @@ export function MainApp({
                                     onAddPost={onAddPost}
                                     onUpdatePost={onUpdatePost}
                                     onDeletePost={onDeletePost}
+                                    onTogglePostReaction={onTogglePostReaction}
                                 />
                             </motion.div>
                         )}

@@ -27,7 +27,9 @@ import { differenceInDays, differenceInHours, differenceInMinutes, format, start
 // import { DEFAULT_COUNTDOWN_EVENTS } from "@/lib/constants";
 import { getVietnamDate, formatVietnamDate } from "@/lib/date-utils";
 import type { CountdownEvent } from "@/lib/types";
-import { useCountdowns } from "@/lib/store";
+import { useCountdowns, useGreetings, useCurrentUser } from "@/lib/store";
+import { DEFAULT_GREETINGS } from "@/lib/constants";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ICON_MAP: Record<string, React.ElementType> = {
     heart: Heart,
@@ -48,6 +50,160 @@ const ICONS = [
 ];
 
 const TYPES = ["Ngày lễ", "Kỷ niệm", "Sinh nhật", "Khác", "Đi chơi"];
+
+function GreetingConfigDialog({
+    open,
+    onOpenChange
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void
+}) {
+    const { greetings, addGreeting, deleteGreeting } = useGreetings();
+    const { role } = useCurrentUser(); // "ảnh" or "ẻm"
+    const myAuthorId = role === "ảnh" ? "him" : "her";
+
+    // Greetings I have written
+    const myGreetings = greetings.filter(g => g.author_id === myAuthorId);
+
+    const [newContent, setNewContent] = useState("");
+    const [activeTab, setActiveTab] = useState("morning");
+
+    const handleAdd = () => {
+        if (!newContent.trim()) return;
+        addGreeting(newContent, activeTab, myAuthorId);
+        setNewContent("");
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="bg-surface border-rose-gold/10 text-white max-w-md max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle className="text-center font-serif italic text-2xl text-rose-gold">
+                        Cấu hình lời chào
+                    </DialogTitle>
+                </DialogHeader>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 bg-white/5">
+                        <TabsTrigger value="morning">Sáng</TabsTrigger>
+                        <TabsTrigger value="afternoon">Trưa</TabsTrigger>
+                        <TabsTrigger value="evening">Chiều</TabsTrigger>
+                        <TabsTrigger value="night">Tối</TabsTrigger>
+                    </TabsList>
+
+                    {["morning", "afternoon", "evening", "night"].map((timeOfDay) => (
+                        <TabsContent key={timeOfDay} value={timeOfDay} className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                                <p className="text-sm text-white/50">Thêm lời chào mới cho buổi {timeOfDay === "morning" ? "Sáng" : timeOfDay === "afternoon" ? "Trưa" : timeOfDay === "evening" ? "Chiều" : "Tối"}:</p>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={newContent}
+                                        onChange={(e) => setNewContent(e.target.value)}
+                                        placeholder="Nhập lời chào..."
+                                        className="bg-white/5 border-white/10 text-white"
+                                        onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                                    />
+                                    <Button onClick={handleAdd} size="icon" className="bg-rose-gold text-surface hover:bg-rose-gold/90 shrink-0">
+                                        <Plus className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-sm text-white/50">Danh sách câu chào của bạn:</p>
+                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                                    {myGreetings.filter(g => g.time_of_day === timeOfDay).length === 0 ? (
+                                        <p className="text-white/30 text-sm italic py-2 text-center">Chưa có câu chào nào.</p>
+                                    ) : (
+                                        myGreetings
+                                            .filter(g => g.time_of_day === timeOfDay)
+                                            .map(g => (
+                                                <div key={g.id} className="flex justify-between items-center bg-white/5 p-3 rounded-lg group">
+                                                    <p className="text-sm text-white/90">{g.content}</p>
+                                                    <Button
+                                                        onClick={() => deleteGreeting(g.id)}
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </Button>
+                                                </div>
+                                            ))
+                                    )}
+                                </div>
+                            </div>
+                        </TabsContent>
+                    ))}
+                </Tabs>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DynamicGreeting({ onEdit }: { onEdit: () => void }) {
+    const [greeting, setGreeting] = useState("");
+    const { greetings } = useGreetings();
+    const { role } = useCurrentUser();
+    const partnerId = role === "ảnh" ? "her" : "him";
+
+    useEffect(() => {
+        const updateGreeting = () => {
+            const hour = new Date().getHours();
+            let timeOfDay: keyof typeof DEFAULT_GREETINGS = "night";
+
+            if (hour >= 5 && hour < 12) timeOfDay = "morning";
+            else if (hour >= 12 && hour < 18) timeOfDay = "afternoon";
+            else if (hour >= 18 && hour < 22) timeOfDay = "evening";
+
+            // 1. Get greetings from partner
+            const partnerGreetings = greetings.filter(g => g.author_id === partnerId && g.time_of_day === timeOfDay);
+
+            // 2. Get default greetings
+            const defaultGreetings = DEFAULT_GREETINGS[timeOfDay];
+
+            // 3. Choose options
+            // System: Prioritize partner greetings. If they exist, use ONLY them.
+            let options: string[] = [];
+
+            if (partnerGreetings.length > 0) {
+                options = partnerGreetings.map(g => g.content);
+            } else {
+                options = defaultGreetings;
+            }
+
+            // Filter out empty options
+            const validOptions = options.filter(Boolean);
+
+            if (validOptions.length > 0) {
+                const randomGreeting = validOptions[Math.floor(Math.random() * validOptions.length)];
+                setGreeting(randomGreeting);
+            }
+        };
+
+        // Initial set
+        updateGreeting();
+
+        // Rotate every 15 seconds
+        const interval = setInterval(updateGreeting, 15000);
+
+        return () => clearInterval(interval);
+    }, [greetings, role, partnerId]);
+
+    return (
+        <span className="group flex items-center gap-2">
+            {greeting}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-rose-gold"
+            >
+                <Pencil className="w-3 h-3" />
+            </Button>
+        </span>
+    );
+}
 
 function getTargetDate(event: CountdownEvent) {
     const now = getVietnamDate();
@@ -114,6 +270,7 @@ export function CountdownTab() {
 
     const [editingCountdown, setEditingCountdown] = useState<Partial<CountdownEvent> | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isGreetingConfigOpen, setIsGreetingConfigOpen] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const handleSave = () => {
@@ -179,8 +336,8 @@ export function CountdownTab() {
                 animate={{ opacity: 1, y: 0 }}
             >
                 <div>
-                    <p className="text-rose-gold text-lg italic font-serif mb-1">
-                        Chào bạn yêu
+                    <p className="text-rose-gold text-lg italic font-serif mb-1 min-h-7">
+                        <DynamicGreeting onEdit={() => setIsGreetingConfigOpen(true)} />
                     </p>
                     <h1 className="text-4xl md:text-5xl font-light text-white">
                         Sự kiện sắp tới
@@ -504,6 +661,8 @@ export function CountdownTab() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <GreetingConfigDialog open={isGreetingConfigOpen} onOpenChange={setIsGreetingConfigOpen} />
         </div>
     );
 }

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 // import { SAMPLE_USERS } from "@/lib/constants";
-import { useLove, useProfiles } from "@/lib/store";
+import { useLove, useProfiles, useLoveStats } from "@/lib/store";
 import { Profile } from "@/lib/types";
 import { FallingHearts } from "../shared/falling-hearts";
 import {
@@ -182,6 +182,7 @@ function ProfileCard({
         sendLove: () => Promise<boolean>;
         loveCount: number;
         cooldownRemaining: number;
+        totalLove: number;
     };
 }) {
     const [editing, setEditing] = useState(false);
@@ -495,35 +496,53 @@ function ProfileCard({
                                 </div>
                             </div>
                             <p className="text-xs text-white/40 mt-1 text-right">lượt yêu hôm nay</p>
+
+                            <div className="flex items-center justify-between text-rose-gold/70 mt-3 pt-3 border-t border-rose-gold/10">
+                                <span className="text-sm font-medium">Tổng lịch sử</span>
+                                <div className="flex items-center gap-2">
+                                    <Heart className="w-4 h-4" />
+                                    <span className="text-lg font-bold">{loveProps.totalLove}</span>
+                                </div>
+                            </div>
                         </div>
                     ) : (
-                        <Button
-                            className={`w-full gap-2 relative overflow-hidden transition-all ${loveProps.cooldownRemaining > 0
-                                ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/5 cursor-not-allowed'
-                                : 'bg-rose-gold/10 hover:bg-rose-gold/20 text-rose-gold border border-rose-gold/20 hover:border-rose-gold/50'
-                                }`}
-                            onClick={async () => {
-                                if (loveProps.cooldownRemaining === 0) {
-                                    const sent = await loveProps.sendLove();
-                                    if (sent) {
-                                        // toast.success("Đã gửi chút tình iu! 💖");
+                        <div>
+                            <Button
+                                className={`w-full gap-2 relative overflow-hidden transition-all ${loveProps.cooldownRemaining > 0
+                                    ? 'bg-white/5 text-white/40 border-white/10 hover:bg-white/5 cursor-not-allowed'
+                                    : 'bg-rose-gold/10 hover:bg-rose-gold/20 text-rose-gold border border-rose-gold/20 hover:border-rose-gold/50'
+                                    }`}
+                                onClick={async () => {
+                                    if (loveProps.cooldownRemaining === 0) {
+                                        const sent = await loveProps.sendLove();
+                                        if (sent) {
+                                            // toast.success("Đã gửi chút tình iu! 💖");
+                                        }
                                     }
-                                }
-                            }}
-                            disabled={loveProps.cooldownRemaining > 0}
-                        >
-                            {loveProps.cooldownRemaining > 0 ? (
-                                <>
-                                    <Clock className="w-4 h-4 animate-pulse" />
-                                    <span>{formatCooldown(loveProps.cooldownRemaining)}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Heart className="w-4 h-4 fill-current" />
-                                    <span>Gửi chút tình yêu</span>
-                                </>
-                            )}
-                        </Button>
+                                }}
+                                disabled={loveProps.cooldownRemaining > 0}
+                            >
+                                {loveProps.cooldownRemaining > 0 ? (
+                                    <>
+                                        <Clock className="w-4 h-4 animate-pulse" />
+                                        <span>{formatCooldown(loveProps.cooldownRemaining)}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Heart className="w-4 h-4 fill-current" />
+                                        <span>Gửi chút tình yêu</span>
+                                    </>
+                                )}
+                            </Button>
+
+                            <div className="flex items-center justify-between text-white/30 mt-3 px-1">
+                                <span className="text-xs">Tổng số tim đã nhận</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Heart className="w-3 h-3" />
+                                    <span className="text-sm font-medium">{loveProps.totalLove}</span>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
@@ -536,6 +555,9 @@ export function ProfileTab({ currentRole, profiles, updateProfile }: ProfileTabP
     // const { profiles, updateProfile } = useProfiles(); // Removed internal hook usage
     console.log("Current profiles state:", profiles);
     const { sendLove, loveCount, cooldownRemaining } = useLove(currentRole);
+    const apiStats = useLoveStats();
+    // If apiStats is missing/loading, default to 0
+    const stats = apiStats || { him: 0, her: 0 };
 
     const himProfile = mergeProfile("him", profiles["him"]);
     const herProfile = mergeProfile("her", profiles["her"]);
@@ -576,7 +598,8 @@ export function ProfileTab({ currentRole, profiles, updateProfile }: ProfileTabP
                 loveProps={{
                     sendLove: handleSendLove,
                     loveCount,
-                    cooldownRemaining
+                    cooldownRemaining,
+                    totalLove: stats.him
                 }}
             />
             <ProfileCard
@@ -587,7 +610,8 @@ export function ProfileTab({ currentRole, profiles, updateProfile }: ProfileTabP
                 loveProps={{
                     sendLove: handleSendLove,
                     loveCount,
-                    cooldownRemaining
+                    cooldownRemaining,
+                    totalLove: stats.her
                 }}
             />
         </div>

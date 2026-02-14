@@ -37,6 +37,7 @@ export interface TimelinePost {
     media_urls?: string[]; // New field for multiple images
     event_date: string;
     type: "photo" | "video" | "text" | "milestone";
+    reactions?: Record<string, string>; // { "him": "❤️", "her": "👍" }
     created_at: string;
     location?: string;
     user?: User;

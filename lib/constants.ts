@@ -153,4 +153,30 @@ export const SAMPLE_TIMELINE_POSTS = [
 //         likes: ["Cacao sữa gấu", "Latte dâu", "Mochi", "Lẩu bò", "Dồi trường", "Thú linh nướng", "Bún đậu", "Bún riêu", "Texas"],
 //         dislikes: ["Thằn lằn", "Rắn", "Bò sát các loại", "Đi làm"],
 //     },
-// };
+// ─── Greetings ───
+export const DEFAULT_GREETINGS = {
+    morning: [
+        "Chào buổi sáng, chúc bạn yêu một ngày tốt lành! ☀️",
+        "Dậy chưa bé ơi? Nhớ ăn sáng đầy đủ nha! 🥐",
+        "Ngày mới năng lượng nhé tình yêu! 💪",
+        "Sáng nay trời đẹp, nhưng không đẹp bằng em! 😉"
+    ],
+    afternoon: [
+        "Trưa rồi, nghỉ ngơi xíu đi nè! 😴",
+        "Đừng quên uống nước nha! 💧",
+        "Cố lên, sắp hết giờ làm rồi! 🚀",
+        "Chiều nay ăn gì đây ta? 🤔"
+    ],
+    evening: [
+        "Chào buổi tối! Hôm nay thế nào? 🌙",
+        "Về nhà cẩn thận nha! 🚗",
+        "Tối nay mình đi đâu chơi không? 🎬",
+        "Thư giãn thôi, cả ngày vất vả rồi! 🍷"
+    ],
+    night: [
+        "Khuya rồi, ngủ sớm đi bé ơi! 😴",
+        "Chúc bé ngủ ngon, mơ đẹp nha! 💤",
+        "Đừng thức khuya nữa, hại mắt lắm! 👀",
+        "Yêu em nhất trên đời, ngủ ngon! ❤️"
+    ]
+};

@@ -54,6 +54,7 @@ interface TimelinePost {
     created_at: string;
     location?: string;
     media_urls?: string[];
+    reactions?: Record<string, string>;
 }
 
 interface TimelineTabProps {
@@ -62,6 +63,7 @@ interface TimelineTabProps {
     onAddPost: (post: Omit<TimelinePost, "id" | "created_at">) => void;
     onDeletePost?: (id: string, mediaUrls: string[]) => void;
     onUpdatePost?: (id: string, updates: Partial<TimelinePost>) => void;
+    onTogglePostReaction?: (postId: string, userId: string, emoji: string) => void;
 }
 
 function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
@@ -112,7 +114,7 @@ function CommentItem({ comment, currentRole, profiles, onDelete, onReact }: {
                     {isOwner && (
                         <button
                             onClick={() => onDelete(comment.id)}
-                            className="hover:text-red-400 transition-colors opacity-0 group-hover/comment:opacity-100"
+                            className="text-white/30 hover:text-red-400 transition-colors"
                         >
                             Xóa
                         </button>
@@ -129,17 +131,25 @@ function PostDetailView({
     post,
     currentRole,
     profiles,
-    onClose
+    onClose,
+    initialIndex,
+    onTogglePostReaction
 }: {
     post: TimelinePost,
     currentRole: "ảnh" | "ẻm",
     profiles: Record<string, Profile>,
-    onClose: () => void
+    onClose: () => void,
+    initialIndex?: number,
+    onTogglePostReaction: (postId: string, userId: string, emoji: string) => void
 }) {
     const { comments, addComment, toggleReaction, deleteComment } = usePostComments(post.id);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentImageIndex, setCurrentImageIndex] = useState(initialIndex || 0);
+
+    const myId = currentRole === "ảnh" ? "him" : "her";
+    const hasReacted = post.reactions?.[myId]; // Use simplified check or specific emoji checking
+    // If strict emoji check: const hasReacted = post.reactions?.[myId] === "❤️";
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -229,89 +239,202 @@ function PostDetailView({
                             <h2 className="text-xl font-serif italic text-white mb-1">{post.title}</h2>
                             <p className="text-rose-gold/50 text-xs uppercase tracking-widest">{format(new Date(post.event_date), "d MMMM, yyyy")}</p>
                         </div>
-                        {/* <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-                            <X className="w-6 h-6" />
-                        </button> */}
-                    </div>
-                    {post.location && (
-                        <div className="flex items-center gap-1 mt-2 text-sm text-white/40">
-                            <MapPin className="w-3 h-3" />
-                            {post.location}
-                        </div>
-                    )}
-                    <p className="mt-4 text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic">
-                        {post.content}
-                    </p>
-                </div>
 
-                {/* Comments List (Scrollable) */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                    {comments.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-white/20">
-                            <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
-                            <p className="text-sm italic">Chưa có bình luận nào</p>
-                        </div>
-                    ) : (
-                        comments.map(comment => (
-                            <CommentItem
-                                key={comment.id}
-                                comment={comment}
-                                currentRole={currentRole}
-                                profiles={profiles}
-                                onDelete={deleteComment}
-                                onReact={toggleReaction}
-                            />
-                        ))
-                    )}
-                </div>
-
-                {/* Input Area (Sticky Bottom) */}
-                <div className="p-4 border-t border-white/5 bg-surface shrink-0">
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <Input
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                                placeholder="Viết bình luận..."
-                                className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
-                            />
-                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
-                        </div>
-                        <Button
-                            size="icon"
-                            onClick={handleAddComment}
-                            disabled={!newComment.trim() || isSubmitting}
-                            className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
-                        >
-                            <Send className="w-4 h-4" />
-                        </Button>
                     </div>
+                </div>
+                {post.location && (
+                    <div className="flex items-center gap-1 mt-2 text-sm text-white/40">
+                        <MapPin className="w-3 h-3" />
+                        {post.location}
+                    </div>
+                )}
+                <p className="mt-4 text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic">
+                    {post.content}
+                </p>
+
+                {/* Reactions */}
+                <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-4">
+                    <button
+                        onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${hasReacted
+                            ? "bg-rose-gold/20 text-rose-gold"
+                            : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                            }`}
+                    >
+                        <Heart className={`w-4 h-4 ${hasReacted ? "fill-rose-gold" : ""}`} />
+                        {hasReacted ? "Đã thích" : "Thích"}
+                        {Object.keys(post.reactions || {}).length > 0 && (
+                            <span className="ml-1 opacity-70">
+                                {Object.keys(post.reactions || {}).length}
+                            </span>
+                        )}
+                    </button>
                 </div>
             </div>
+
+            {/* Comments List (Scrollable) */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                {comments.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-white/20">
+                        <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
+                        <p className="text-sm italic">Chưa có bình luận nào</p>
+                    </div>
+                ) : (
+                    comments.map(comment => (
+                        <CommentItem
+                            key={comment.id}
+                            comment={comment}
+                            currentRole={currentRole}
+                            profiles={profiles}
+                            onDelete={deleteComment}
+                            onReact={toggleReaction}
+                        />
+                    ))
+                )}
+            </div>
+
+            {/* Input Area (Sticky Bottom) */}
+            <div className="p-4 border-t border-white/5 bg-surface shrink-0">
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Input
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                            placeholder="Viết bình luận..."
+                            className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
+                        />
+                        <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
+                    </div>
+                    <Button
+                        size="icon"
+                        onClick={handleAddComment}
+                        disabled={!newComment.trim() || isSubmitting}
+                        className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
+                    >
+                        <Send className="w-4 h-4" />
+                    </Button>
+                </div>
+            </div>
+        </div>
+
+    );
+}
+
+function MediaGrid({ mediaUrls, onOpen }: { mediaUrls: string[], onOpen: (index: number) => void }) {
+    const count = mediaUrls.length;
+    if (count === 0) return null;
+
+    // 1 Image
+    if (count === 1) {
+        return (
+            <div
+                className="relative aspect-video w-full overflow-hidden cursor-pointer group"
+                onClick={() => onOpen(0)}
+            >
+                <Image
+                    src={mediaUrls[0]}
+                    alt="Media"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+            </div>
+        );
+    }
+
+    // 2 Images
+    if (count === 2) {
+        return (
+            <div className="grid grid-cols-2 gap-0.5 w-full aspect-video overflow-hidden">
+                {mediaUrls.map((url, i) => (
+                    <div key={i} className="relative w-full h-full cursor-pointer group overflow-hidden" onClick={() => onOpen(i)}>
+                        <Image
+                            src={url}
+                            alt={`Media ${i}`}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    // 3 Images
+    if (count === 3) {
+        return (
+            <div className="grid grid-cols-2 gap-0.5 w-full aspect-video overflow-hidden">
+                <div className="relative w-full h-full cursor-pointer group overflow-hidden" onClick={() => onOpen(0)}>
+                    <Image
+                        src={mediaUrls[0]}
+                        alt="Media 0"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                </div>
+                <div className="grid grid-rows-2 gap-0.5 w-full h-full">
+                    {[1, 2].map(i => (
+                        <div key={i} className="relative w-full h-full cursor-pointer group overflow-hidden" onClick={() => onOpen(i)}>
+                            <Image
+                                src={mediaUrls[i]}
+                                alt={`Media ${i}`}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // 4+ Images
+    return (
+        <div className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full aspect-video overflow-hidden">
+            {mediaUrls.slice(0, 4).map((url, i) => (
+                <div key={i} className="relative w-full h-full cursor-pointer group overflow-hidden" onClick={() => onOpen(i)}>
+                    <Image
+                        src={url}
+                        alt={`Media ${i}`}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    {i === 3 && count > 4 && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-serif text-2xl backdrop-blur-sm">
+                            +{count - 4}
+                        </div>
+                    )}
+                </div>
+            ))}
         </div>
     );
 }
 
 function TimelinePostCard({
-    post, currentRole, openGallery, handleEdit, handleDelete, profiles
+    post, currentRole, openGallery, handleEdit, handleDelete, profiles, onTogglePostReaction
 }: {
     post: TimelinePost,
     currentRole: "ảnh" | "ẻm",
     openGallery: (post: TimelinePost, index: number) => void,
     handleEdit: (post: TimelinePost) => void,
     handleDelete: (post: TimelinePost) => void,
-    profiles: Record<string, Profile>
+    profiles: Record<string, Profile>,
+    onTogglePostReaction: (postId: string, userId: string, emoji: string) => void
 }) {
     const { comments, addComment, toggleReaction, deleteComment } = usePostComments(post.id);
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Reaction state
+    const myId = currentRole === "ảnh" ? "him" : "her";
+    const hasReacted = post.reactions?.[myId];
+
     // Limit displayed comments
     const VISIBLE_COMMENTS = 3;
     const displayedComments = comments.slice(0, VISIBLE_COMMENTS);
     const hasMoreComments = comments.length > VISIBLE_COMMENTS;
+    const shouldShowComments = showComments || comments.length > 0;
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
@@ -322,41 +445,13 @@ function TimelinePostCard({
         setIsSubmitting(false);
     };
 
+    const allMedia = (post.media_urls && post.media_urls.length > 0)
+        ? post.media_urls
+        : (post.media_url ? [post.media_url] : []);
+
     return (
         <div className="glass-card glass-card-hover rounded-xl overflow-hidden">
-            {(post.media_urls && post.media_urls.length > 0) ? (
-                <div
-                    className="relative aspect-video overflow-hidden cursor-pointer group"
-                    onClick={() => openGallery(post, 0)}
-                >
-                    <Image
-                        src={post.media_urls[0]}
-                        alt={post.title}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                    {post.media_urls.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-md">
-                            +{post.media_urls.length - 1}
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-white text-sm font-serif italic">Xem chi tiết</span>
-                    </div>
-                </div>
-            ) : post.media_url ? (
-                <div
-                    className="relative aspect-video overflow-hidden cursor-pointer"
-                    onClick={() => openGallery(post, 0)}
-                >
-                    <Image
-                        src={post.media_url}
-                        alt={post.title}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                </div>
-            ) : null}
+            <MediaGrid mediaUrls={allMedia} onOpen={(index) => openGallery(post, index)} />
 
             <div className="p-5">
                 {!post.media_url && !post.media_urls?.length && (
@@ -372,12 +467,19 @@ function TimelinePostCard({
                 </div>
 
                 <div className="flex items-center gap-3 mt-4 text-xs text-white/20 border-t border-white/5 pt-3">
-                    <button className="flex items-center gap-1 hover:text-rose-gold transition-colors">
-                        <Heart className="w-3 h-3" /> Thích
+                    <button
+                        onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
+                        className={`flex items-center gap-1 transition-colors ${hasReacted ? "text-rose-gold" : "hover:text-rose-gold"}`}
+                    >
+                        <Heart className={`w-3 h-3 ${hasReacted ? "fill-rose-gold" : ""}`} />
+                        {hasReacted ? "Đã thích" : "Thích"}
+                        {Object.keys(post.reactions || {}).length > 0 && (
+                            <span className="ml-0.5">({Object.keys(post.reactions || {}).length})</span>
+                        )}
                     </button>
 
                     <button
-                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${showComments ? "text-rose-gold" : ""}`}
+                        className={`flex items-center gap-1 hover:text-rose-gold transition-colors ${shouldShowComments ? "text-rose-gold" : ""}`}
                         onClick={() => setShowComments(!showComments)}
                     >
                         <MessageCircle className="w-3 h-3" />
@@ -414,7 +516,7 @@ function TimelinePostCard({
                 </div>
 
                 <AnimatePresence>
-                    {showComments && (
+                    {shouldShowComments && (
                         <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
@@ -476,7 +578,7 @@ function TimelinePostCard({
     );
 }
 
-export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpdatePost }: TimelineTabProps) {
+export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpdatePost, onTogglePostReaction }: TimelineTabProps) {
     const { uploadFile, isUploading: uploading } = useUpload();
     const { profiles } = useProfiles();
     const [filterYear, setFilterYear] = useState<string | null>(null);
@@ -486,6 +588,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
     // Gallery / Detail State
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<TimelinePost | null>(null);
+    const [selectedPostIndex, setSelectedPostIndex] = useState(0);
     // currentImageIndex is handled inside PostDetailView now usually, but we keep it if we want init state
     // Actually PostDetailView handles its own index state to be self-contained for the view
 
@@ -515,7 +618,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
 
     const openGallery = (post: TimelinePost, index: number = 0) => {
         setSelectedPost(post);
-        // We can pass index if we want deep linking to specific image, but for now defaults to 0
+        setSelectedPostIndex(index);
         setGalleryOpen(true);
     };
 
@@ -707,6 +810,7 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                                                 handleEdit={handleEdit}
                                                 handleDelete={handleDelete}
                                                 profiles={profiles}
+                                                onTogglePostReaction={onTogglePostReaction!}
                                             />
                                         </div>
                                     </motion.div>
@@ -844,14 +948,17 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
             </Dialog>
 
             {/* Post Detail Dialog (Was Gallery) */}
+            {/* Post Detail Dialog (Was Gallery) */}
             <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogContent className="max-w-7xl! w-full p-0 overflow-hidden h-[90vh] md:h-[90vh] border-none bg-transparent">
+                <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-transparent border-none overflow-hidden flex items-center justify-center">
                     {selectedPost && (
                         <PostDetailView
                             post={selectedPost}
                             currentRole={currentRole}
                             profiles={profiles}
                             onClose={() => setGalleryOpen(false)}
+                            initialIndex={selectedPostIndex}
+                            onTogglePostReaction={onTogglePostReaction!}
                         />
                     )}
                 </DialogContent>
