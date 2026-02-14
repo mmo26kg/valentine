@@ -27,7 +27,7 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
     const partnerRole = role === "ảnh" ? "her" : "him";
     const partnerProfile = profiles[partnerRole];
     const partnerName = partnerProfile?.name || (role === "ảnh" ? "Em" : "Anh");
-    const partnerAvatar = partnerProfile?.avatar_url || (role === "ảnh" ? "/images/default-avatar-her.png" : "/images/default-avatar-him.png");
+    const partnerAvatar = partnerProfile?.avatar_url || (role === "ảnh" ? "/file.svg" : "/file.svg");
 
     // Auto-scroll to bottom on new messages
     useEffect(() => {
@@ -123,8 +123,8 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                                 <span className="text-2xl">✨</span>
                             </div>
-                            <h3 className="font-serif text-xl italic mb-2">Private Sanctuary</h3>
-                            <p className="text-sm text-muted-foreground">Bắt đầu cuộc trò chuyện đầy yêu thương...</p>
+                            <h3 className="font-serif text-xl italic mb-2">Trò chuyện riêng tư</h3>
+                            <p className="text-sm text-muted-foreground">Nói thoải mái, hông sợ bị nghe lén...</p>
                         </div>
                     )}
 
