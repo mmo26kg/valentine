@@ -11,9 +11,24 @@ CREATE TABLE IF NOT EXISTS valentine.profiles (
     personality_tags TEXT[],
     likes TEXT[],
     dislikes TEXT[],
+    password TEXT DEFAULT '19042025', -- Default password for migration
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration for existing profiles table
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'valentine'
+        AND table_name = 'profiles'
+        AND column_name = 'password'
+    ) THEN
+        ALTER TABLE valentine.profiles ADD COLUMN password TEXT DEFAULT '19042025';
+    END IF;
+END $$;
 
 -- Create love_logs table
 CREATE TABLE IF NOT EXISTS valentine.love_logs (

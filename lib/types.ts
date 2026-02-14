@@ -79,6 +79,7 @@ export interface Profile {
     personality_tags?: string[];
     likes?: string[];
     dislikes?: string[];
+    password?: string;
 }
 
 export interface LoveLog {

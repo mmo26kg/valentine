@@ -84,52 +84,7 @@ export function useUnlocked() {
     return { unlocked, captchaPassed, eventDismissed, unlock, passCaptcha, dismissEvent, lock };
 }
 
-/** App password (Shared via Supabase) */
-export function usePassword() {
-    const [password, setPasswordState] = useState("19042025");
 
-    useEffect(() => {
-        // Fetch initially
-        supabase
-            .from("settings")
-            .select("value")
-            .eq("key", "password")
-            .single()
-            .then(({ data }) => {
-                if (data) setPasswordState(data.value);
-            });
-
-        // Realtime subscription
-        const channel = supabase
-            .channel("settings_password")
-            .on(
-                "postgres_changes",
-                {
-                    event: "UPDATE",
-                    schema: "valentine",
-                    table: "settings",
-                    filter: "key=eq.password",
-                },
-                (payload) => {
-                    if (payload.new && "value" in payload.new) {
-                        setPasswordState(payload.new.value as string);
-                    }
-                }
-            )
-            .subscribe();
-
-        return () => {
-            channel.unsubscribe();
-        };
-    }, []);
-
-    const setPassword = useCallback(async (p: string) => {
-        setPasswordState(p);
-        await supabase.from("settings").upsert({ key: "password", value: p });
-    }, []);
-
-    return { password, setPassword };
-}
 
 /** Couple start date (Shared via Supabase) */
 export function useStartDate() {

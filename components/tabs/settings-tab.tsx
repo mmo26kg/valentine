@@ -214,7 +214,7 @@ export function SettingsTab({
                                     className="bg-rose-gold hover:bg-rose-gold-dark text-background disabled:opacity-30"
                                 >
                                     <Save className="w-4 h-4 mr-2" />
-                                    Save Password
+                                    Lưu mật khẩu mới
                                 </Button>
                             </motion.div>
                         )}

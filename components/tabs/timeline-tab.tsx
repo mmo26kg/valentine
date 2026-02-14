@@ -233,7 +233,7 @@ function PostDetailView({
             {/* Right: Info & Comments (or Bottom on mobile) */}
             <div className={`flex flex-col h-full bg-surface border-l border-white/5 ${hasMedia ? "w-full md:w-2/5" : "w-full md:max-w-2xl md:mx-auto border-x"}`}>
                 {/* Header Info */}
-                <div className="p-4 border-b border-white/5 shrink-0">
+                <div className="px-4 py-2 border-b border-white/5 shrink-0">
                     <div className="flex justify-between items-start">
                         <div>
                             <h2 className="text-xl font-serif italic text-white mb-1">{post.title}</h2>
@@ -243,17 +243,17 @@ function PostDetailView({
                     </div>
                 </div>
                 {post.location && (
-                    <div className="flex items-center gap-1 mt-2 text-sm text-white/40">
+                    <div className="flex items-center gap-1 px-4 py-2 text-sm text-white/40">
                         <MapPin className="w-3 h-3" />
                         {post.location}
                     </div>
                 )}
-                <p className="mt-4 text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic">
+                <p className="px-4 py-2  text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-serif italic">
                     {post.content}
                 </p>
 
                 {/* Reactions */}
-                <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-4">
+                <div className="px-4 py-2 border-t border-white/5 flex items-center gap-4">
                     <button
                         onClick={() => onTogglePostReaction(post.id, myId, "❤️")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${hasReacted
@@ -270,50 +270,50 @@ function PostDetailView({
                         )}
                     </button>
                 </div>
-            </div>
 
-            {/* Comments List (Scrollable) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                {comments.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-white/20">
-                        <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
-                        <p className="text-sm italic">Chưa có bình luận nào</p>
-                    </div>
-                ) : (
-                    comments.map(comment => (
-                        <CommentItem
-                            key={comment.id}
-                            comment={comment}
-                            currentRole={currentRole}
-                            profiles={profiles}
-                            onDelete={deleteComment}
-                            onReact={toggleReaction}
-                        />
-                    ))
-                )}
-            </div>
+                {/* Comments List (Scrollable) */}
+                <div className="flex-1 overflow-y-auto px-4 space-y-4 custom-scrollbar">
+                    {comments.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-white/20">
+                            <MessageCircle className="w-8 h-8 mb-2 opacity-50" />
+                            <p className="text-sm italic">Chưa có bình luận nào</p>
+                        </div>
+                    ) : (
+                        comments.map(comment => (
+                            <CommentItem
+                                key={comment.id}
+                                comment={comment}
+                                currentRole={currentRole}
+                                profiles={profiles}
+                                onDelete={deleteComment}
+                                onReact={toggleReaction}
+                            />
+                        ))
+                    )}
+                </div>
 
-            {/* Input Area (Sticky Bottom) */}
-            <div className="p-4 border-t border-white/5 bg-surface shrink-0">
-                <div className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Input
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                            placeholder="Viết bình luận..."
-                            className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
-                        />
-                        <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
+                {/* Input Area (Sticky Bottom) */}
+                <div className="p-4 border-t border-white/5 bg-surface shrink-0">
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <Input
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                                placeholder="Viết bình luận..."
+                                className="h-10 pl-3 pr-10 bg-white/5 border-white/10 text-white focus-visible:ring-rose-gold/30 rounded-full text-sm"
+                            />
+                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 cursor-pointer hover:text-rose-gold transition-colors" />
+                        </div>
+                        <Button
+                            size="icon"
+                            onClick={handleAddComment}
+                            disabled={!newComment.trim() || isSubmitting}
+                            className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
+                        >
+                            <Send className="w-4 h-4" />
+                        </Button>
                     </div>
-                    <Button
-                        size="icon"
-                        onClick={handleAddComment}
-                        disabled={!newComment.trim() || isSubmitting}
-                        className="h-10 w-10 rounded-full bg-rose-gold hover:bg-rose-gold/80 flex items-center justify-center shrink-0"
-                    >
-                        <Send className="w-4 h-4" />
-                    </Button>
                 </div>
             </div>
         </div>
@@ -948,9 +948,8 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
             </Dialog>
 
             {/* Post Detail Dialog (Was Gallery) */}
-            {/* Post Detail Dialog (Was Gallery) */}
             <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-                <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-transparent border-none overflow-hidden flex items-center justify-center">
+                <DialogContent className="!max-w-[95vw] !w-[1400px] !h-[90vh] p-0 bg-transparent border-none overflow-hidden flex items-center justify-center">
                     {selectedPost && (
                         <PostDetailView
                             post={selectedPost}

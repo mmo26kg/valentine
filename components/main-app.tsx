@@ -8,6 +8,7 @@ import {
     BookHeart,
     User,
     LogOut,
+    Settings,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import { AmbientBackground } from "@/components/shared/ambient-background";
@@ -29,7 +30,7 @@ const TABS = [
     { value: "countdown", label: "Đếm ngược", icon: Timer },
     { value: "timeline", label: "Kỷ niệm", icon: BookHeart },
     { value: "profile", label: "Hồ sơ", icon: User },
-    // { value: "settings", label: "Cài đặt", icon: Settings }, // Settings icon not imported? wait, I need to check imports
+    // { value: "settings", label: "Cài đặt", icon: Settings },
 ];
 
 interface MainAppProps {
