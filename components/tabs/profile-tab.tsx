@@ -105,7 +105,7 @@ function ItemList({
                 <span className="uppercase tracking-widest">{title}</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 content-start grow">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 content-start grow">
                 {visibleItems.map((item, idx) => (
                     <div key={`${item}-${idx}`} className="flex justify-between items-center group/item bg-white/5 hover:bg-white/10 transition-colors rounded-full px-2 py-1.5 h-[20px]">
                         <p className="text-white/70 text-[10px] leading-tight wrap-break-word pr-1 lowercase font-sans">
