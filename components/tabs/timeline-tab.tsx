@@ -507,12 +507,12 @@ export function TimelineTab({ posts, currentRole, onAddPost, onDeletePost, onUpd
                 <DialogContent className="max-w-4xl bg-black/90 border-none p-0 overflow-hidden h-[90vh] flex flex-col justify-center">
                     {selectedPost && (
                         <div className="relative w-full h-full flex flex-col">
-                            <button
+                            {/* <button
                                 onClick={() => setGalleryOpen(false)}
                                 className="absolute top-4 right-4 z-50 text-white/50 hover:text-white p-2"
                             >
                                 <X className="w-6 h-6" />
-                            </button>
+                            </button> */}
 
                             <div className="flex-1 relative flex items-center justify-center bg-black">
                                 <AnimatePresence mode="wait">
