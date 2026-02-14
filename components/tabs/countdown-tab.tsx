@@ -47,7 +47,7 @@ const ICONS = [
     { name: "sparkles", icon: Sparkles },
 ];
 
-const TYPES = ["holiday", "anniversary", "birthday", "custom"];
+const TYPES = ["Ngày lễ", "Kỷ niệm", "Sinh nhật", "Khác", "Đi chơi"];
 
 function getTargetDate(event: CountdownEvent) {
     const now = getVietnamDate();
