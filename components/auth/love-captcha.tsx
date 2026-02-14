@@ -88,7 +88,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                                 }}
                             >
                                 <Heart
-                                    className="text-rose-gold"
+                                    className="text-primary"
                                     fill="currentColor"
                                     size={particle.size}
                                 />
@@ -109,7 +109,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                 <div className="glass-card rounded-xl p-8 md:p-12 shadow-2xl">
                     {/* Badge */}
                     <div className="flex justify-center mb-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-gold/10 border border-rose-gold/20 text-rose-gold text-sm tracking-wide">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm tracking-wide">
                             <Lock className="w-4 h-4" />
                             <span className="uppercase text-xs">Xác nhận tình yêu</span>
                         </div>
@@ -117,26 +117,26 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
 
                     {/* Question */}
                     <div className="text-center mb-10 space-y-4">
-                        <h1 className="text-4xl md:text-5xl italic font-serif text-white leading-tight">
+                        <h1 className="text-4xl md:text-5xl italic font-serif text-foreground leading-tight">
                             Em có yêu{" "}
                             <br />
-                            <span className="text-rose-gold">anh không?</span>
+                            <span className="text-primary">anh không?</span>
                         </h1>
-                        <p className="text-white/40 text-lg font-light">
+                        <p className="text-muted-foreground text-lg font-light">
                             Vui lòng xác nhận cảm xúc.
                         </p>
                     </div>
 
                     {/* Captcha Checkbox */}
                     <div
-                        className="bg-background/50 rounded-lg p-4 border border-white/5 mb-8 flex items-center gap-4 cursor-pointer hover:border-rose-gold/20 transition-colors group"
+                        className="bg-card/50 rounded-lg p-4 border border-border mb-8 flex items-center gap-4 cursor-pointer hover:border-primary/20 transition-colors group"
                         onClick={() => setChecked(!checked)}
                     >
                         <div className="relative flex items-center justify-center">
                             <motion.div
                                 className={`w-7 h-7 border-2 rounded flex items-center justify-center transition-all ${checked
-                                    ? "bg-rose-gold border-rose-gold"
-                                    : "border-white/20 bg-transparent"
+                                    ? "bg-primary border-primary"
+                                    : "border-border bg-transparent"
                                     }`}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -158,7 +158,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                                 </AnimatePresence>
                             </motion.div>
                         </div>
-                        <span className="text-white/70 font-light group-hover:text-rose-gold transition-colors select-none text-md">
+                        <span className="text-foreground/70 font-light group-hover:text-primary transition-colors select-none text-md">
                             Tôi xin chịu trách nhiệm với câu trả lời của mình
                         </span>
                     </div>
@@ -174,7 +174,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                             <Button
                                 ref={noButtonRef}
                                 variant="outline"
-                                className="w-full py-6 border-white/10 text-white/40 hover:text-white hover:bg-white/5 tracking-[0.2em] uppercase text-sm font-medium"
+                                className="w-full py-6 border-border text-muted-foreground hover:text-foreground hover:bg-muted tracking-[0.2em] uppercase text-sm font-medium"
                                 onMouseEnter={runAway}
                                 onTouchStart={runAway}
                                 onClick={runAway}
@@ -187,7 +187,7 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
                         <Button
                             onClick={handleYes}
                             disabled={!checked}
-                            className="flex-1 py-6 bg-rose-gold hover:bg-rose-gold-dark text-background shadow-lg shadow-rose-gold/20 hover:shadow-rose-gold/40 tracking-[0.2em] uppercase text-sm font-semibold disabled:opacity-30 transition-all"
+                            className="flex-1 py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 tracking-[0.2em] uppercase text-sm font-semibold disabled:opacity-30 transition-all font-serif italic"
                         >
                             Có{" "}
                             <Heart className="w-4 h-4 ml-1 inline" fill="currentColor" />
@@ -196,9 +196,9 @@ export function LoveCaptcha({ onPass }: LoveCaptchaProps) {
 
                     {/* Footer */}
                     <div className="mt-8 text-center">
-                        <p className="text-sm text-white/15 tracking-[0.2em] uppercase font-light">
-                            Được bảo vệ bởi <p className="text-rose-gold text-xs">Hội đồng tình yêu vũ trụ</p>
-                        </p>
+                        <div className="text-sm text-muted-foreground/30 tracking-[0.2em] uppercase font-light">
+                            Được bảo vệ bởi <p className="text-primary text-xs">Hội đồng tình yêu vũ trụ</p>
+                        </div>
                     </div>
                 </div>
             </motion.div>

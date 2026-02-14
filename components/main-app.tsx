@@ -135,7 +135,7 @@ export function MainApp() {
                 <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
                     <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-surface border border-primary/20 flex items-center justify-center overflow-hidden">
+                            <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
                                 <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/avatar.png" alt="Logo" width={32} height={32} />
                             </div>
                             <span className="font-serif text-lg italic text-foreground">
@@ -151,7 +151,7 @@ export function MainApp() {
                                         <span className="hidden sm:inline font-serif italic">
                                             {currentRole === "ảnh" ? profiles.him?.name : profiles.her?.name}
                                         </span>
-                                        <div className="w-8 h-8 rounded-full bg-surface border border-primary/20 flex items-center justify-center overflow-hidden">
+                                        <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
                                             {currentUserAvatarURL ? (
                                                 <img src={currentUserAvatarURL} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
                                             ) : (

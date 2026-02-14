@@ -63,7 +63,7 @@ export function EventScreen({ onDismiss }: EventScreenProps) {
 
                 {/* Title */}
                 <motion.h1
-                    className="font-serif text-5xl md:text-7xl italic text-white mb-6 leading-tight text-glow-strong"
+                    className="font-serif text-5xl md:text-7xl italic text-foreground mb-6 leading-tight text-glow-strong"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.8 }}
@@ -78,7 +78,7 @@ export function EventScreen({ onDismiss }: EventScreenProps) {
 
                 {/* Message */}
                 <motion.p
-                    className="text-white/50 text-lg md:text-xl font-light leading-relaxed mb-12 font-serif"
+                    className="text-foreground/50 text-lg md:text-xl font-light leading-relaxed mb-12 font-serif"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}

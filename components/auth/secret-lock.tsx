@@ -50,7 +50,7 @@ export function SecretLockScreen({
             >
                 {/* Together Since */}
                 <motion.p
-                    className="text-rose-gold/60 text-sm tracking-[0.3em] uppercase font-sans"
+                    className="text-primary/60 text-sm tracking-[0.3em] uppercase font-sans"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
@@ -63,23 +63,23 @@ export function SecretLockScreen({
                     <motion.button
                         onClick={() => onSelectRole("ảnh")}
                         className={`relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all duration-300 ${currentRole === "ảnh"
-                            ? "border-rose-gold shadow-[0_0_20px_rgba(201,160,160,0.3)]"
-                            : "border-white/10 opacity-60 hover:opacity-80"
+                            ? "border-primary shadow-[0_0_20px_var(--primary-glow)]"
+                            : "border-border opacity-60 hover:opacity-80"
                             }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <div className="w-full h-full bg-surface flex items-center justify-center">
-                            {/* <User className="w-8 h-8 text-rose-gold" /> */}
-                            <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG" alt="anh" className="w-full h-full object-cover object-center text-rose-gold" />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                            {/* <User className="w-8 h-8 text-primary" /> */}
+                            <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/A%CC%89nh%20ma%CC%80n%20hi%CC%80nh.PNG" alt="anh" className="w-full h-full object-cover object-center text-primary" />
                         </div>
                         {currentRole === "ảnh" && (
                             <motion.div
-                                className="absolute -bottom-1 -right-1 w-6 h-6 bg-rose-gold rounded-full flex items-center justify-center"
+                                className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                             >
-                                <Heart className="w-3 h-3 text-background" fill="currentColor" />
+                                <Heart className="w-3 h-3 text-primary-foreground" fill="currentColor" />
                             </motion.div>
                         )}
                     </motion.button>
@@ -89,7 +89,7 @@ export function SecretLockScreen({
                         transition={{ duration: 2, repeat: Infinity }}
                     >
                         <Heart
-                            className="w-6 h-6 text-rose-gold"
+                            className="w-6 h-6 text-primary"
                             fill="currentColor"
                         />
                     </motion.div>
@@ -97,23 +97,23 @@ export function SecretLockScreen({
                     <motion.button
                         onClick={() => onSelectRole("ẻm")}
                         className={`relative w-20 h-20 rounded-full overflow-hidden border-2 transition-all duration-300 ${currentRole === "ẻm"
-                            ? "border-rose-gold shadow-[0_0_20px_rgba(201,160,160,0.3)]"
-                            : "border-white/10 opacity-60 hover:opacity-80"
+                            ? "border-primary shadow-[0_0_20px_var(--primary-glow)]"
+                            : "border-border opacity-60 hover:opacity-80"
                             }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <div className="w-full h-full bg-surface flex items-center justify-center">
-                            {/* <User className="w-8 h-8 text-rose-gold-light" /> */}
-                            <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg" alt="anh" className="w-full h-full text-rose-gold" />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                            {/* <User className="w-8 h-8 text-primary" /> */}
+                            <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/IMG_A67177C3D2B4-1.jpeg" alt="anh" className="w-full h-full text-primary" />
                         </div>
                         {currentRole === "ẻm" && (
                             <motion.div
-                                className="absolute -bottom-1 -right-1 w-6 h-6 bg-rose-gold rounded-full flex items-center justify-center"
+                                className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                             >
-                                <Heart className="w-3 h-3 text-background" fill="currentColor" />
+                                <Heart className="w-3 h-3 text-primary-foreground" fill="currentColor" />
                             </motion.div>
                         )}
                     </motion.button>
@@ -130,10 +130,10 @@ export function SecretLockScreen({
                             animate={error ? {} : { y: [0, -3, 0] }}
                             transition={{ duration: 2, repeat: Infinity }}
                         >
-                            <Lock className="w-6 h-6 text-rose-gold/80" />
+                            <Lock className="w-6 h-6 text-primary/80" />
                         </motion.div>
 
-                        <h2 className="font-serif text-2xl italic text-white">Đã khóa</h2>
+                        <h2 className="font-serif text-2xl italic text-foreground">Đã khóa</h2>
 
                         <form onSubmit={handleSubmit} className="w-full space-y-4">
                             <div className="relative">
@@ -143,14 +143,14 @@ export function SecretLockScreen({
                                     placeholder="Nhập mật khẩu tình iu"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="bg-transparent border-0 border-b border-rose-gold/20 rounded-none text-center text-lg tracking-[0.5em] placeholder:tracking-widest placeholder:text-white/20 focus-visible:ring-0 focus-visible:border-rose-gold/50 font-serif"
+                                    className="bg-transparent border-0 border-b border-border rounded-none text-center text-lg tracking-[0.5em] placeholder:tracking-widest placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:border-primary font-serif font-bold"
                                     maxLength={10}
                                 />
                             </div>
 
                             <Button
                                 type="submit"
-                                className="w-full bg-rose-gold/10 hover:bg-rose-gold/20 text-rose-gold border border-rose-gold/20 hover:border-rose-gold/40 font-serif tracking-wide transition-all duration-300 group"
+                                className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-border hover:border-primary/40 font-serif tracking-wide transition-all duration-300 group"
                             >
                                 Mở khóa kỷ niệm
                                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -163,7 +163,7 @@ export function SecretLockScreen({
                 <AnimatePresence>
                     {showHint && (
                         <motion.p
-                            className="text-rose-gold/40 text-sm italic font-serif"
+                            className="text-primary/40 text-sm italic font-serif"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0 }}
@@ -175,7 +175,7 @@ export function SecretLockScreen({
 
                 {/* Footer */}
                 <motion.p
-                    className="text-white/10 text-xs tracking-[0.3em] uppercase mt-8"
+                    className="text-muted-foreground/30 text-xs tracking-[0.3em] uppercase mt-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1 }}
