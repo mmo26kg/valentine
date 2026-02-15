@@ -89,7 +89,7 @@ export function TimelineScrubber({ posts, className }: TimelineScrubberProps) {
                                     initial={{ opacity: 0, x: 10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 10 }}
-                                    className="text-[10px] font-serif font-bold text-primary bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap pointer-events-none"
+                                    className="text-[16px] font-serif font-bold text-primary bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap pointer-events-none"
                                 >
                                     {label}
                                 </motion.span>
@@ -100,7 +100,7 @@ export function TimelineScrubber({ posts, className }: TimelineScrubberProps) {
                             className={cn(
                                 "rounded-full transition-all duration-300 relative",
                                 isActive
-                                    ? "w-3 h-3 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                                    ? "w-3 h-3 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] text-lg"
                                     : "w-1.5 h-1.5 bg-muted-foreground/40 hover:bg-primary/60 hover:w-2 hover:h-2"
                             )}
                             data-date={date}

@@ -877,7 +877,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
         <div className="space-y-8 pb-20 relative">
             {/* Timeline Scrubber */}
             <TimelineScrubber posts={posts} className="hidden md:flex" />
-            <TimelineScrubber posts={posts} className="md:hidden right-0! top-[55%]! scale-75 origin-right" />
+            <TimelineScrubber posts={posts} className="md:hidden right-1! top-[55%]! scale-75 origin-right" />
 
             <motion.div
                 className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
