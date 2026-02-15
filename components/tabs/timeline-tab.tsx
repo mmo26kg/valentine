@@ -48,6 +48,7 @@ import { useUpload } from "@/hooks/use-upload";
 import { getVietnamDate, formatVietnamDate } from "@/lib/date-utils";
 import { usePostComments } from "@/lib/store";
 import { Comment, Profile } from "@/lib/types";
+import { TimelineScrubber } from "./timeline-scrubber";
 
 interface TimelinePost {
     id: string;
@@ -873,7 +874,11 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
     };
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8 pb-20 relative">
+            {/* Timeline Scrubber */}
+            <TimelineScrubber posts={posts} className="hidden md:flex" />
+            <TimelineScrubber posts={posts} className="md:hidden right-0! top-[55%]! scale-75 origin-right" />
+
             <motion.div
                 className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -934,47 +939,58 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                                 const isLeft = i % 2 === 0;
                                 const d = new Date(post.event_date);
 
+                                // Add anchor for month if it's the first post of that month
+                                const currentMonth = post.event_date.substring(0, 7);
+                                const prevPost = i > 0 ? yearPosts[i - 1] : null;
+                                const prevMonth = prevPost ? prevPost.event_date.substring(0, 7) : null;
+                                const isMonthStart = currentMonth !== prevMonth;
+
                                 return (
-                                    <motion.div
-                                        key={post.id}
-                                        className={`relative flex flex-col md:flex-row items-start md:items-center gap-4 mb-12 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"
-                                            }`}
-                                        initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.1 }}
-                                    >
-                                        <div
-                                            className={`flex-1 ${isLeft ? "md:text-right" : "md:text-left"
+                                    <div key={post.id} className="relative">
+                                        {isMonthStart && (
+                                            <div id={`timeline-${currentMonth}`} className="scroll-mt-32 h-0 w-0 opacity-0 absolute -top-10" />
+                                        )}
+                                        <motion.div
+                                            key={post.id}
+                                            className={`relative flex flex-col md:flex-row items-start md:items-center gap-4 mb-12 ${isLeft ? "md:flex-row" : "md:flex-row-reverse"
                                                 }`}
+                                            initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: i * 0.1 }}
                                         >
-                                            <h3 className="text-2xl font-serif italic text-foreground">
-                                                {format(d, "d MMMM")}
-                                            </h3>
-                                            <p className="text-xs uppercase tracking-widest text-primary/50 mt-1">
-                                                {post.title}
-                                            </p>
-                                            {post.location && (
-                                                <div className={`flex items-center gap-1 mt-2 text-sm text-muted-foreground ${isLeft ? "md:justify-end" : ""}`}>
-                                                    <MapPin className="w-3 h-3 text-primary/40" />
-                                                    {post.location}
-                                                </div>
-                                            )}
-                                        </div>
+                                            <div
+                                                className={`flex-1 ${isLeft ? "md:text-right" : "md:text-left"
+                                                    }`}
+                                            >
+                                                <h3 className="text-2xl font-serif italic text-foreground">
+                                                    {format(d, "d MMMM")}
+                                                </h3>
+                                                <p className="text-xs uppercase tracking-widest text-primary/50 mt-1">
+                                                    {post.title}
+                                                </p>
+                                                {post.location && (
+                                                    <div className={`flex items-center gap-1 mt-2 text-sm text-muted-foreground ${isLeft ? "md:justify-end" : ""}`}>
+                                                        <MapPin className="w-3 h-3 text-primary/40" />
+                                                        {post.location}
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                        <div className="relative z-10 shrink-0 w-4 h-4 rounded-full bg-background border-2 border-primary shadow-[0_0_10px_var(--primary)] hidden md:block" />
+                                            <div className="relative z-10 shrink-0 w-4 h-4 rounded-full bg-background border-2 border-primary shadow-[0_0_10px_var(--primary)] hidden md:block" />
 
-                                        <div className="flex-1 w-full">
-                                            <TimelinePostCard
-                                                post={post}
-                                                currentRole={currentRole}
-                                                openGallery={openGallery}
-                                                handleEdit={handleEdit}
-                                                handleDelete={handleDelete}
-                                                profiles={profiles}
-                                                onTogglePostReaction={onTogglePostReaction}
-                                            />
-                                        </div>
-                                    </motion.div>
+                                            <div className="flex-1 w-full">
+                                                <TimelinePostCard
+                                                    post={post}
+                                                    currentRole={currentRole}
+                                                    openGallery={openGallery}
+                                                    handleEdit={handleEdit}
+                                                    handleDelete={handleDelete}
+                                                    profiles={profiles}
+                                                    onTogglePostReaction={onTogglePostReaction}
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    </div>
                                 );
                             })}
                         </div>

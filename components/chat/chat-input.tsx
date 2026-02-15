@@ -124,7 +124,7 @@ export function ChatInput({ onSendMessage, onSendFile, replyTo, replyMessage, on
                         onChange={(e) => setContent(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Nhập tin nhắn..."
-                        className="min-h-[44px] max-h-[120px] bg-transparent border-none shadow-none resize-none py-3 px-4 focus-visible:ring-0 text-sm"
+                        className="min-h-[44px] max-h-[44px] bg-transparent border-none shadow-none resize-none py-3 px-4 focus-visible:ring-0 text-xs"
                         disabled={false} // Don't disable input to keep keyboard open on mobile
                     />
                 </div>
