@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, useLayoutEffect } from "react";
 import { useChat, useCurrentUser } from "@/lib/store";
+import { ChatMessage } from "@/lib/types";
 import { useValentineAuth } from "@/providers/valentine-provider";
 import { ChatInput } from "@/components/chat/chat-input";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -14,32 +15,120 @@ import { Button } from "@/components/ui/button";
 
 interface ChatScreenProps {
     onClose: () => void;
-    initialContext?: { type: "post" | "event" | "caption", id: string };
+    initialContext?: { type: "post" | "event" | "caption" | "message", id: string };
 }
 
 export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
-    const { messages, sendMessage, sendFiles, editMessage, deleteMessage, markAllRead } = useChat();
+    const { messages, sendMessage, sendFiles, editMessage, deleteMessage, markAllRead, loadMoreMessages, hasMore, isLoadingMore } = useChat();
     const { role } = useCurrentUser();
     const { profiles } = useValentineAuth();
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [replyContext, setReplyContext] = useState<{ type: "post" | "event" | "caption", id: string } | null>(initialContext || null);
+    const scrollRef = useRef<HTMLDivElement>(null); // For ScrollArea viewport
+    const bottomRef = useRef<HTMLDivElement>(null); // For auto-scroll to bottom
+    const [replyContext, setReplyContext] = useState<{ type: "post" | "event" | "caption" | "message", id: string } | null>(initialContext || null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     const partnerRole = role === "ảnh" ? "her" : "him";
     const partnerProfile = profiles[partnerRole];
     const partnerName = partnerProfile?.name || (role === "ảnh" ? "Em" : "Anh");
     const partnerAvatar = partnerProfile?.avatar_url || (role === "ảnh" ? "/file.svg" : "/file.svg");
 
-    // Auto-scroll to bottom on new messages
+    // Auto-scroll to bottom only on NEW messages or Initial Load
+    // And maintain scroll position when loading more
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: "smooth" });
+        if (!scrollRef.current) return;
+
+        const scrollElement = scrollRef.current;
+        const isFromLoadMore = !isInitialLoad && isLoadingMore; // Capture this before effect runs? No, isLoadingMore changes.
+
+        // Actually, we can use a ref to store previous scroll height
+    }, [messages, isLoadingMore, isInitialLoad]);
+
+    // And maintain scroll position when loading more
+    // Actually, we can use a ref to store previous scroll height
+    // We need to capture scroll height BEFORE messages update if we are loading more.
+    // But we don't know exactly when messages update.
+    // Use layout effect?
+    // Let's use a ref to track the LAST message ID to detect prepend.
+
+    const lastMessageIdRef = useRef<string | null>(null);
+    const prevScrollHeightRef = useRef<number>(0);
+    const prevScrollTopRef = useRef<number>(0);
+
+    // Snapshot before update
+    // We can't easily snapshot "before" in functional component render without useLayoutEffect or careful ordering.
+    // But we know when we CLICK play load more.
+
+    // Let's update the loadMore handler to snapshot.
+
+    // Auto-scroll to bottom only on NEW messages or Initial Load
+    // And maintain scroll position when loading more
+    useLayoutEffect(() => {
+        if (!scrollRef.current) return;
+
+        // Find the actual scrollable viewport (inner div of ScrollArea)
+        const viewport = scrollRef.current.firstElementChild as HTMLElement;
+        if (!viewport) return;
+
+        if (isInitialLoad && messages.length > 0) {
+            if (bottomRef.current) {
+                // Determine if we should smooth scroll or instant
+                // Instant is better for initial load
+                bottomRef.current.scrollIntoView({ behavior: "auto" });
+            }
+            setIsInitialLoad(false);
+            if (messages.length > 0) lastMessageIdRef.current = messages[messages.length - 1].id;
+            return;
         }
-    }, [messages]);
+
+        const lastMessage = messages[messages.length - 1];
+        const isNewMessage = lastMessage && lastMessage.id !== lastMessageIdRef.current;
+
+        if (isNewMessage) {
+            // New message appended
+            bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+            lastMessageIdRef.current = lastMessage.id;
+        } else if (messages.length > 0 && lastMessageIdRef.current === lastMessage.id) {
+            // Messages changed but last one is same => Prepend (Load More)
+            // Restore scroll position
+            if (prevScrollHeightRef.current > 0) {
+                const newScrollHeight = viewport.scrollHeight;
+                const diff = newScrollHeight - prevScrollHeightRef.current;
+
+                if (diff > 0) {
+                    viewport.scrollTop = prevScrollTopRef.current + diff;
+                }
+            }
+        }
+
+        // Update last message ref
+        lastMessageIdRef.current = lastMessage ? lastMessage.id : null;
+
+    }, [messages, isInitialLoad]);
+
+    // Snapshot function
+    const handleLoadMore = () => {
+        // Find the actual scrollable viewport
+        const viewport = scrollRef.current?.firstElementChild as HTMLElement;
+        if (viewport) {
+            prevScrollHeightRef.current = viewport.scrollHeight;
+            prevScrollTopRef.current = viewport.scrollTop;
+            // console.log("Snapshot:", viewport.scrollHeight, viewport.scrollTop);
+        }
+        loadMoreMessages();
+    };
 
     // Mark messages as read when screen is open
     useEffect(() => {
         markAllRead();
     }, [messages.length, markAllRead]);
+
+    // Lock body scroll when chat is open
+    useEffect(() => {
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, []);
 
     // Handle initial context passed
     useEffect(() => {
@@ -56,9 +145,17 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
         return acc;
     }, {} as Record<string, typeof messages>);
 
+    // Create a map for O(1) message lookup
+    const messagesMap = useMemo(() => {
+        return messages.reduce((acc, msg) => {
+            acc[msg.id] = msg;
+            return acc;
+        }, {} as Record<string, ChatMessage>);
+    }, [messages]);
+
     return (
         <motion.div
-            className="fixed inset-0 z-50 bg-background flex flex-col"
+            className="fixed inset-0 max-h-dvh z-50 bg-background flex flex-col overflow-hidden"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -67,7 +164,7 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://images.unsplash.com/photo-1518199266791-5375a83190b2?q=80&w=2940&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1554338379-cbfe9dfd523c?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Chat Background"
                     fill
                     className="object-cover opacity-20 dark:opacity-10 blur-sm"
@@ -82,7 +179,7 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="rounded-full hover:bg-white/10 text-foreground"
+                        className="rounded-full size-12 hover:bg-white/10 text-foreground"
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </Button>
@@ -115,8 +212,23 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
             </header>
 
             {/* Messages Area */}
-            <ScrollArea className="flex-1 relative z-10 px-4">
-                <div className="space-y-6 py-6 min-h-full flex flex-col justify-end">
+            <ScrollArea className="flex-1 relative z-10 px-4" ref={scrollRef}>
+                <div className="space-y-6 py-6 min-h-full flex flex-col justify-end max-w-5xl mx-auto">
+                    {/* Load More Trigger */}
+                    {hasMore && (
+                        <div className="flex justify-center py-4">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleLoadMore()}
+                                disabled={isLoadingMore}
+                                className="text-xs text-muted-foreground hover:text-foreground"
+                            >
+                                {isLoadingMore ? "Đang tải..." : "Tải thêm tin nhắn cũ"}
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Welcome Message / Empty State */}
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center p-8 text-center opacity-60">
@@ -141,20 +253,19 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
                                         key={msg.id}
                                         message={msg}
                                         onLinkClick={(type, id) => {
-                                            // TODO: Handle navigation better. For now just close chat and let URL handle it if possible.
-                                            // Or maybe we keep chat open? The user likely wants to see the content.
-                                            // We can close chat and navigate.
                                             const url = `/?tab=${type === 'caption' ? 'home' : type === 'post' ? 'timeline' : 'countdown'}&${type === 'caption' ? 'caption' : type === 'post' ? 'post' : 'countdown'}=${id}`;
-                                            window.location.href = url; // Simplest way to ensure tab switch + param
+                                            window.location.href = url;
                                         }}
                                         onEdit={editMessage}
                                         onDelete={deleteMessage}
+                                        onReply={(id) => setReplyContext({ type: 'message', id: id })}
+                                        replyMessage={msg.reply_to_type === 'message' && msg.reply_to_ref_id ? messagesMap[msg.reply_to_ref_id] : undefined}
                                     />
                                 ))}
                             </div>
                         </div>
                     ))}
-                    <div ref={scrollRef} />
+                    <div ref={bottomRef} />
                 </div>
             </ScrollArea>
 
@@ -171,6 +282,7 @@ export function ChatScreen({ onClose, initialContext }: ChatScreenProps) {
                             setReplyContext(null);
                         }}
                         replyTo={replyContext}
+                        replyMessage={replyContext?.type === 'message' ? messagesMap[replyContext.id] : undefined}
                         onCancelReply={() => setReplyContext(null)}
                     />
                 </div>

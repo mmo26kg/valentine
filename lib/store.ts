@@ -1155,31 +1155,78 @@ export function useGreetings() {
 /** Chat Logic (Shared via Supabase) */
 export function useChat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const { role } = useCurrentUser();
+    const MESSAGES_PER_PAGE = 20;
 
-    const fetchMessages = useCallback(async () => {
+    const fetchMessages = useCallback(async (start = 0) => {
+        setIsLoadingMore(true);
         const { data, error } = await supabase
             .from("messages")
             .select("*")
-            .order("created_at", { ascending: true });
+            .order("created_at", { ascending: false }) // Fetch latest first
+            .range(start, start + MESSAGES_PER_PAGE - 1);
 
         if (error) {
             console.error("Error fetching messages:", error);
         } else if (data) {
-            setMessages(data as ChatMessage[]);
+            if (data.length < MESSAGES_PER_PAGE) {
+                setHasMore(false);
+            }
+
+            // If starting from 0, replacing. Else appending (prepending in terms of time).
+            // But wait, our UI expects chronological order (oldest at top, newest at bottom).
+            // Data from DB is Newest -> Oldest.
+            // So for initial load (start=0): [New1, New2, New3]. UI wants [New3, New2, New1].
+            // For load more (start=20): [Old1, Old2, Old3]. UI wants [Old3, Old2, Old1, New3, New2, New1].
+
+            const newMessages = (data as ChatMessage[]).reverse();
+
+            setMessages(prev => {
+                if (start === 0) return newMessages;
+                // Prepend older messages
+                // Check dupes just in case
+                const existingIds = new Set(prev.map(m => m.id));
+                const filtered = newMessages.filter(m => !existingIds.has(m.id));
+                return [...filtered, ...prev];
+            });
         }
+        setIsLoadingMore(false);
     }, []);
 
+    // Initial load
     useEffect(() => {
-        void fetchMessages();
+        fetchMessages(0);
 
         const channel = supabase
             .channel("messages_chat")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "valentine", table: "messages" },
-                () => {
-                    fetchMessages();
+                { event: "INSERT", schema: "valentine", table: "messages" },
+                (payload) => {
+                    const newMessage = payload.new as ChatMessage;
+                    setMessages(prev => {
+                        // Avoid dupes if we sent it (optimistic update handle elsewhere, but good to be safe)
+                        if (prev.some(m => m.id === newMessage.id)) return prev;
+                        return [...prev, newMessage];
+                    });
+                }
+            )
+            .on(
+                "postgres_changes",
+                { event: "UPDATE", schema: "valentine", table: "messages" },
+                (payload) => {
+                    const updatedMessage = payload.new as ChatMessage;
+                    setMessages(prev => prev.map(m => m.id === updatedMessage.id ? updatedMessage : m));
+                }
+            )
+            .on(
+                "postgres_changes",
+                { event: "DELETE", schema: "valentine", table: "messages" },
+                (payload) => {
+                    const deletedId = payload.old.id;
+                    setMessages(prev => prev.filter(m => m.id !== deletedId));
                 }
             )
             .subscribe();
@@ -1189,7 +1236,13 @@ export function useChat() {
         };
     }, [fetchMessages]);
 
-    const sendMessage = useCallback(async (content: string, replyTo?: { type: "post" | "event" | "caption", id: string }) => {
+    const loadMoreMessages = useCallback(async () => {
+        if (!hasMore || isLoadingMore) return;
+        const currentLength = messages.length;
+        await fetchMessages(currentLength);
+    }, [hasMore, isLoadingMore, messages.length, fetchMessages]);
+
+    const sendMessage = useCallback(async (content: string, replyTo?: { type: "post" | "event" | "caption" | "message", id: string }) => {
         if (!role) return;
 
         const payload: Partial<ChatMessage> = {
@@ -1222,14 +1275,19 @@ export function useChat() {
         }
     }, [role]);
 
-    const sendFiles = useCallback(async (files: File[], type: "image" | "video" | "file", replyTo?: { type: "post" | "event" | "caption", id: string }) => {
+    const sendFiles = useCallback(async (files: File[], type: "image" | "video" | "file", replyTo?: { type: "post" | "event" | "caption" | "message", id: string }) => {
         if (!role || files.length === 0) return;
 
         try {
             // 1. Convert HEIC files to JPG if needed
             const processedFiles = await Promise.all(files.map(async (file) => {
                 const { convertHeicToJpg } = await import("./file-utils");
-                return convertHeicToJpg(file);
+                try {
+                    return await convertHeicToJpg(file);
+                } catch (e) {
+                    console.error("HEIC convert failed", e);
+                    return file;
+                }
             }));
 
             // 2. Upload all files to R2 in parallel
@@ -1254,6 +1312,7 @@ export function useChat() {
                 loading: `Đang tải ${files.length} tệp lên...`,
                 success: 'Tải lên thành công!',
                 error: 'Lỗi tải tập tin',
+                position: "top-center"
             });
 
             const uploadedUrls = await uploadAllPromise;
@@ -1287,6 +1346,7 @@ export function useChat() {
                 loading: 'Đang gửi tin nhắn...',
                 success: 'Đã gửi tin nhắn!',
                 error: 'Gửi thất bại',
+                position: "top-center"
             });
 
             try {
@@ -1326,11 +1386,8 @@ export function useChat() {
 
         if (error) {
             console.error("Error editing message:", error);
-            toast.error("Sửa tin nhắn thất bại");
-            // Revert would require fetching original content or storing it. 
-            // For now, let's just re-fetch to be safe or rely on realtime to correct it if it failed?
-            // Realtime might not fire if update failed. Better to re-fetch if error, or just let it slide.
-            fetchMessages();
+            toast.error("Sửa tin nhắn thất bại", { position: "top-center" });
+            fetchMessages(0); // Re-fetch initial
         }
     }, [fetchMessages]);
 
@@ -1346,7 +1403,7 @@ export function useChat() {
         if (error) {
             console.error("Error deleting message:", error);
             toast.error("Xóa tin nhắn thất bại");
-            fetchMessages(); // Revert
+            fetchMessages(0); // Revert
         }
     }, [fetchMessages]);
 
@@ -1378,7 +1435,7 @@ export function useChat() {
         }
     }, [role, supabase]);
 
-    return { messages, sendMessage, sendFiles, editMessage, deleteMessage, markAsRead, markAllRead };
+    return { messages, sendMessage, sendFiles, editMessage, deleteMessage, markAsRead, markAllRead, loadMoreMessages, hasMore, isLoadingMore };
 }
 
 

@@ -3,7 +3,7 @@ import { useCurrentUser } from "@/lib/store";
 import { useValentineAuth } from "@/providers/valentine-provider";
 import { cn } from "@/lib/utils";
 import { formatVietnamDate } from "@/lib/date-utils";
-import { Check, CheckCheck, FileText, Play, MoreHorizontal, Pencil, Trash2, X, Save } from "lucide-react";
+import { Check, CheckCheck, FileText, Play, MoreHorizontal, Pencil, Trash2, X, Save, Reply } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LinkPreviewCard } from "./link-preview-card";
@@ -22,9 +22,10 @@ interface MessageBubbleProps {
     onLinkClick?: (type: "post" | "event" | "caption", id: string) => void;
     onEdit?: (id: string, newContent: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
+    replyMessage?: ChatMessage;
 }
 
-export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit, onDelete }: MessageBubbleProps) {
+export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit, onDelete, onReply, replyMessage }: MessageBubbleProps & { onReply?: (id: string) => void }) {
     const { role } = useCurrentUser();
     const { profiles } = useValentineAuth();
     const isMe = role === (message.sender_id === "him" ? "ảnh" : "ẻm");
@@ -56,22 +57,39 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
             )}
 
             <div className={cn("max-w-[75%] flex flex-col relative", isMe ? "items-end" : "items-start")}>
-                {/* Options Menu (Only for own messages) */}
-                {isMe && !isEditing && (
-                    <div className="absolute top-0 -left-8 opacity-0 group-hover/message:opacity-100 transition-opacity">
+                {/* Options Menu */}
+                {!isEditing && (
+                    <div className={cn(
+                        "absolute top-0 transition-opacity z-10",
+                        isMe ? "-left-8" : "-right-8",
+                        // Mobile: Always visible (or at least accessible via tap). Desktop: Hover.
+                        // Actually user requested "always visible on mobile". 
+                        // It's cleaner to just make it visible or use CSS media queries if needed.
+                        // But "always visible" might clutter. 
+                        // Let's use opacity-100 for touch devices if possible, or just remove opacity-0.
+                        // Given the request "trên mobile, luôn hiện", removing opacity-0 is simplest.
+                        "opacity-100"
+                    )}>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="p-1 rounded-full hover:bg-muted text-muted-foreground transition-colors">
+                                <button className="p-1 rounded-full hover:bg-muted/50 text-muted-foreground/50 hover:text-foreground transition-colors">
                                     <MoreHorizontal className="w-4 h-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                                    <Pencil className="w-4 h-4 mr-2" /> Chỉnh sửa
+                            <DropdownMenuContent align={isMe ? "end" : "start"}>
+                                <DropdownMenuItem onClick={() => onReply?.(message.id)}>
+                                    <Reply className="w-4 h-4 mr-2" /> Trả lời
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onDelete?.(message.id)} className="text-destructive focus:text-destructive">
-                                    <Trash2 className="w-4 h-4 mr-2" /> Xóa tin nhắn
-                                </DropdownMenuItem>
+                                {isMe && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                            <Pencil className="w-4 h-4 mr-2" /> Chỉnh sửa
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onDelete?.(message.id)} className="text-destructive focus:text-destructive">
+                                            <Trash2 className="w-4 h-4 mr-2" /> Xóa tin nhắn
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -79,12 +97,29 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
 
                 {/* Reply Context */}
                 {message.reply_to_type && message.reply_to_ref_id && (
-                    <div className="mb-1 -mt-1 scale-90 origin-bottom-left">
-                        <LinkPreviewCard
-                            type={message.reply_to_type as any}
-                            id={message.reply_to_ref_id}
-                            onClick={() => onLinkClick?.(message.reply_to_type as any, message.reply_to_ref_id!)}
-                        />
+                    <div className="mb-1 -mt-1 scale-90 origin-bottom-left max-w-full">
+                        {message.reply_to_type === 'message' ? (
+                            <div className="flex flex-col text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-md mb-1 border-l-2 border-primary/50 cursor-pointer hover:bg-muted/80 transition-colors"
+                                onClick={() => {
+                                    // Optional: Scroll to message?
+                                }}
+                            >
+                                {replyMessage ? (
+                                    <>
+                                        <span className="font-semibold text-[10px] opacity-70 mb-0.5">{replyMessage.sender_id === 'him' ? 'Anh' : 'Em'}</span>
+                                        <span className="truncate line-clamp-1 italic">{replyMessage.content || (replyMessage.media_urls?.length ? "Hình ảnh/Video" : "Tập tin")}</span>
+                                    </>
+                                ) : (
+                                    <span className="italic">Tin nhắn đã bị xóa hoặc không có sẵn</span>
+                                )}
+                            </div>
+                        ) : (
+                            <LinkPreviewCard
+                                type={message.reply_to_type as any}
+                                id={message.reply_to_ref_id}
+                                onClick={() => onLinkClick?.(message.reply_to_type as any, message.reply_to_ref_id!)}
+                            />
+                        )}
                     </div>
                 )}
 
@@ -102,21 +137,24 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
                     {(message.media_urls && message.media_urls.length > 0) ? (
                         <div className={cn("mb-2 mt-1 gap-1", message.media_urls.length > 1 ? "grid grid-cols-2" : "flex")}>
                             {message.media_urls.map((url, index) => (
-                                <div key={index} className="rounded-lg overflow-hidden max-w-full relative aspect-square">
+                                <div key={index} className="rounded-lg overflow-hidden relative aspect-square min-w-[120px] bg-muted/20">
                                     {message.media_type === "image" ? (
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <img
-                                                    src={url}
-                                                    alt={`Attachment ${index + 1}`}
-                                                    className="w-full h-full object-cover cursor-zoom-in hover:opacity-95 transition-opacity"
-                                                />
+                                                <div className="w-full h-full cursor-pointer">
+                                                    <img
+                                                        src={url}
+                                                        alt={`Attachment ${index + 1}`}
+                                                        loading="lazy"
+                                                        className="w-full h-full object-cover hover:opacity-95 transition-opacity"
+                                                    />
+                                                </div>
                                             </DialogTrigger>
                                             <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none flex items-center justify-center">
                                                 <img
                                                     src={url}
                                                     alt="Full size"
-                                                    className="max-h-[90vh] max-w-full object-contain rounded-md"
+                                                    className="max-h-[85vh] w-auto max-w-[95vw] object-contain rounded-md"
                                                 />
                                             </DialogContent>
                                         </Dialog>
@@ -141,22 +179,27 @@ export function MessageBubble({ message, showAvatar = true, onLinkClick, onEdit,
                             {message.media_type === "image" ? (
                                 <Dialog open={imageOpen} onOpenChange={setImageOpen}>
                                     <DialogTrigger asChild>
-                                        <img
-                                            src={message.media_url}
-                                            alt="Attachment"
-                                            className="max-h-60 max-w-sm object-cover cursor-zoom-in hover:opacity-95 transition-opacity rounded-md"
-                                        />
+                                        <div className="bg-muted min-h-[150px] min-w-[200px] rounded-md cursor-pointer">
+                                            <img
+                                                src={message.media_url}
+                                                alt="Attachment"
+                                                loading="lazy"
+                                                className="w-full h-auto max-h-60 object-cover hover:opacity-95 transition-opacity rounded-md"
+                                            />
+                                        </div>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none flex items-center justify-center">
-                                        <img
-                                            src={message.media_url}
-                                            alt="Full size"
-                                            className="max-h-[90vh] max-w-full object-contain rounded-md"
-                                        />
+                                        <div className="relative w-full h-full min-h-[200px] flex items-center justify-center">
+                                            <img
+                                                src={message.media_url}
+                                                alt="Full size"
+                                                className="max-h-[85vh] w-auto max-w-[95vw] object-contain rounded-md"
+                                            />
+                                        </div>
                                     </DialogContent>
                                 </Dialog>
                             ) : message.media_type === "video" ? (
-                                <video controls src={message.media_url} className="max-h-60 rounded-lg" />
+                                <video controls src={message.media_url} className="max-h-60 w-full object-cover rounded-lg" />
                             ) : (
                                 <a
                                     href={message.media_url}

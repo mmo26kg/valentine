@@ -116,7 +116,7 @@ export interface ChatMessage {
     media_urls?: string[] | null;
     media_type?: "image" | "video" | "file";
     is_edited?: boolean;
-    reply_to_type?: "post" | "event" | "caption";
+    reply_to_type?: "post" | "event" | "caption" | "message";
     reply_to_ref_id?: string;
     is_read: boolean;
     created_at: string;

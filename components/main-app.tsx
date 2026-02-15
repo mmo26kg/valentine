@@ -98,23 +98,36 @@ export function MainApp() {
 
         if (tabParam && TABS.some(t => t.value === tabParam)) {
             setActiveTab(tabParam);
+            setShowChat(false); // Close chat if navigating to a main tab
         } else if (postParam) {
             setActiveTab("timeline");
+            setShowChat(false);
         } else if (captionParam) {
             setActiveTab("home");
+            setShowChat(false);
         } else if (countdownParam) {
             setActiveTab("countdown");
+            setShowChat(false);
         }
 
         if (tabParam === "chat" || (chatRef && chatType)) {
-            // If URL says chat, open chat screen and remove param to avoid stuck state?
-            // Or just open it.
             setShowChat(true);
             if (chatRef && chatType) {
                 setChatContext({ type: chatType as any, id: chatRef });
             }
         }
     }, [searchParams]);
+
+    const handleChatOpen = () => {
+        router.push("/?tab=chat");
+    };
+
+    const handleChatClose = () => {
+        // Navigate back to the active tab (or home if undefined)
+        // If we are deep linked, maybe just clear params?
+        // Simplest is to push to the current activeTab
+        router.push(`/?tab=${activeTab || 'home'}`);
+    };
 
     const {
         role: currentRole,
@@ -125,169 +138,185 @@ export function MainApp() {
         lock: onLock,
     } = useValentine();
 
+
     return (
-        <div className="min-h-screen relative">
+        <div className="min-h-screen relative overflow-hidden">
             <AmbientBackground />
 
-            <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="relative z-10"
-            >
-                {/* Header */}
-                <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-                    <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
-                                <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/avatar.png" alt="Logo" width={32} height={32} />
-                            </div>
-                            <span className="font-serif text-lg italic text-foreground">
-                                Ảnh & Ẻm
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full text-muted-foreground hover:text-primary relative"
-                                onClick={() => setShowChat(true)}
-                            >
-                                <MessageCircle className="w-5 h-5" />
-                                {/* Add unread badge here if needed */}
-                            </Button>
-                            <ModeToggle />
-                            <NotificationCenter onNavigate={handleNavigate} />
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors">
-                                        <span className="hidden sm:inline font-serif italic">
-                                            {currentRole === "ảnh" ? profiles.him?.name : profiles.her?.name}
-                                        </span>
-                                        <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
-                                            {currentUserAvatarURL ? (
-                                                <img src={currentUserAvatarURL} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
-                                            ) : (
-                                                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary/30 text-[10px]">
-                                                    {currentRole === "ảnh" ? "Anh" : "Em"}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
-                                    <DropdownMenuItem onClick={onLock} className="focus:bg-destructive/20 focus:text-destructive cursor-pointer">
-                                        <LogOut className="w-4 h-4 mr-2" />
-                                        Đăng xuất
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-                </header>
-
-                {/* Content */}
-                <main className="max-w-6xl mx-auto px-4 py-8 pb-28">
-                    <AnimatePresence mode="wait">
-                        {activeTab === "home" && (
-                            <motion.div
-                                key={`home-${refreshKeys.home}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <HomeTab initialCaptionDate={searchParams.get("caption")} />
-                            </motion.div>
-                        )}
-
-                        {activeTab === "countdown" && (
-                            <motion.div
-                                key={`countdown-${refreshKeys.countdown}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <CountdownTab initialEventId={searchParams.get("countdown")} />
-                            </motion.div>
-                        )}
-
-                        {activeTab === "timeline" && (
-                            <motion.div
-                                key={`timeline-${refreshKeys.timeline}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <TimelineTab initialPostId={searchParams.get("post")} />
-                            </motion.div>
-                        )}
-
-                        {activeTab === "profile" && (
-                            <motion.div
-                                key={`profile-${refreshKeys.profile}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <ProfileTab />
-                            </motion.div>
-                        )}
-
-                        {/* Settings Tab */}
-                        {activeTab === "settings" && (
-                            <motion.div
-                                key={`settings-${refreshKeys.settings}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <SettingsTab />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </main>
-
-                {/* Chat Screen Overlay */}
-                <AnimatePresence>
-                    {showChat && (
+            <AnimatePresence mode="wait">
+                {showChat ? (
+                    <motion.div
+                        key="chat-screen"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        className="fixed inset-0 z-50 w-full h-full"
+                    >
                         <ChatScreen
-                            onClose={() => setShowChat(false)}
+                            onClose={handleChatClose}
                             initialContext={chatContext || undefined}
                         />
-                    )}
-                </AnimatePresence>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="main-tabs"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        className="relative z-10 w-full min-h-screen"
+                    >
+                        <Tabs
+                            value={activeTab}
+                            onValueChange={setActiveTab}
+                            className="relative"
+                        >
+                            {/* Header */}
+                            <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+                                <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
+                                            <img src="https://pub-79d67780b43f4e7c91fc78db86657824.r2.dev/media/avatar.png" alt="Logo" width={32} height={32} />
+                                        </div>
+                                        <span className="font-serif text-lg italic text-foreground">
+                                            Ảnh & Ẻm
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <ModeToggle />
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="rounded-full text-muted-foreground hover:text-primary relative"
+                                            onClick={handleChatOpen}
+                                        >
+                                            <MessageCircle className="w-5 h-5" />
+                                            {/* Add unread badge here if needed */}
+                                        </Button>
+                                        <NotificationCenter onNavigate={handleNavigate} />
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <div className="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors ml-2">
+                                                    <span className="hidden sm:inline font-serif italic">
+                                                        {currentRole === "ảnh" ? profiles.him?.name : profiles.her?.name}
+                                                    </span>
+                                                    <div className="w-8 h-8 rounded-full bg-muted border border-primary/20 flex items-center justify-center overflow-hidden">
+                                                        {currentUserAvatarURL ? (
+                                                            <img src={currentUserAvatarURL} className="w-full h-full object-cover" alt="Avatar" width={32} height={32} />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary/30 text-[10px]">
+                                                                {currentRole === "ảnh" ? "Anh" : "Em"}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
+                                                <DropdownMenuItem onClick={onLock} className="focus:bg-destructive/20 focus:text-destructive cursor-pointer">
+                                                    <LogOut className="w-4 h-4 mr-2" />
+                                                    Đăng xuất
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            </header>
 
-                {/* Bottom Navigation */}
-                <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">
-                    <div className="pointer-events-auto">
-                        <Dock magnification={60} distance={100} panelHeight={56}>
-                            {TABS.map(({ value, label, icon: Icon }) => (
-                                <DockItem
-                                    key={value}
-                                    active={activeTab === value}
-                                    onClick={() => handleTabChange(value)}
-                                >
-                                    <DockLabel>{label}</DockLabel>
-                                    <DockIcon>
-                                        <Icon
-                                            className={cn(
-                                                "size-full transition-colors duration-300",
-                                                activeTab === value
-                                                    ? "text-primary dark:text-rose-gold"
-                                                    : "text-muted-foreground group-hover:text-foreground"
-                                            )}
-                                        />
-                                    </DockIcon>
-                                </DockItem>
-                            ))}
-                        </Dock>
-                    </div>
-                </div>
-            </Tabs>
-        </div >
+                            {/* Content */}
+                            <main className="max-w-6xl mx-auto px-4 py-8 pb-28">
+                                <AnimatePresence mode="wait">
+                                    {activeTab === "home" && (
+                                        <motion.div
+                                            key={`home-${refreshKeys.home}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <HomeTab initialCaptionDate={searchParams.get("caption")} />
+                                        </motion.div>
+                                    )}
+
+                                    {activeTab === "countdown" && (
+                                        <motion.div
+                                            key={`countdown-${refreshKeys.countdown}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <CountdownTab initialEventId={searchParams.get("countdown")} />
+                                        </motion.div>
+                                    )}
+
+                                    {activeTab === "timeline" && (
+                                        <motion.div
+                                            key={`timeline-${refreshKeys.timeline}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <TimelineTab initialPostId={searchParams.get("post")} />
+                                        </motion.div>
+                                    )}
+
+                                    {activeTab === "profile" && (
+                                        <motion.div
+                                            key={`profile-${refreshKeys.profile}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <ProfileTab />
+                                        </motion.div>
+                                    )}
+
+                                    {/* Settings Tab */}
+                                    {activeTab === "settings" && (
+                                        <motion.div
+                                            key={`settings-${refreshKeys.settings}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <SettingsTab />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </main>
+
+                            {/* Bottom Navigation */}
+                            <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">
+                                <div className="pointer-events-auto">
+                                    <Dock magnification={60} distance={100} panelHeight={56}>
+                                        {TABS.map(({ value, label, icon: Icon }) => (
+                                            <DockItem
+                                                key={value}
+                                                active={activeTab === value}
+                                                onClick={() => handleTabChange(value)}
+                                            >
+                                                <DockLabel>{label}</DockLabel>
+                                                <DockIcon>
+                                                    <Icon
+                                                        className={cn(
+                                                            "size-full transition-colors duration-300",
+                                                            activeTab === value
+                                                                ? "text-primary dark:text-rose-gold"
+                                                                : "text-muted-foreground group-hover:text-foreground"
+                                                        )}
+                                                    />
+                                                </DockIcon>
+                                            </DockItem>
+                                        ))}
+                                    </Dock>
+                                </div>
+                            </div>
+                        </Tabs>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
