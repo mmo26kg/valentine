@@ -43,6 +43,18 @@ export async function GET(request: Request) {
             .from("love_logs")
             .insert({ sender_id: "him" });
 
+        // Send notification to user
+        const { error: notificationError } = await supabase
+            .schema("valentine")
+            .from("notifications")
+            .insert({
+                user_id: 'her',
+                title: "Gửi ngàn lời yêu! 💖",
+                message: `Anh vừa gửi cho bạn một trái tim.`,
+                type: "love",
+                is_read: false
+            });
+
         if (insertError) {
             console.error("Error inserting love log:", insertError);
             return NextResponse.json({ error: insertError.message }, { status: 500 });

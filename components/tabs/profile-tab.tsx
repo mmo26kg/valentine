@@ -12,13 +12,15 @@ import {
     Upload,
     Check,
     X,
-    Clock
+    Clock,
+    Zap
 } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useLove, useLoveStats } from "@/lib/store";
 import { useValentine } from "@/providers/valentine-provider";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -181,6 +183,40 @@ function ProfileCard({
 
     const [newDislike, setNewDislike] = useState("");
     const [dislikes, setDislikes] = useState<string[]>(user.dislikes || []);
+
+    // Love Spam State
+    const [spamActive, setSpamActive] = useState(false);
+    const [loadingSpam, setLoadingSpam] = useState(false);
+
+    // Fetch initial status
+    useState(() => {
+        if (roleId === 'him' && isOwner) {
+            fetch('/api/cron/love-spam/toggle?action=status')
+                .then(res => res.json())
+                .then(data => setSpamActive(data.active))
+                .catch(err => console.error("Error fetching spam status", err));
+        }
+    });
+
+    const toggleSpam = async () => {
+        setLoadingSpam(true);
+        const action = spamActive ? 'stop' : 'start';
+        try {
+            const res = await fetch('/api/cron/love-spam/toggle', {
+                method: 'POST',
+                body: JSON.stringify({ action })
+            });
+            const data = await res.json();
+            if (data.active !== undefined) {
+                setSpamActive(data.active);
+                toast.success(data.active ? "Đã bật chế độ Love Spam! 😈" : "Đã tắt chế độ Love Spam 😇");
+            }
+        } catch (e) {
+            toast.error("Lỗi khi toggle spam");
+        } finally {
+            setLoadingSpam(false);
+        }
+    };
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { uploadFile, isUploading } = useUpload();
@@ -450,6 +486,32 @@ function ProfileCard({
                                 </div>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1 text-right">lượt yêu hôm nay</p>
+
+                            {/* Love Spam Button for Him */}
+                            {roleId === 'him' && (
+                                <div className="mt-3 pt-3 border-t border-primary/10">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className={`w-full justify-between ${spamActive ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-primary/20'}`}
+                                        onClick={toggleSpam}
+                                        disabled={loadingSpam}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Zap className={`w-4 h-4 ${spamActive ? 'fill-current' : ''}`} />
+                                            <span>Love Spam</span>
+                                        </div>
+                                        <Switch
+                                            checked={spamActive}
+                                            onCheckedChange={() => { }} // Handled by button click
+                                            className="scale-75 pointer-events-none"
+                                        />
+                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground mt-1 text-center">
+                                        {spamActive ? "Đang spam tim mỗi 6 phút..." : "Tự động gửi tim liên tục"}
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="flex items-center justify-between text-primary/70 mt-3 pt-3 border-t border-primary/10">
                                 <span className="text-sm font-medium">Tổng lịch sử</span>
