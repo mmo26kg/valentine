@@ -1006,7 +1006,7 @@ export function TimelineTab({ initialPostId }: { initialPostId?: string | null }
                         <Plus className="w-6 h-6" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent showCloseButton={false} className=" bg-card text-card-foreground border-border">
+                <DialogContent showCloseButton={false} className=" bg-card text-card-foreground border-border max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-serif italic text-foreground">
                             {editingPostId ? "Chỉnh sửa kỷ niệm" : "Thêm kỷ niệm mới"}
