@@ -545,6 +545,11 @@ const TimelinePostCard = memo(({
 
     const myId = currentRole === "ảnh" ? "him" : "her";
     const hasReacted = post.reactions?.[myId];
+    const convertUserId = post.user_id === "ảnh" ? "him" : "her";
+
+    const userProfile = profiles[convertUserId];
+    const avatar = userProfile?.avatar_url || (post.user_id === "him" ? "/images/default-avatar-him.png" : "/images/default-avatar-her.png");
+    const name = userProfile?.name || (post.user_id === "him" ? "Anh" : "Em");
 
     const VISIBLE_COMMENTS = 3;
     const displayedComments = comments.slice(0, VISIBLE_COMMENTS);
@@ -566,6 +571,24 @@ const TimelinePostCard = memo(({
 
     return (
         <div className="glass-card glass-card-hover rounded-xl overflow-hidden">
+            <div className="p-4 flex items-center gap-3 border-b border-white/5">
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 shrink-0 relative">
+                    <Image
+                        src={avatar}
+                        alt={name}
+                        fill
+                        className="object-cover"
+                        sizes="36px"
+                    />
+                </div>
+                <div>
+                    <p className="text-sm font-medium text-foreground/90">{name}</p>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground/70">
+                        <span>Đã tạo vào: {format(new Date(post.created_at), "HH:mm dd/MM/yyyy")}</span>
+                    </div>
+                </div>
+            </div>
+
             <MediaGrid mediaUrls={allMedia} onOpen={(index) => openGallery(post, index)} />
 
             <div className="p-5">
@@ -576,7 +599,10 @@ const TimelinePostCard = memo(({
                     onClick={() => openGallery(post, 0)}
                     className="cursor-pointer group/content"
                 >
-                    <p className="text-muted-foreground font-serif italic leading-relaxed text-sm group-hover/content:text-foreground transition-colors">
+                    <h3 className="text-base font-medium text-foreground mb-1 group-hover/content:text-primary transition-colors">
+                        {post.title}
+                    </h3>
+                    <p className="text-muted-foreground font-serif italic leading-relaxed text-sm group-hover/content:text-foreground transition-colors line-clamp-3">
                         {post.content}
                     </p>
                 </div>
