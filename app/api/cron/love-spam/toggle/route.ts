@@ -1,46 +1,33 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client"
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
 async function handleLoveSpamToggle(action: string | null) {
-    if (action !== "start" && action !== "stop" && action !== "status") {
-        return NextResponse.json({ error: "Invalid action. Use 'start', 'stop', or 'status'." }, { status: 400 });
+    if (action !== "start" && action !== "stop") {
+        return NextResponse.json({ error: "Invalid action. Use 'start' or 'stop'." }, { status: 400 });
     }
 
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    if (action === "status") {
-        const { data } = await supabase
-            .from("settings")
-            .select("value")
-            .eq("key", "love_spam_start_time")
-            .maybeSingle(); // Use maybeSingle to avoid 406 error if 0 rows
-
-        const active = !!data;
-        return NextResponse.json({ active, startTime: data?.value });
-    }
+    const supabase = createClient();
 
     if (action === "start") {
         // Set start time to now
         const now = new Date().toISOString();
         const { error } = await supabase
+            .schema("valentine")
             .from("settings")
             .upsert({ key: "love_spam_start_time", value: now }, { onConflict: "key" });
 
         if (error) {
             console.error("Error starting love spam:", error);
-            // If table doesn't exist or other error
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ message: "Love spam started", startTime: now, active: true });
+        return NextResponse.json({ message: "Love spam started", startTime: now });
     } else {
         // Stop (delete the setting)
         const { error } = await supabase
+            .schema("valentine")
             .from("settings")
             .delete()
             .eq("key", "love_spam_start_time");
@@ -50,7 +37,7 @@ async function handleLoveSpamToggle(action: string | null) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ message: "Love spam stopped", active: false });
+        return NextResponse.json({ message: "Love spam stopped" });
     }
 }
 
